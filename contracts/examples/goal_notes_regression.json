@@ -1,0 +1,20 @@
+{
+  "goal_id": "123e4567-e89b-12d3-a456-426614174001",
+  "user_intent": "Corriger la sauvegarde des notes : la note doit persister après fermeture et réouverture",
+  "inputs": ["bench://notes"],
+  "constraints": {
+    "allowed_actions": ["observe", "edit", "test"],
+    "environment_id": "bench-notes"
+  },
+  "success_conditions": [
+    {
+      "all_of": [
+        {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+      ]
+    }
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

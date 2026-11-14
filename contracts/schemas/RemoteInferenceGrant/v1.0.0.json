@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "akasha://schemas/RemoteInferenceGrant/1.0.0",
+  "title": "RemoteInferenceGrant",
+  "description": "Autorisation bornée d'inférence distante, spec §13.7. Gel v0.",
+  "type": "object",
+  "required": ["grant_id", "provider", "endpoint", "purpose", "data_categories", "expires_at", "budget", "approver"],
+  "properties": {
+    "grant_id": {"type": "string", "minLength": 1},
+    "provider": {"type": "string", "minLength": 1},
+    "endpoint": {"type": "string", "minLength": 1},
+    "purpose": {"type": "string", "minLength": 1},
+    "data_categories": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "expires_at": {"type": "string"},
+    "budget": {
+      "type": "object",
+      "properties": {
+        "max_calls": {"type": "integer", "minimum": 0},
+        "max_cost": {"type": "number", "minimum": 0},
+        "calls_used": {"type": "integer", "minimum": 0, "default": 0},
+        "cost_used": {"type": "number", "minimum": 0, "default": 0}
+      },
+      "additionalProperties": false
+    },
+    "approver": {"type": "string", "minLength": 1},
+    "revoked": {"type": "boolean", "default": false},
+    "created_at": {"type": "string"}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "akasha://schemas/ExperienceRecord/1.0.0",
+  "title": "ExperienceRecord",
+  "description": "Enregistrement d'expérience, spec §10. Distingue le journal d'audit minimal (sans contenu utilisateur) des contenus effaçables. Gel v0.",
+  "type": "object",
+  "required": ["record_id", "goal_id", "graph_version", "verification", "created_at"],
+  "properties": {
+    "record_id": {"type": "string", "minLength": 1},
+    "goal_id": {"type": "string", "minLength": 1},
+    "graph_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "node_versions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["capability_id", "version"],
+        "properties": {
+          "capability_id": {"type": "string"},
+          "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "inputs_digests": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+    },
+    "outputs_digests": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+    },
+    "verification": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["pass", "fail", "inconclusive"]},
+        "predicate_results": {"type": "array", "items": {"type": "object"}}
+      },
+      "additionalProperties": false
+    },
+    "cost": {"type": "object"},
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "family"],
+        "properties": {
+          "code": {"type": "string"},
+          "family": {"type": "string"},
+          "message": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "contains_user_content": {
+      "type": "boolean",
+      "description": "Vrai si des contenus ou dérivés réels sont joints ; faux pour l'audit minimal."
+    },
+    "redacted": {
+      "type": "boolean",
+      "description": "Trace devenue redacted_by_deletion après effacement (spec §16.1)."
+    },
+    "created_at": {"type": "string"}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,7 @@
+.venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.db
+bench/notes/notes_check.db
+bench/tasks/tasks_check.db

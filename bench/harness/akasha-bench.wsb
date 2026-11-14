@@ -1,0 +1,14 @@
+<Configuration>
+  <!-- Profil durci du banc Akasha (spec §13.5). Aucune action réelle hors bac. -->
+  <Networking>Disable</Networking>
+  <ClipboardRedirection>Disable</ClipboardRedirection>
+  <AudioInput>Disable</AudioInput>
+  <VideoInput>Disable</VideoInput>
+  <PrinterRedirection>Disable</PrinterRedirection>
+  <VGpu>Disable</VGpu>
+  <MemoryInMB>4096</MemoryInMB>
+  <!-- Pas de dossier hôte monté par défaut : isolation totale.
+       Échanges uniquement via la procédure de staging (sandbox_profile.md) :
+       intrants en lecture seule, sortants via courtier d'export. -->
+  <MappedFolders />
+</Configuration>

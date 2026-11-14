@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "akasha://schemas/RetentionPolicy/1.0.0",
+  "title": "RetentionPolicy",
+  "description": "Politique versionnée de rétention et sauvegarde, spec §10.2 et §10.5. Valeurs décidées : résultats minimisés 90 j, contenus réels 30 j, captures 7 j, sauvegarde chiffrée quotidienne 7 j. Gel v0.",
+  "type": "object",
+  "required": ["version", "windows_days", "backup"],
+  "properties": {
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "windows_days": {
+      "type": "object",
+      "required": ["minimized_results", "real_contents", "captures"],
+      "properties": {
+        "minimized_results": {"type": "integer", "minimum": 1},
+        "real_contents": {"type": "integer", "minimum": 1},
+        "captures": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "backup": {
+      "type": "object",
+      "required": ["daily", "retention_days", "includes_real_contents"],
+      "properties": {
+        "daily": {"type": "boolean"},
+        "retention_days": {"type": "integer", "minimum": 1},
+        "includes_real_contents": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

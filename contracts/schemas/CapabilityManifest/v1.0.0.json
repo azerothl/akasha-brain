@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "akasha://schemas/CapabilityManifest/1.0.0",
+  "title": "CapabilityManifest",
+  "description": "Manifeste de capacité, spec §6 et §6.1. Version exacte exigée, aucune plage. Gel v0.",
+  "type": "object",
+  "required": ["capability_id", "version", "kind", "permissions", "risk_class"],
+  "properties": {
+    "capability_id": {"type": "string", "minLength": 1},
+    "version": {
+      "type": "string",
+      "description": "SemVer exacte, plages interdites.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "kind": {
+      "enum": ["model", "tool", "solver", "skill", "memory", "adapter", "verifier", "human", "engine"]
+    },
+    "description": {"type": "string"},
+    "input_schema": {"type": "object"},
+    "output_schema": {"type": "object"},
+    "mcp_annotations": {
+      "type": "object",
+      "description": "Hints MCP non autoritatifs, informatifs uniquement.",
+      "properties": {
+        "readOnlyHint": {"type": "boolean"},
+        "destructiveHint": {"type": "boolean"},
+        "idempotentHint": {"type": "boolean"},
+        "openWorldHint": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "preconditions": {"type": "array", "items": {"type": "string"}},
+    "postconditions": {"type": "array", "items": {"type": "string"}},
+    "permissions": {
+      "type": "object",
+      "description": "Permissions normatives, vérifiées par le runtime hors modèle.",
+      "properties": {
+        "reads": {"type": "array", "items": {"type": "string"}},
+        "writes": {"type": "array", "items": {"type": "string"}},
+        "execute": {"type": "array", "items": {"type": "string"}},
+        "network": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "risk_class": {"enum": ["R0", "R1", "R2", "R3"]},
+    "sandbox": {
+      "type": "object",
+      "properties": {
+        "tier": {"enum": ["none", "container-rootless", "windows-sandbox", "hardened-vm"]},
+        "cpu_limit": {"type": ["number", "null"]},
+        "memory_mb": {"type": ["integer", "null"]},
+        "time_s": {"type": ["integer", "null"]},
+        "network_egress": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "side_effects": {"enum": ["none", "local-temporary", "persistent", "irreversible"]},
+    "resource_profile": {
+      "type": "object",
+      "properties": {
+        "engine_id": {"type": "string"},
+        "engine_version": {"type": "string"},
+        "model_format": {"type": "string"},
+        "model_architecture": {"type": "string"},
+        "quantization": {"type": "string"},
+        "context_tokens": {"type": "integer"},
+        "devices": {"type": "array", "items": {"type": "string"}},
+        "measurement": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "source": {"type": "string"},
+            "measured_at": {"type": "string"},
+            "status": {"enum": ["measured", "estimated", "unknown"]}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "uncertainty": {
+      "type": "object",
+      "properties": {
+        "method": {"type": "string"},
+        "calibration_dataset": {"type": "string"},
+        "ece": {"type": "number"},
+        "brier": {"type": "number"},
+        "recalibrated_at": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "evaluation_profile": {"type": "string"},
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "model_id": {"type": "string"},
+        "weights_digest": {"type": "string"},
+        "license": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

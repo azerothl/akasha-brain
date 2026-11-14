@@ -1,0 +1,16 @@
+{
+  "goal_id": "123e4567-e89b-12d3-a456-426614174002",
+  "user_intent": "Évaluer le transfert sur la variante tâches (filtre À faire), sans modifier ses états",
+  "inputs": ["bench://tasks"],
+  "constraints": {
+    "allowed_actions": ["observe"],
+    "environment_id": "bench-tasks"
+  },
+  "success_conditions": [
+    {"predicate": "file_hash_equals", "on": "DesktopState", "args": {"path": "tasks.db", "sha256": "etat-fige-a-renseigner"}}
+  ],
+  "risk_class": "R0",
+  "resource_budget": {},
+  "uncertainties": ["empreinte exacte de l'état figé à renseigner après gel"],
+  "approval_requirements": []
+}

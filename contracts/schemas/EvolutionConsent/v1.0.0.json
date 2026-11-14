@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "akasha://schemas/EvolutionConsent/1.0.0",
+  "title": "EvolutionConsent",
+  "description": "Accord explicite de réutilisation pour l'évolution locale, spec §10.4. Par projet et catégories, finalité unique, révocable. Gel v0.",
+  "type": "object",
+  "required": ["project", "categories", "purpose", "granted_at", "status"],
+  "properties": {
+    "project": {"type": "string", "minLength": 1},
+    "categories": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "purpose": {"type": "string", "minLength": 1},
+    "granted_at": {"type": "string"},
+    "expires_at": {"type": ["string", "null"]},
+    "status": {"enum": ["active", "revoked"]}
+  },
+  "additionalProperties": false
+}

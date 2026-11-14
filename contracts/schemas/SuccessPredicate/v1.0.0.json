@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "akasha://schemas/SuccessPredicate/1.0.0",
+  "title": "SuccessPredicate",
+  "description": "Condition de réussite exécutable, ensemble fermé par adaptateur, spec §5.4. Composition bornée profondeur 2 : seules les racines all_of/any_of contiennent des prédicats, jamais imbriqués.",
+  "anyOf": [
+    {
+      "type": "object",
+      "required": ["predicate", "on", "args"],
+      "properties": {
+        "predicate": {
+          "enum": [
+            "file_exists",
+            "file_matches_regex",
+            "git_diff_applies",
+            "test_suite_passes",
+            "process_exit_zero",
+            "window_foreground",
+            "ui_element_state",
+            "file_hash_equals",
+            "registry_key_equals",
+            "process_running",
+            "human_confirms"
+          ]
+        },
+        "on": {"enum": ["CodeState", "DesktopState", "HumanReview"]},
+        "args": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": ["all_of"],
+      "properties": {
+        "all_of": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["predicate", "on", "args"],
+            "properties": {
+              "predicate": {
+                "enum": [
+                  "file_exists",
+                  "file_matches_regex",
+                  "git_diff_applies",
+                  "test_suite_passes",
+                  "process_exit_zero",
+                  "window_foreground",
+                  "ui_element_state",
+                  "file_hash_equals",
+                  "registry_key_equals",
+                  "process_running",
+                  "human_confirms"
+                ]
+              },
+              "on": {"enum": ["CodeState", "DesktopState", "HumanReview"]},
+              "args": {"type": "object"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": ["any_of"],
+      "properties": {
+        "any_of": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["predicate", "on", "args"],
+            "properties": {
+              "predicate": {
+                "enum": [
+                  "file_exists",
+                  "file_matches_regex",
+                  "git_diff_applies",
+                  "test_suite_passes",
+                  "process_exit_zero",
+                  "window_foreground",
+                  "ui_element_state",
+                  "file_hash_equals",
+                  "registry_key_equals",
+                  "process_running",
+                  "human_confirms"
+                ]
+              },
+              "on": {"enum": ["CodeState", "DesktopState", "HumanReview"]},
+              "args": {"type": "object"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}
