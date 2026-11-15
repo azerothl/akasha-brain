@@ -436,4 +436,134 @@ contient les six `ExperienceRecord` et les onze événements chaînés.
 Le registre SQLite et les rapports bruts sont dans le dossier
 de preuves `phase1-notes-evolution-ram-frozen/`.
 
+## Parcours projet local avec approbation du diff
+
+Le point d'entrée `python -m akasha_brain.project` couvre la modification
+d'un fichier UTF-8 existant. `prepare` copie le fichier, le test Python
+et les autres entrées explicitement sélectionnées dans Windows Sandbox.
+Le montage est en lecture seule et le réseau est désactivé. Dans le
+répertoire temporaire du bac, Git contrôle et applique le diff. Le
+lanceur vérifie les empreintes avant et après avoir exécuté le test.
+
+La proposition regroupe le diff exact, le fichier de remplacement et
+un manifeste qui lie ces artefacts à l'identité du projet, aux empreintes
+des fichiers sélectionnés et au verdict du bac. Après examen du diff,
+`apply --approve` exige l'empreinte `approval_sha256` de la proposition.
+Le contrôle R2 et la comparaison des empreintes précèdent le remplacement
+atomique du fichier. Un changement dans le périmètre sélectionné impose
+une nouvelle préparation et une nouvelle approbation.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.project prepare `
+    --project $projet --output $proposition --file 'notes_store.py' `
+    --replacement $remplacement --test 'check_notes.py' --python-runtime $pythonPortable
+Get-Content -LiteralPath (Join-Path $proposition 'proposal.diff') -Encoding UTF8
+.\.venv\Scripts\python.exe -m akasha_brain.project apply `
+    --project $projet --proposal $proposition --approve $empreinteApprouvee
+```
+
+Deux copies jetables de Notes ont servi de projets de référence pour
+l'essai. Les deux préparations ont validé le diff dans des bacs neufs
+(22,634 s et 22,004 s). Le test a relu deux notes après réouverture et
+confirmé leurs valeurs exactes dans SQLite.
+
+| Cas | Résultat | Contrôle sur le projet de test |
+| --- | --- | --- |
+| Approbation absente ou liée à l'autre proposition | `approval_required` | Empreintes inchangées |
+| Approbation exacte | Appliquée | Le fichier correspond à la version testée dans le bac |
+| Édition du fichier après validation du diff | `contract_precondition_failed`, `project_changed` | Édition conservée et empreintes inchangées après le refus |
+
+Le fichier du dépôt qui a servi à créer les copies conserve son empreinte.
+Le diff et `report.json` sont sous `phase1-project-approval/` dans le
+dossier de preuves.
+
+## Suppressions et déplacements approuvés dans un projet local
+
+`prepare --file $source --delete` et `prepare --file $source --move-to
+$destination` préparent chacun une seule opération sur un fichier ordinaire.
+Le manifeste `proposal.json` indique l'opération, les chemins concernés,
+l'empreinte du fichier source et le verdict du bac. Le déplacement exige
+un dossier parent existant dans le projet et une destination libre. Le
+lanceur contrôle à nouveau leur état avant application.
+
+Après examen du manifeste, l'application exige à la fois l'empreinte de
+la proposition et l'accord propre à l'opération.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.project apply `
+    --project $projet --proposal $suppression --approve $empreinteSuppression `
+    --approve-delete $source
+.\.venv\Scripts\python.exe -m akasha_brain.project apply `
+    --project $projet --proposal $deplacement --approve $empreinteDeplacement `
+    --approve-move $source $destination
+```
+
+Deux copies jetables ont servi à tester la suppression et le déplacement
+d'un fichier binaire vers un nom avec espace et accent. Chaque préparation
+utilise un bac neuf hors réseau et vérifie les empreintes et l'absence de
+la source avant et après le test indépendant. Les préparations prennent
+**20,831 s** pour la suppression et **20,396 s** pour le déplacement.
+
+| Accord présenté | Suppression | Déplacement |
+| --- | --- | --- |
+| Accord propre à l'opération seul | Refusée | Refusé |
+| Approbation de la proposition seule | Refusée | Refusé |
+| Approbation et accord pour l'autre opération ou un autre chemin | Refusée | Refusé |
+| Approbation et accord correspondants | Source supprimée | Source absente et empreinte conservée à destination |
+
+Les refus retournent `approval_required` et laissent les empreintes des
+copies intactes. Un troisième bac valide à nouveau la préparation du diff
+Notes en 21,725 s. Les rapports sont sous `phase1-project-file-operations/`
+dans le dossier de preuves.
+
+## Accord par téléchargement et installation hors ligne
+
+`dependency-request` présente une wheel Python avec son nom, sa version,
+son URL directe, son SHA-256 et sa licence déclarée. `dependency-download`
+exige une approbation dont l'empreinte correspond à cette demande et à ce
+projet. Le cache local publie la wheel après contrôle du SHA-256 et des
+métadonnées. Une tentative de téléchargement consomme la demande. Une
+préparation ultérieure peut réutiliser la wheel vérifiée du cache.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.project dependency-request `
+    --project $projet --output $demande --name $nom --version $version `
+    --url $urlWheel --sha256 $sha256Wheel --license $licence
+.\.venv\Scripts\python.exe -m akasha_brain.project dependency-download `
+    --project $projet --request $demande --approve-download $empreinteDemande
+.\.venv\Scripts\python.exe -m akasha_brain.project prepare `
+    --project $projet --output $proposition --file $fichier --replacement $remplacement `
+    --test $test --python-runtime $pythonPortable --dependency $demande
+```
+
+Chaque `--dependency` désigne une demande téléchargée et vérifiée. Le bac
+recontrôle les empreintes, installe les wheels depuis le montage en lecture
+seule dans son dossier temporaire et compare le rapport de pip aux wheels
+approuvées. pip reçoit uniquement les fichiers locaux déclarés, avec
+`--no-index`, `--no-deps` et `--require-hashes`.
+[Documentation de pip](https://pip.pypa.io/en/stable/cli/pip_install/)
+
+Le serveur HTTP de test sur loopback sert une wheel synthétique
+`akasha-fixture-helper==1.0.0` dont la licence déclarée est `0BSD`.
+
+| Contrôle | Résultat |
+| --- | --- |
+| Accord absent ou empreinte d'une autre demande | `approval_required`, zéro requête HTTP |
+| Accord correspondant | Une requête HTTP, SHA-256 et métadonnées vérifiés |
+| Nouvel appel avec l'accord déjà utilisé | Refus avant toute nouvelle requête |
+| Préparation avec une demande sans cache vérifié | `approval_required` |
+| Installation dans Windows Sandbox | Réussie avec pip 24.2, réseau désactivé et source arrêtée |
+
+Le test invité importe la version attendue depuis le dossier d'installation
+du bac et vérifie le comportement du code modifié. Il confirme l'absence
+de la dépendance transitive volontairement laissée sans accord.
+Les fichiers du projet de test conservent leurs empreintes. Le premier
+bac a échoué au démarrage de pip faute de `libexpat.dll`. Une copie du
+Python portable complétée avec la DLL de son installation d'origine a
+passé le rejeu en **35,329 s**, avec la wheel déjà en cache. Le rapport est
+sous `phase1-project-dependency-approval/` dans le dossier de preuves.
+
+Les [résultats consolidés du parcours projet](../../bench/results/local-project-v1.json)
+reprennent les contrôles d'approbation, d'obsolescence et d'installation.
+
 [Plan de la phase 1](development-plan.md#phase-1--parcours-bureaucode-et-évolution-bornée-mvp)

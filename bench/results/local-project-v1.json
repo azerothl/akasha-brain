@@ -1,0 +1,192 @@
+{
+  "protocol": "local-project-v1",
+  "execution_date": "2026-11-15",
+  "scope": "disposable-projects",
+  "edit": {
+    "sandbox": {
+      "approved": {
+        "wall_s": 22.634,
+        "status": "passed",
+        "sandbox_stopped": true,
+        "read_only_input": true,
+        "disabled_channels": [
+          "Networking",
+          "ClipboardRedirection",
+          "AudioInput",
+          "VideoInput",
+          "PrinterRedirection",
+          "VGpu"
+        ],
+        "channel_probe": 16655,
+        "guest_exit_code": 18176
+      },
+      "stale": {
+        "wall_s": 22.004,
+        "status": "passed",
+        "sandbox_stopped": true,
+        "read_only_input": true,
+        "disabled_channels": [
+          "Networking",
+          "ClipboardRedirection",
+          "AudioInput",
+          "VideoInput",
+          "PrinterRedirection",
+          "VGpu"
+        ],
+        "channel_probe": 16655,
+        "guest_exit_code": 18176
+      }
+    },
+    "without_approval": "approval_required",
+    "different_approval": "approval_required",
+    "refusal_left_project_unchanged": true,
+    "approved_matches_tested_content": true,
+    "stale": {
+      "code": "contract_precondition_failed",
+      "reason": "project_changed",
+      "user_edit_preserved": true
+    },
+    "sandbox_regression": {
+      "wall_s": 21.725,
+      "status": "passed",
+      "sandbox_stopped": true,
+      "read_only_input": true,
+      "disabled_channels": [
+        "Networking",
+        "ClipboardRedirection",
+        "AudioInput",
+        "VideoInput",
+        "PrinterRedirection",
+        "VGpu"
+      ],
+      "channel_probe": 16655,
+      "guest_exit_code": 18176
+    }
+  },
+  "file_operations": {
+    "delete": {
+      "sandbox": {
+        "wall_s": 20.831,
+        "status": "passed",
+        "sandbox_stopped": true,
+        "read_only_input": true,
+        "disabled_channels": [
+          "Networking",
+          "ClipboardRedirection",
+          "AudioInput",
+          "VideoInput",
+          "PrinterRedirection",
+          "VGpu"
+        ],
+        "channel_probe": 16655,
+        "guest_exit_code": 18176
+      },
+      "refusals": {
+        "without_proposal_approval": {
+          "code": "approval_required",
+          "project_unchanged": true
+        },
+        "without_operation_approval": {
+          "code": "approval_required",
+          "project_unchanged": true
+        },
+        "wrong_operation": {
+          "code": "approval_required",
+          "project_unchanged": true
+        },
+        "wrong_path": {
+          "code": "approval_required",
+          "project_unchanged": true
+        }
+      },
+      "matching_approval": {
+        "status": "applied",
+        "source_absent": true
+      }
+    },
+    "move": {
+      "sandbox": {
+        "wall_s": 20.396,
+        "status": "passed",
+        "sandbox_stopped": true,
+        "read_only_input": true,
+        "disabled_channels": [
+          "Networking",
+          "ClipboardRedirection",
+          "AudioInput",
+          "VideoInput",
+          "PrinterRedirection",
+          "VGpu"
+        ],
+        "channel_probe": 16655,
+        "guest_exit_code": 18176
+      },
+      "refusals": {
+        "without_proposal_approval": {
+          "code": "approval_required",
+          "project_unchanged": true
+        },
+        "without_operation_approval": {
+          "code": "approval_required",
+          "project_unchanged": true
+        },
+        "wrong_operation": {
+          "code": "approval_required",
+          "project_unchanged": true
+        },
+        "wrong_path": {
+          "code": "approval_required",
+          "project_unchanged": true
+        }
+      },
+      "matching_approval": {
+        "status": "applied",
+        "source_absent": true,
+        "destination_matches_source": true
+      }
+    }
+  },
+  "dependency": {
+    "package": {
+      "name": "akasha-fixture-helper",
+      "version": "1.0.0",
+      "filename": "akasha_fixture_helper-1.0.0-py3-none-any.whl",
+      "sha256": "49d40c288f4358b8a61770c90bc798d9ff319bd8c9518d0abb2d2c1abddfd793",
+      "license": "0BSD"
+    },
+    "source": "controlled-http-loopback",
+    "without_approval": "approval_required",
+    "wrong_request_approval": "approval_required",
+    "requests_before_approval": 0,
+    "requests_total": 1,
+    "retry": "download_already_requested",
+    "prepare_without_cache": "approval_required",
+    "initial_failure_guest_exit_code": 18200,
+    "portable_runtime_extra_dll": {
+      "name": "libexpat.dll",
+      "sha256": "e82bc0776358be497e47eedd079f42dbf3c1fb4afabcb51dd2ab05624580f7b1"
+    },
+    "sandbox": {
+      "wall_s": 35.329,
+      "status": "passed",
+      "sandbox_stopped": true,
+      "read_only_input": true,
+      "disabled_channels": [
+        "Networking",
+        "ClipboardRedirection",
+        "AudioInput",
+        "VideoInput",
+        "PrinterRedirection",
+        "VGpu"
+      ],
+      "channel_probe": 16655,
+      "guest_exit_code": 18176,
+      "dependency_installation": {
+        "offline": true,
+        "pip_version": "24.2"
+      }
+    },
+    "source_closed_before_sandbox": true,
+    "project_unchanged": true
+  }
+}

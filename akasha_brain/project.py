@@ -1,0 +1,389 @@
+"""Préparer et approuver une opération sur un fichier d'un projet local."""
+
+import argparse
+from contextlib import contextmanager
+from difflib import unified_diff
+import json
+import os
+from pathlib import Path, PurePosixPath, PureWindowsPath
+import secrets
+import shutil
+import stat
+import subprocess
+from tempfile import NamedTemporaryFile, TemporaryDirectory, gettempdir
+from time import perf_counter
+from uuid import uuid4
+
+from bench.run_guided_repair import BENCH, file_hash, wsb
+from contracts.akasha_contracts.authz import authorize
+from contracts.akasha_contracts.errors import AkashaError, ErrorCode
+
+from .notes_repair import stage_git
+from .notes_sandbox import CHANNELS, POWERSHELL, active_sandboxes, guest_exit, read_profile, wait_for_guest
+from .project_common import ProjectError, digest, identity, reject
+from .project_dependencies import create_request, download, stage_dependencies, stage_installer
+
+
+def project_file(project: Path, name: str, *, absent: bool = False) -> Path:
+    relative = PurePosixPath(name)
+    if (not relative.parts or relative.is_absolute() or relative.as_posix() != name
+            or any(char in '\\:<>"|?*' or ord(char) < 32 for char in name)
+            or any(part.casefold() in {"..", ".git"} or part.endswith((" ", "."))
+                   or PureWindowsPath(part).is_reserved() for part in relative.parts)):
+        reject(ErrorCode.PERMISSION_DENIED, "Chemin de projet interdit.", path=name)
+    path = project
+    for index, part in enumerate(relative.parts):
+        path /= part
+        leaf = index == len(relative.parts) - 1
+        try:
+            info = path.lstat()
+        except FileNotFoundError:
+            if leaf and absent:
+                return path
+            raise
+        if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+            reject(ErrorCode.PERMISSION_DENIED, "Lien ou point de réanalyse interdit.", path=name)
+        if not leaf and not stat.S_ISDIR(info.st_mode):
+            reject(ErrorCode.PERMISSION_DENIED, "Dossier parent ordinaire requis.", path=name)
+    if absent:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "La destination existe déjà.", reason="destination_exists", path=name)
+    if not stat.S_ISREG(info.st_mode):
+        reject(ErrorCode.PERMISSION_DENIED, "Fichier ordinaire requis.", path=name)
+    return path
+
+
+def snapshot(project: Path, names) -> dict:
+    return {name: project_file(project, name).read_bytes() for name in names}
+
+
+def fingerprints(files: dict) -> dict:
+    return {name: digest(content) for name, content in files.items()}
+
+
+def text_lines(content: bytes) -> list[str]:
+    text = content.decode("utf-8")
+    if "\0" in text:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le diff exige un fichier texte UTF-8.")
+    *lines, last = text.split("\n")
+    return [line + "\n" for line in lines] + ([last] if last else [])
+
+
+def make_diff(name: str, before: bytes, after: bytes) -> bytes:
+    lines = unified_diff(text_lines(before), text_lines(after), f"a/{name}\t", f"b/{name}\t")
+    return "".join(line if line.endswith("\n") else line + "\n\\ No newline at end of file\n"
+                   for line in lines).encode("utf-8")
+
+
+def expected_files(manifest: dict) -> tuple[dict, list]:
+    files = dict(manifest["files"])
+    source = manifest["target"]
+    operation = manifest.get("operation", "replace")
+    if operation == "replace":
+        files[source] = manifest["replacement_sha256"]
+        return files, []
+    old_digest = files.pop(source)
+    if operation == "move":
+        files[manifest["destination"]] = old_digest
+    return files, [source]
+
+
+def validate_in_sandbox(stage: Path, runtime: Path) -> dict:
+    if active_sandboxes():
+        reject(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Une session Windows Sandbox est déjà active.")
+    profile = read_profile()
+    tag = secrets.token_hex(4)
+    mount_path = fr"C:\AkashaGuidedInput-{tag}"
+    scripts = ("probe_notes_isolation.ps1", "probe_guest_channels.ps1", "validate_project.ps1")
+    has_dependencies = (stage / "wheels").is_dir()
+    if has_dependencies:
+        scripts += ("install_project_dependencies.py",)
+    for name in scripts:
+        shutil.copyfile(BENCH / "harness" / name, stage / name)
+    (stage / "isolation-sentinel.txt").write_text(tag, encoding="ascii")
+    shutil.copytree(runtime, stage / "python")
+    if (stage / "proposal.diff").is_file():
+        stage_git(stage)
+    pip_version = stage_installer(stage) if has_dependencies else None
+    sandbox = str(uuid4())
+    try:
+        if wsb("start", "--id", sandbox, "--config", profile)["Id"].lower() != sandbox:
+            raise RuntimeError("Identifiant du bac inattendu.")
+        wait_for_guest(sandbox)
+        wsb("share", "--id", sandbox, "--host-path", str(stage), "--sandbox-path", mount_path)
+        mount = guest_exit(sandbox, f"{POWERSHELL} -File {mount_path}\\probe_notes_isolation.ps1 -Tag {tag}")
+        channels = guest_exit(sandbox, f"{POWERSHELL} -File {mount_path}\\probe_guest_channels.ps1")
+        denied = authorize({"risk_class": "R1", "confinement_verified": (
+            mount == 0x450F and channels in (0x410F, 0x411F) and active_sandboxes() == [sandbox]
+        )})
+        if denied:
+            raise ProjectError(denied)
+        result = guest_exit(sandbox, f"{POWERSHELL} -File {mount_path}\\validate_project.ps1 -Tag {tag}")
+        if result != 0x4700:
+            reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "La validation de la proposition dans le bac a échoué.",
+                   guest_exit_code=result)
+    finally:
+        if sandbox in active_sandboxes():
+            wsb("stop", "--id", sandbox)
+        if sandbox in active_sandboxes():
+            raise RuntimeError("Arrêt du bac non confirmé.")
+    validation = {"status": "passed", "sandbox_id": sandbox, "sandbox_stopped": True, "read_only_input": True,
+                  "disabled_channels": list(CHANNELS), "channel_probe": channels, "guest_exit_code": result}
+    if pip_version is not None:
+        validation["dependency_installation"] = {"offline": True, "pip_version": pip_version}
+    return validation
+
+
+def prepare(project: Path, output: Path, target: str, replacement: Path | None, test: str, runtime: Path,
+            *, inputs=(), delete: bool = False, move_to: str | None = None, dependencies=()) -> dict:
+    project = project.resolve(strict=True)
+    project_id = identity(project)
+    output = output.resolve()
+    if output.is_relative_to(project):
+        reject(ErrorCode.PERMISSION_DENIED, "La proposition doit être stockée hors du projet.")
+    if sum((replacement is not None, delete, move_to is not None)) != 1:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Une opération par proposition est requise.")
+    names = (target, test, *inputs)
+    paths = names if move_to is None else (*names, move_to)
+    if len({name.casefold() for name in paths}) != len(paths):
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Les chemins de l'opération et du test doivent être distincts.")
+    if move_to is not None:
+        project_file(project, move_to, absent=True)
+    original = snapshot(project, names)
+    hashes = fingerprints(original)
+    operation = "delete" if delete else "move" if move_to is not None else "replace"
+    manifest = {"version": 2, "project": project_id, "operation": operation, "target": target,
+                "test": test, "files": hashes}
+    if move_to is not None:
+        manifest["destination"] = move_to
+    if replacement is not None:
+        candidate = replacement.read_bytes()
+        patch = make_diff(target, original[target], candidate)
+        if not patch:
+            reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "La proposition ne contient aucune modification.")
+        manifest.update(diff_sha256=digest(patch), replacement_sha256=digest(candidate))
+
+    output.mkdir(parents=True)
+    began = perf_counter()
+    expected, absent = expected_files(manifest)
+    with TemporaryDirectory(prefix="stage-", dir=output) as directory:
+        stage = Path(directory).resolve(strict=True)
+        if stage.parent != output:
+            raise RuntimeError("Espace de préparation hors du dossier de proposition.")
+        for name, content in original.items():
+            file = stage / "snapshot" / name
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.write_bytes(content)
+        if replacement is not None:
+            (stage / "proposal.diff").write_bytes(patch)
+        if move_to is not None:
+            (stage / "snapshot" / move_to).parent.mkdir(parents=True, exist_ok=True)
+        wheels = stage_dependencies(project, dependencies, stage)
+        guest_wheels = [{key: wheel[key] for key in ("name", "version", "filename", "sha256")} for wheel in wheels]
+        request = json.dumps({"operation": operation, "target": target, "destination": move_to,
+                              "test": test, "files": expected, "absent": absent, "dependencies": guest_wheels},
+                             ensure_ascii=False).encode("utf-8")
+        (stage / "validation.json").write_bytes(request)
+        validation = validate_in_sandbox(stage, runtime)
+        if (fingerprints(snapshot(stage / "snapshot", names)) != hashes
+                or (replacement is not None and (stage / "proposal.diff").read_bytes() != patch)
+                or (stage / "validation.json").read_bytes() != request
+                or any(file_hash(stage / "wheels" / wheel["filename"]) != wheel["sha256"] for wheel in wheels)):
+            reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "Les entrées de validation ont changé.")
+
+    manifest["validation"] = validation
+    if wheels:
+        manifest["dependencies"] = wheels
+    encoded = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    if replacement is not None:
+        (output / "proposal.diff").write_bytes(patch)
+        (output / "replacement.txt").write_bytes(candidate)
+    (output / "proposal.json").write_bytes(encoded)
+    return {"status": "awaiting_approval", "proposal": str(output), "approval_sha256": digest(encoded),
+            "operation": operation, "file": target, "destination": move_to,
+            "validation": validation, "wall_s": round(perf_counter() - began, 3)}
+
+
+@contextmanager
+def project_lease(project_id: dict):
+    import msvcrt
+
+    key = digest(f"{project_id['device']}:{project_id['inode']}".encode("ascii"))
+    lock = Path(gettempdir()) / f"akasha-project-{key}.lock"
+    with lock.open("a+b") as stream:
+        stream.seek(0)
+        try:
+            msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+        except OSError:
+            reject(ErrorCode.RESOURCE_BUDGET_EXCEEDED, "Une application est déjà en cours pour ce projet.")
+        try:
+            yield
+        finally:
+            stream.seek(0)
+            msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+
+
+def check_current(project: Path, manifest: dict) -> dict:
+    try:
+        current = snapshot(project, manifest["files"]) if identity(project) == manifest["project"] else {}
+        if manifest.get("operation") == "move":
+            project_file(project, manifest["destination"], absent=True)
+    except (OSError, ProjectError):
+        current = {}
+    if fingerprints(current) != manifest["files"]:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le projet a changé. Préparer et approuver une nouvelle proposition.",
+               reason="project_changed")
+    return current
+
+
+def require_operation_approval(manifest: dict, approved_delete: str | None,
+                               approved_move: tuple[str, str] | None) -> None:
+    operation = manifest.get("operation", "replace")
+    target = manifest["target"]
+    if operation == "replace":
+        if approved_delete is not None or approved_move is not None:
+            reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "L'accord spécifique ne correspond pas à la proposition.")
+        return
+    destination = manifest.get("destination")
+    approved = (approved_delete == target and approved_move is None if operation == "delete"
+                else approved_move == (target, destination) and approved_delete is None)
+    denied = authorize({"risk_class": "R3", "human_approval": approved})
+    if denied:
+        reject(denied.code, "Accord explicite requis pour cette opération.",
+               risk_class="R3", operation=operation, source=target, destination=destination)
+
+
+def apply_replacement(project: Path, proposal: Path, manifest: dict, original: bytes) -> None:
+    target = manifest["target"]
+    patch = (proposal / "proposal.diff").read_bytes()
+    candidate = (proposal / "replacement.txt").read_bytes()
+    if digest(patch) != manifest["diff_sha256"] or digest(candidate) != manifest["replacement_sha256"]:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Les artefacts diffèrent de la proposition approuvée.",
+               reason="proposal_changed")
+    if make_diff(target, original, candidate) != patch:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le contenu à appliquer diffère du diff approuvé.")
+    destination = project_file(project, target)
+    temporary = None
+    try:
+        with NamedTemporaryFile(dir=destination.parent, prefix=".akasha-", delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(candidate)
+            stream.flush()
+            os.fsync(stream.fileno())
+        shutil.copymode(destination, temporary)
+        check_current(project, manifest)
+        os.replace(temporary, destination)
+        temporary = None
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def apply(project: Path, proposal: Path, approved_digest: str | None = None, *,
+          approved_delete: str | None = None, approved_move: tuple[str, str] | None = None) -> dict:
+    encoded = (proposal / "proposal.json").read_bytes()
+    proposal_digest = digest(encoded)
+    denied = authorize({"risk_class": "R2", "human_approval": approved_digest == proposal_digest})
+    if denied:
+        raise ProjectError(denied)
+    manifest = json.loads(encoded)
+    target = manifest["target"]
+    files = manifest["files"]
+    version = manifest["version"]
+    operation = manifest.get("operation", "replace")
+    destination = manifest.get("destination")
+    if (version not in (1, 2) or (version == 1 and operation != "replace")
+            or operation not in ("replace", "delete", "move")
+            or (operation == "move" and (not isinstance(destination, str)
+                                         or destination.casefold() in {name.casefold() for name in files}))
+            or manifest["validation"]["status"] != "passed"
+            or manifest["validation"]["guest_exit_code"] != 0x4700
+            or target not in files or manifest["test"] not in files or manifest["test"] == target):
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Proposition non validée.")
+    require_operation_approval(manifest, approved_delete, approved_move)
+    expected, absent = expected_files(manifest)
+
+    project = project.resolve(strict=True)
+    with project_lease(identity(project)):
+        current = check_current(project, manifest)
+        if operation == "replace":
+            apply_replacement(project, proposal, manifest, current[target])
+        elif operation == "delete":
+            project_file(project, target).unlink()
+        else:
+            source = project_file(project, target)
+            target_path = project_file(project, destination, absent=True)
+            # Sur Windows, rename échoue si la destination existe et préserve le fichier concurrent.
+            source.rename(target_path)
+
+        try:
+            for name in absent:
+                project_file(project, name, absent=True)
+            after = fingerprints(snapshot(project, expected))
+        except (OSError, ProjectError):
+            after = None
+        if after != expected:
+            reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "Opération effectuée, état du projet à vérifier.")
+    return {"status": "applied", "operation": operation, "file": target, "destination": destination,
+            "proposal_sha256": proposal_digest}
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+    preparation = commands.add_parser("prepare", help="Préparer et tester une opération dans Windows Sandbox")
+    preparation.add_argument("--project", required=True, type=Path)
+    preparation.add_argument("--output", required=True, type=Path)
+    preparation.add_argument("--file", required=True, help="Fichier existant, relatif au projet")
+    operation = preparation.add_mutually_exclusive_group(required=True)
+    operation.add_argument("--replacement", type=Path, help="Fichier texte de remplacement")
+    operation.add_argument("--delete", action="store_true", help="Préparer la suppression du fichier")
+    operation.add_argument("--move-to", help="Préparer le déplacement vers ce chemin relatif")
+    preparation.add_argument("--test", required=True, help="Script Python de test, relatif au projet")
+    preparation.add_argument("--input", action="append", default=[], help="Autre fichier autorisé dans la copie")
+    preparation.add_argument("--dependency", type=Path, action="append", default=[],
+                             help="Dossier d'une demande déjà approuvée et téléchargée")
+    preparation.add_argument("--python-runtime", required=True, type=Path)
+    request = commands.add_parser("dependency-request", help="Présenter un téléchargement de wheel à approuver")
+    request.add_argument("--project", required=True, type=Path)
+    request.add_argument("--output", required=True, type=Path)
+    request.add_argument("--name", required=True)
+    request.add_argument("--version", required=True)
+    request.add_argument("--url", required=True)
+    request.add_argument("--sha256", required=True)
+    request.add_argument("--license", required=True)
+    fetch = commands.add_parser("dependency-download", help="Télécharger la wheel d'une demande approuvée")
+    fetch.add_argument("--project", required=True, type=Path)
+    fetch.add_argument("--request", required=True, type=Path)
+    fetch.add_argument("--approve-download", help="Empreinte exacte de la demande après examen")
+    application = commands.add_parser("apply", help="Appliquer une proposition validée et approuvée")
+    application.add_argument("--project", required=True, type=Path)
+    application.add_argument("--proposal", required=True, type=Path)
+    application.add_argument("--approve", help="Empreinte exacte de la proposition après examen")
+    approval = application.add_mutually_exclusive_group()
+    approval.add_argument("--approve-delete", metavar="SOURCE", help="Accord explicite pour supprimer cette source")
+    approval.add_argument("--approve-move", nargs=2, metavar=("SOURCE", "DESTINATION"),
+                          help="Accord explicite pour ce déplacement")
+    args = parser.parse_args()
+    try:
+        if args.command == "prepare":
+            result = prepare(args.project, args.output, args.file, args.replacement, args.test, args.python_runtime,
+                             inputs=args.input, delete=args.delete, move_to=args.move_to, dependencies=args.dependency)
+        elif args.command == "dependency-request":
+            result = create_request(args.project, args.output, name=args.name, version=args.version,
+                                    url=args.url, sha256=args.sha256, license=args.license)
+        elif args.command == "dependency-download":
+            result = download(args.project, args.request, args.approve_download)
+        else:
+            result = apply(args.project, args.proposal, args.approve, approved_delete=args.approve_delete,
+                           approved_move=tuple(args.approve_move) if args.approve_move is not None else None)
+    except ProjectError as exc:
+        result = {"status": "refused", "error": exc.error.as_dict()}
+    except (OSError, RuntimeError, ValueError, TypeError, KeyError, subprocess.SubprocessError) as exc:
+        error = AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, str(exc))
+        result = {"status": "failed", "error": error.as_dict()}
+    print(json.dumps(result, ensure_ascii=True, indent=2))
+    return int(result["status"] in {"refused", "failed"})
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
