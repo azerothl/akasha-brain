@@ -19,6 +19,7 @@ def main() -> int:
     compile_parser = subcommands.add_parser("compile", help="Compiler un objectif du banc")
     compile_parser.add_argument("goal", type=Path, help="Fichier JSON GoalSpec")
     compile_parser.add_argument("--rbitnet", action="store_true", help="Sélectionner la réparation Rbitnet CPU")
+    compile_parser.add_argument("--rapidocr", action="store_true", help="Ajouter la vérification bureau après les tests")
     run_parser = subcommands.add_parser("run", help="Exécuter le graphe Notes dans un bac dédié")
     run_parser.add_argument("goal", type=Path, help="Fichier JSON GoalSpec")
     run_parser.add_argument("--python-runtime", required=True, type=Path, help="Python portable du banc")
@@ -27,6 +28,7 @@ def main() -> int:
                             help="Utiliser les artefacts Rbitnet CPU du protocole évalué")
     run_parser.add_argument("--first-diff-seed", type=int,
                             help="Évaluer le premier diff Rbitnet avec cette graine")
+    run_parser.add_argument("--rapidocr", action="store_true", help="Vérifier le bureau avec RapidOCR v2 après les tests")
     desktop = subcommands.add_parser("run-desktop", help="Vérifier Notes avec RapidOCR dans le bac")
     desktop.add_argument("goal", type=Path, help="Fichier JSON GoalSpec")
     desktop.add_argument("--python-runtime", required=True, type=Path, help="Python portable du banc")
@@ -54,11 +56,11 @@ def main() -> int:
             if args.command == "run":
                 engine = RbitnetPaths(*(path.resolve() for path in args.rbitnet)) if args.rbitnet else None
                 result = run_notes(goal, catalog, args.python_runtime.resolve(), args.output.resolve(), engine,
-                                   first_diff_seed=args.first_diff_seed)
+                                   first_diff_seed=args.first_diff_seed, rapidocr=args.rapidocr)
             elif args.command == "run-desktop":
                 result = run_desktop(goal, catalog, args.python_runtime.resolve(), args.output.resolve(), args.diff.resolve())
             else:
-                result = compile_goal(goal, catalog, rbitnet=args.rbitnet)
+                result = compile_goal(goal, catalog, rbitnet=args.rbitnet, rapidocr=args.rapidocr)
     except (OSError, UnicodeError, json.JSONDecodeError):
         error = AkashaError(ErrorCode.CONTRACT_SCHEMA_VIOLATION, "Impossible de lire le JSON d'entrée.")
         print(json.dumps({"error": error.as_dict()}, ensure_ascii=True, indent=2))

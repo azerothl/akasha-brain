@@ -7,7 +7,7 @@ from pathlib import Path
 import secrets
 import shutil
 import subprocess
-from time import perf_counter, sleep
+from time import perf_counter
 from uuid import UUID, uuid4
 from xml.etree import ElementTree
 
@@ -15,34 +15,21 @@ from bench.run_guided_repair import (
     BENCH, MAX_TOKENS, SEEDS, TEMPERATURE, check_faulty, file_hash, guest_validate, method_text, prepare,
     write_report, wsb,
 )
-from contracts.akasha_contracts.authz import authorize
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
+from .notes_desktop import desktop_patch_matches, load_desktop_protocol, prepare_desktop, verify_desktop
 from .notes_repair import RbitnetPaths, generate_patch, load_repair_prompt, retry_prompt, stage_git
+from .notes_sandbox import (
+    CHANNELS, POWERSHELL, active_sandboxes, guest_exit, read_profile, require_step_permission, wait_for_guest,
+)
 from .planning import PlanningError, compile_goal
 
-CHANNELS = ("Networking", "ClipboardRedirection", "AudioInput", "VideoInput", "PrinterRedirection", "VGpu")
 TESTS = (
     "test_saved_note_survives_restart",
     "test_two_notes_with_accents_multiline_survive_restart",
     "test_save_acknowledged_in_session",
     "test_select_redisplays_content",
 )
-POWERSHELL = (
-    r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe "
-    "-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass"
-)
-
-
-def require_step_permission(step: dict, goal: dict, confinement_verified: bool) -> None:
-    if step["action"] not in goal["constraints"]["allowed_actions"]:
-        raise PlanningError(AkashaError(
-            ErrorCode.PERMISSION_DENIED, "Action hors périmètre de l'objectif.",
-            {"step": step["id"], "action": step["action"]},
-        ))
-    denied = authorize({"risk_class": goal["risk_class"], "confinement_verified": confinement_verified})
-    if denied:
-        raise PlanningError(denied)
 
 
 def authorization_controls(step: dict, goal: dict) -> dict:
@@ -58,38 +45,6 @@ def authorization_controls(step: dict, goal: dict) -> dict:
             raise
         raise RuntimeError(f"Le contrôle d'autorisation a accepté {name}.")
     return results
-
-
-def read_profile() -> str:
-    source = (BENCH / "harness" / "akasha-bench.wsb").read_text(encoding="utf-8")
-    root = ElementTree.fromstring(source)
-    folders = root.find("MappedFolders")
-    expected = set(CHANNELS) | {"MappedFolders", "MemoryInMB"}
-    if (root.tag != "Configuration" or {item.tag for item in root} != expected
-            or len(root) != len(expected) or any(root.findtext(name) != "Disable" for name in CHANNELS)
-            or folders is None or len(folders) or (folders.text or "").strip()):
-        raise RuntimeError("Profil Windows Sandbox incompatible avec le banc durci.")
-    return source
-
-
-def active_sandboxes() -> list[str]:
-    return [str(UUID(item["Id"])) for item in wsb("list").get("WindowsSandboxEnvironments", ())]
-
-
-def guest_exit(sandbox_id: str, command: str) -> int:
-    return wsb("exec", "--id", sandbox_id, "--run-as", "ExistingLogin", "--command", command)["ExitCode"]
-
-
-def wait_for_guest(sandbox_id: str) -> None:
-    wsb("connect", "--id", sandbox_id)
-    for _ in range(12):
-        try:
-            if guest_exit(sandbox_id, r"C:\Windows\System32\cmd.exe /c exit 0") == 0:
-                return
-        except RuntimeError:
-            pass
-        sleep(1)
-    raise RuntimeError("La session utilisateur du bac n'est pas prête.")
 
 
 def decode_validation(code: int) -> dict:
@@ -109,8 +64,11 @@ def decode_validation(code: int) -> dict:
 
 
 def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: RbitnetPaths | None = None,
-              *, first_diff_seed: int | None = None) -> dict:
-    plan = compile_goal(goal, catalog, rbitnet=repair is not None)
+              *, first_diff_seed: int | None = None, rapidocr: bool = False) -> dict:
+    plan = compile_goal(goal, catalog, rbitnet=repair is not None, rapidocr=rapidocr)
+    # Le script bureau figé cible la copie préparée par le premier diff.
+    if rapidocr and first_diff_seed is None:
+        first_diff_seed = 742
     seeds = (first_diff_seed,) if first_diff_seed is not None else SEEDS[0]
     output.mkdir(parents=True)
     report = {"graph": plan, "status": "running", "trace": []}
@@ -142,8 +100,12 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                                 "git": stage_git(stage), "seeds": seeds, "temperature": TEMPERATURE,
                                 "max_tokens": MAX_TOKENS, "prompt_version": repair_prompt["version"],
                                 "prompt_sha256": repair_prompt["sha256"]}
-        for script in ("probe_notes_isolation.ps1", "probe_guest_channels.ps1"):
-            shutil.copyfile(BENCH / "harness" / script, stage / script)
+        if rapidocr:
+            desktop_protocol = load_desktop_protocol(report)
+            prepare_desktop(stage, profile, report, desktop_protocol, report["repair"]["git"])
+        else:
+            for script in ("probe_notes_isolation.ps1", "probe_guest_channels.ps1"):
+                shutil.copyfile(BENCH / "harness" / script, stage / script)
         (stage / "isolation-sentinel.txt").write_text(tag, encoding="ascii")
         (stage / "notes-test-cases.json").write_text(json.dumps(TESTS), encoding="ascii")
 
@@ -195,7 +157,7 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                 row["wall_s"] = round(perf_counter() - began, 3)
                 write_report(output, report)
 
-        localize, prepare_step, verify = plan["steps"]
+        localize, prepare_step, verify, *desktop_steps = plan["steps"]
         with trace_step(localize) as row:
             results = guest_validate(sandbox_id, tag, "control", locate=True)
             row["result"] = results
@@ -220,6 +182,10 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                     proposal = generate_patch(repair, work, stage, source, prompt, seed)
                     row["result"] = proposal
                     if "diff_file" in proposal:
+                        if rapidocr:
+                            proposal["matches_desktop_protocol"] = desktop_patch_matches(stage / name, desktop_protocol)
+                            if not proposal["matches_desktop_protocol"]:
+                                raise RuntimeError("Le diff Rbitnet généré diffère de celui du protocole RapidOCR v2.")
                         code = guest_exit(sandbox_id, f"{runner} {name} -ApplyDiff")
                         proposal["guest_apply_exit"] = code
                         if code == 0x4602:
@@ -246,12 +212,22 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
             if validate_prepared("baseline", 1)["status"] != "passed":
                 raise RuntimeError("Les tests ou le vérificateur SQLite ont échoué.")
 
+        if desktop_steps:
+            (desktop_step,) = desktop_steps
+            with trace_step(desktop_step) as row:
+                row["result"] = {}
+                verify_desktop(sandbox_id, guest_input, tag, row["result"])
+                if not all(row["result"]["desktop"].values()):
+                    raise RuntimeError("La vérification RapidOCR ou SQLite après relance de Notes a échoué.")
+                row["status"] = "passed"
+
         originals_intact = all(file_hash(path) == source_hashes[name] for name, path in sources.items())
         staging_intact = (
             (stage / "isolation-sentinel.txt").read_text(encoding="ascii") == tag
             and not (stage / "isolation-probe.tmp").exists()
             and all(file_hash(stage / "fixture" / path) == digest for path, digest in fixtures.items())
             and all(file_hash(stage / name / "notes_store.py") == digest for name, digest in staged_hashes.items())
+            and (not rapidocr or desktop_patch_matches(stage / "rbitnet-1", desktop_protocol))
         )
         report["isolation"].update(host_sources_unchanged=originals_intact, host_staging_unchanged=staging_intact)
         if not originals_intact or not staging_intact:

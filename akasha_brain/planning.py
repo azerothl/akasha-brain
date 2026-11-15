@@ -26,6 +26,10 @@ RBITNET_GRAPH = (
     ("generate_diff", "edit", "notes.repair_rbitnet", "1.0.0", ("localize",)),
     ("verify", "test", "notes.verify", "1.0.0", ("generate_diff",)),
 )
+RBITNET_OCR_GRAPH = (
+    *RBITNET_GRAPH,
+    ("verify_desktop", "test", "notes.verify_desktop", "1.0.0", ("verify",)),
+)
 
 
 class PlanningError(Exception):
@@ -66,7 +70,8 @@ def load_catalog() -> dict[tuple[str, str], dict]:
     return catalog
 
 
-def compile_goal(goal: dict, catalog: dict[tuple[str, str], dict], *, rbitnet: bool = False) -> dict:
+def compile_goal(goal: dict, catalog: dict[tuple[str, str], dict], *,
+                 rbitnet: bool = False, rapidocr: bool = False) -> dict:
     problems = validate(goal, "GoalSpec")
     if problems:
         raise PlanningError(problems[0])
@@ -83,7 +88,16 @@ def compile_goal(goal: dict, catalog: dict[tuple[str, str], dict], *, rbitnet: b
         raise PlanningError(AkashaError(
             ErrorCode.APPROVAL_REQUIRED, "L'objectif comporte une approbation à obtenir.",
         ))
-    graph = RBITNET_GRAPH if rbitnet else GRAPH
+    if rapidocr and not rbitnet:
+        raise PlanningError(AkashaError(
+            ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le graphe RapidOCR v2 exige la réparation Rbitnet CPU.",
+        ))
+    if rapidocr:
+        graph_id, graph = "notes-rbitnet-ocr", RBITNET_OCR_GRAPH
+    elif rbitnet:
+        graph_id, graph = "notes-rbitnet", RBITNET_GRAPH
+    else:
+        graph_id, graph = "notes-baseline", GRAPH
     required_actions = {action for _, action, *_ in graph}
     if goal["risk_class"] != "R1" or not required_actions.issubset(constraints.get("allowed_actions", [])):
         raise PlanningError(AkashaError(
@@ -122,12 +136,16 @@ def compile_goal(goal: dict, catalog: dict[tuple[str, str], dict], *, rbitnet: b
             "id": step_id, "action": action, "capability_id": capability_id,
             "version": version, "depends_on": list(dependencies), "evidence": evaluation["evidence"],
         })
+    expected_validation = {"tests_passed": 4, "verifier": "sqlite_persistence"}
+    if rapidocr:
+        expected_validation["desktop"] = {"protocol": "notes-desktop-ocr-v2",
+                                          "ocr_after_restart": True, "sqlite_after_restart": True}
     return {
         "goal_id": goal["goal_id"],
-        "graph_id": "notes-rbitnet" if rbitnet else "notes-baseline",
+        "graph_id": graph_id,
         "graph_version": "1.0.0",
         "environment_id": ENVIRONMENT,
         "sandbox_tier": "windows-sandbox",
         "steps": steps,
-        "expected_validation": {"tests_passed": 4, "verifier": "sqlite_persistence"},
+        "expected_validation": expected_validation,
     }

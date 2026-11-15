@@ -57,3 +57,20 @@ def test_rbitnet_replaces_only_the_repair_step(goal):
     assert [step["id"] for step in plan["steps"]] == ["localize", "generate_diff", "verify"]
     assert plan["steps"][1]["capability_id"] == "notes.repair_rbitnet"
     assert plan["steps"][2]["depends_on"] == ["generate_diff"]
+
+
+def test_rapidocr_verification_follows_the_tests_and_requires_rbitnet(goal):
+    catalog = load_catalog()
+    plan = compile_goal(goal, catalog, rbitnet=True, rapidocr=True)
+    assert plan["graph_id"] == "notes-rbitnet-ocr"
+    assert plan["steps"][:-1] == compile_goal(goal, catalog, rbitnet=True)["steps"]
+    step = plan["steps"][-1]
+    assert (step["id"], step["action"], step["capability_id"], step["depends_on"]) == (
+        "verify_desktop", "test", "notes.verify_desktop", ["verify"],
+    )
+    assert plan["expected_validation"]["desktop"] == {
+        "protocol": "notes-desktop-ocr-v2", "ocr_after_restart": True, "sqlite_after_restart": True,
+    }
+    with pytest.raises(PlanningError) as denied:
+        compile_goal(goal, catalog, rapidocr=True)
+    assert denied.value.error.code == ErrorCode.CONTRACT_PRECONDITION_FAILED

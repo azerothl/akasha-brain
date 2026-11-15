@@ -271,4 +271,66 @@ sous le dossier de preuves. La série initiale est conservée dans
 `phase1-notes-ocr-frozen/`. Les rejeux 1 et 3 s'étaient arrêtés avant
 l'enregistrement (code 22) et le rejeu 2 avait réussi en 49,060 s.
 
+## Graphe complet Rbitnet CPU et RapidOCR v2
+
+Le graphe `notes-rbitnet-ocr@1.0.0` lance la vérification bureau après
+les quatre tests et le vérificateur SQLite du code réparé. Rbitnet
+génère le premier diff sur l'hôte, en CPU sur la boucle locale. Le
+lanceur exige que le diff et le fichier résultant correspondent aux
+empreintes du protocole RapidOCR v2. Dans le même bac, Git applique le
+diff, les tests contrôlent la copie réparée, puis le scénario bureau
+démarre Notes depuis cette copie. Après relance de l'application,
+RapidOCR retrouve la note et une lecture SQLite indépendante contrôle
+la base créée par le scénario bureau.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain run contracts/examples/goal_notes_regression.json `
+    --python-runtime $pythonPortable --output $dossierRapport `
+    --rbitnet $rbitnetExe $gguf $tokenizer --first-diff-seed 742 --rapidocr
+```
+
+Le rejeu du 15 novembre 2026 a pris **109,775 s**, de la préparation
+des entrées à l'arrêt confirmé du bac. Les contrôles d'isolation et
+d'autorisation ont passé. Les quatre étapes ont utilisé le même bac.
+
+| Étape | Résultat | Temps |
+| --- | --- | ---: |
+| Localisation | Deux échecs reproduits sur la version fautive | 13,089 s |
+| Rbitnet CPU | Premier diff généré, empreinte conforme, appliqué par Git | 43,978 s |
+| Validation du code | 4/4 tests sans saut, vérificateur SQLite code `0` | 5,665 s |
+| Vérification bureau | Note retrouvée après relance, ligne SQLite exacte | 24,515 s |
+
+La vérification bureau a renvoyé `0x471F`. RapidOCR a retrouvé
+`Note Akasha` et reconnu `Contenu durable` après relance. Le rapport
+complet et le diff généré sont dans
+`phase1-notes-rbitnet-ocr-integrated/run-1/` sous le dossier de preuves.
+
+### Trois graines et baseline fixe
+
+Les graines 742, 743 et 744 ont chacune tourné dans un bac neuf. La
+baseline fixe a été rejouée sur le même hôte dans un quatrième bac.
+Les temps vont de la préparation des entrées à l'arrêt confirmé du bac.
+
+| Parcours | Premier diff | Tests | RapidOCR après relance | SQLite après relance de Notes | Total | Écart à la baseline |
+| --- | --- | --- | --- | --- | ---: | ---: |
+| Baseline fixe | Référence copiée | 4/4 | — | — | 37,161 s | — |
+| Graine 742 | Appliqué | 4/4 | Réussi | Ligne exacte | 106,589 s | +69,428 s |
+| Graine 743 | Appliqué | 4/4 | Réussi | Ligne exacte | 105,159 s | +67,998 s |
+| Graine 744 | Appliqué | 4/4 | Réussi | Ligne exacte | 103,881 s | +66,720 s |
+
+Les trois premiers diffs ont la même empreinte SHA-256, conforme au
+protocole RapidOCR v2. Git a vérifié et appliqué chaque diff dans le
+bac, puis le lanceur a confirmé l'empreinte du fichier réparé. Le
+vérificateur SQLite du banc a renvoyé `0` pour les quatre exécutions.
+Chaque parcours bureau a renvoyé `0x471F`.
+
+Le graphe complet prend en moyenne **105,210 s**, soit **68,049 s de
+plus** et **2,83 fois** la baseline fixe. La baseline couvre la
+localisation, la copie de référence, les quatre tests et le vérificateur
+SQLite du banc. L'écart inclut la génération du diff et la vérification
+bureau.
+
+Les rapports se trouvent dans `phase1-notes-rbitnet-ocr-three-seeds/`,
+sous `seed-742/`, `seed-743/`, `seed-744/` et `baseline/`.
+
 [Plan de la phase 1](development-plan.md#phase-1--parcours-bureaucode-et-évolution-bornée-mvp)

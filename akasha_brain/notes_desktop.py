@@ -15,7 +15,7 @@ from bench.run_guided_repair import BENCH, file_hash, write_report, wsb
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
 from .notes_repair import stage_git
-from .notes_runtime import POWERSHELL, active_sandboxes, guest_exit, read_profile, require_step_permission, wait_for_guest
+from .notes_sandbox import POWERSHELL, active_sandboxes, guest_exit, read_profile, require_step_permission, wait_for_guest
 from .planning import PlanningError, compile_goal
 
 PROTOCOL_FILE = Path(__file__).with_name("protocols") / "notes-desktop-ocr-v2.json"
@@ -23,6 +23,13 @@ VC_RUNTIME = ("msvcp140.dll", "msvcp140_1.dll", "vcruntime140.dll", "vcruntime14
 GUEST_SCRIPTS = ("notes_ocr_guest.py", "run_notes_ocr.ps1", "read_notes_ocr_error.ps1",
                  "measure_ocr.py", "validate_guided_notes.ps1", "probe_notes_isolation.ps1",
                  "probe_guest_channels.ps1")
+
+
+def load_desktop_protocol(report: dict) -> dict:
+    manifest = PROTOCOL_FILE.read_text(encoding="utf-8")
+    protocol = json.loads(manifest)
+    report["protocol"] = {"version": protocol["version"], "sha256": hashlib.sha256(manifest.encode("utf-8")).hexdigest()}
+    return protocol
 
 
 def stage_ocr(stage: Path, wheel_versions: dict[str, str]) -> dict:
@@ -41,16 +48,38 @@ def stage_ocr(stage: Path, wheel_versions: dict[str, str]) -> dict:
     return {"packages": wheel_versions, "model_sha256": {m.name: file_hash(m) for m in sorted(models.glob("*.onnx"))}}
 
 
-def verify_frozen_inputs(stage: Path, profile: str, report: dict, protocol: dict) -> None:
+def prepare_desktop(stage: Path, profile: str, report: dict, protocol: dict, git: dict) -> None:
+    ocr = report["ocr"] = stage_ocr(stage, protocol["ocr"]["packages"])
+    portable = stage / "python"
+    system = Path(os.environ["SystemRoot"]) / "System32"
+    ocr["native_dependencies"] = {}
+    for name in VC_RUNTIME:
+        shutil.copyfile(system / name, portable / name)
+        ocr["native_dependencies"][name] = file_hash(portable / name)
+    for name in GUEST_SCRIPTS:
+        shutil.copyfile(BENCH / "harness" / name, stage / name)
+    shutil.copyfile(BENCH / "notes" / "notes_app.py", stage / "notes_app.py")
+    verify_frozen_inputs(stage, profile, ocr, git, protocol)
+    report["protocol"]["inputs_verified"] = True
+
+
+def verify_frozen_inputs(stage: Path, profile: str, ocr: dict, git: dict, protocol: dict) -> None:
     inputs = {name: (stage / name).read_text(encoding="utf-8")
               for name in (*GUEST_SCRIPTS, "notes_app.py", "control/notes_store.py")}
     inputs["akasha-bench.wsb"] = profile
     input_hashes = {name: hashlib.sha256(content.encode("utf-8")).hexdigest() for name, content in inputs.items()}
     python_hashes = {name: file_hash(stage / "python" / name) for name in protocol["python_sha256"]}
-    observed = {"inputs_sha256": input_hashes, "python_sha256": python_hashes, "ocr": report["ocr"], "git": report["git"]}
+    observed = {"inputs_sha256": input_hashes, "python_sha256": python_hashes, "ocr": ocr, "git": git}
     for key, values in observed.items():
         if values != protocol[key]:
             raise RuntimeError(f"Entrées différentes du protocole bureau figé ({key}).")
+
+
+def desktop_patch_matches(repair: Path, protocol: dict) -> bool:
+    return (
+        file_hash(repair / "proposal.diff") == protocol["diff_sha256"]
+        and (repair / "notes-store.sha256").read_text(encoding="ascii").strip() == protocol["patched_store_sha256"]
+    )
 
 
 def decode_desktop(code: int) -> dict:
@@ -79,6 +108,14 @@ def guest_diagnostic(sandbox_id: str, guest_input: str, tag: str) -> str:
     return output.decode("ascii")
 
 
+def verify_desktop(sandbox_id: str, guest_input: str, tag: str, report: dict) -> None:
+    code = guest_exit(sandbox_id, f"{POWERSHELL} -Sta -File {guest_input}\\run_notes_ocr.ps1 -Tag {tag}")
+    report["guest_exit_code"] = code
+    if code != 0x471F:
+        report["guest_diagnostic"] = guest_diagnostic(sandbox_id, guest_input, tag)
+    report["desktop"] = decode_desktop(code)
+
+
 def run_desktop(goal: dict, catalog: dict, runtime: Path, output: Path, diff: Path) -> dict:
     compile_goal(goal, catalog)
     observer = catalog["notes.form_ocr", "1.0.0"]["manifest"]
@@ -89,9 +126,7 @@ def run_desktop(goal: dict, catalog: dict, runtime: Path, output: Path, diff: Pa
     try:
         if active_sandboxes():
             raise RuntimeError("Une session Windows Sandbox est déjà active.")
-        manifest = PROTOCOL_FILE.read_text(encoding="utf-8")
-        protocol = json.loads(manifest)
-        report["protocol"] = {"version": protocol["version"], "sha256": hashlib.sha256(manifest.encode("utf-8")).hexdigest()}
+        protocol = load_desktop_protocol(report)
         diff_hash = protocol["diff_sha256"]
         if file_hash(diff) != diff_hash:
             raise RuntimeError("L'empreinte du diff diffère de celle de la réparation Notes validée.")
@@ -100,18 +135,8 @@ def run_desktop(goal: dict, catalog: dict, runtime: Path, output: Path, diff: Pa
         guest_input = fr"C:\AkashaGuidedInput-{tag}"
         stage = output / "input"
         stage.mkdir()
-        report["ocr"] = stage_ocr(stage, protocol["ocr"]["packages"])
         report["git"] = stage_git(stage)
-        portable = stage / "python"
-        shutil.copytree(runtime, portable)
-        system = Path(os.environ["SystemRoot"]) / "System32"
-        report["ocr"]["native_dependencies"] = {}
-        for name in VC_RUNTIME:
-            shutil.copyfile(system / name, portable / name)
-            report["ocr"]["native_dependencies"][name] = file_hash(portable / name)
-        for name in GUEST_SCRIPTS:
-            shutil.copyfile(BENCH / "harness" / name, stage / name)
-        shutil.copyfile(BENCH / "notes" / "notes_app.py", stage / "notes_app.py")
+        shutil.copytree(runtime, stage / "python")
         original = BENCH / "notes" / "notes_store.py"
         frozen_hash = file_hash(original)
         (stage / "control").mkdir()
@@ -121,8 +146,7 @@ def run_desktop(goal: dict, catalog: dict, runtime: Path, output: Path, diff: Pa
         shutil.copyfile(diff, stage / "rbitnet-1" / "proposal.diff")
         (stage / "rbitnet-1" / "notes-store.sha256").write_text(protocol["patched_store_sha256"], encoding="ascii")
         (stage / "isolation-sentinel.txt").write_text(tag, encoding="ascii")
-        verify_frozen_inputs(stage, profile, report, protocol)
-        report["protocol"]["inputs_verified"] = True
+        prepare_desktop(stage, profile, report, protocol, report["git"])
 
         sandbox_id = str(uuid4())
         report["sandbox_id"] = sandbox_id
@@ -143,14 +167,10 @@ def run_desktop(goal: dict, catalog: dict, runtime: Path, output: Path, diff: Pa
         report["diff_applied"] = apply_code == 0x4602
         if not report["diff_applied"]:
             raise RuntimeError(f"Application du diff de référence interrompue ({apply_code}).")
-        code = guest_exit(sandbox_id, f"{POWERSHELL} -Sta -File {guest_input}\\run_notes_ocr.ps1 -Tag {tag}")
-        report["guest_exit_code"] = code
-        if code != 0x471F:
-            report["guest_diagnostic"] = guest_diagnostic(sandbox_id, guest_input, tag)
-        report["desktop"] = decode_desktop(code)
+        verify_desktop(sandbox_id, guest_input, tag, report)
         report["isolation"]["host_unchanged"] = (
             file_hash(original) == frozen_hash
-            and file_hash(diff) == file_hash(stage / "rbitnet-1" / "proposal.diff") == diff_hash
+            and file_hash(diff) == diff_hash and desktop_patch_matches(stage / "rbitnet-1", protocol)
             and (stage / "isolation-sentinel.txt").read_text(encoding="ascii") == tag
             and not (stage / "isolation-probe.tmp").exists()
         )

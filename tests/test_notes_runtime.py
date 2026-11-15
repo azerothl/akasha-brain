@@ -1,6 +1,6 @@
 import pytest
 
-from akasha_brain import notes_runtime
+from akasha_brain import notes_sandbox
 from akasha_brain.notes_runtime import TESTS, authorization_controls, decode_validation
 
 
@@ -33,11 +33,11 @@ def test_decode_notes_results_rejects_a_plain_or_unknown_guest_exit():
     ("<MappedFolders />", "<MappedFolders><MappedFolder /></MappedFolders>"),
 ])
 def test_notes_profile_refuses_an_open_channel_or_an_unexpected_mount(tmp_path, monkeypatch, change):
-    profile = notes_runtime.read_profile()
+    profile = notes_sandbox.read_profile()
     assert change[0] in profile
     harness = tmp_path / "harness"
     harness.mkdir()
     (harness / "akasha-bench.wsb").write_text(profile.replace(*change), encoding="utf-8")
-    monkeypatch.setattr(notes_runtime, "BENCH", tmp_path)
+    monkeypatch.setattr(notes_sandbox, "BENCH", tmp_path)
     with pytest.raises(RuntimeError):
-        notes_runtime.read_profile()
+        notes_sandbox.read_profile()

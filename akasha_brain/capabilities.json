@@ -106,5 +106,32 @@
       "environment_id": "bench-notes",
       "evidence": "docs/plans/phase1_status.md#parcours-bureau-notes-avec-rapidocr"
     }
+  },
+  {
+    "manifest": {
+      "capability_id": "notes.verify_desktop",
+      "version": "1.0.0",
+      "kind": "verifier",
+      "description": "Enregistrer et retrouver la note par RapidOCR v2 après relance, puis contrôler SQLite.",
+      "permissions": {
+        "reads": ["bench://notes/capture", "bench://notes/scratch"],
+        "writes": ["bench://notes/scratch"],
+        "execute": ["notes-desktop-validation"],
+        "network": []
+      },
+      "risk_class": "R1",
+      "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+      "side_effects": "local-temporary",
+      "resource_profile": {
+        "engine_id": "rapidocr-onnxruntime",
+        "engine_version": "1.4.4",
+        "model_format": "ONNX",
+        "devices": ["cpu"]
+      }
+    },
+    "evaluation": {
+      "environment_id": "bench-notes",
+      "evidence": "docs/plans/phase1_status.md#trois-rejeux-en-bacs-neufs"
+    }
   }
 ]
