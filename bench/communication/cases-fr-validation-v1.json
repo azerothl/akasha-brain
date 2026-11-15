@@ -1,0 +1,48 @@
+{
+  "version": "fr-validation-v1",
+  "critere_commun": "Une réponse française courte destinée à l'utilisateur, fidèle à la fiche. Toute action, tout résultat ou tout accord inventé invalide la réponse.",
+  "cases": {
+    "attente": {
+      "fiche": "État=attente; utilisateur=relire le sommaire du dossier; assistant=attendre la décision de l'utilisateur avant publication.",
+      "criteres": [
+        "La relecture du sommaire du dossier revient à l'utilisateur.",
+        "L'assistant attend la décision de l'utilisateur avant publication."
+      ]
+    },
+    "clarification": {
+      "fiche": "État=info manquante; objet=le dossier à archiver parmi deux; question=identifier lequel; aucune action exécutée.",
+      "criteres": [
+        "Une seule question demande à l'utilisateur quel dossier archiver.",
+        "La réponse ne prétend pas qu'un dossier a déjà été traité."
+      ]
+    },
+    "resultat": {
+      "fiche": "État=résultat constaté; objet=tests de connexion au serveur local; succès=7 sur 9; durée=11,8 secondes.",
+      "criteres": [
+        "Les 7 réussites sur 9 sont attribuées aux tests de connexion au serveur local.",
+        "La durée de 11,8 secondes est conservée."
+      ]
+    },
+    "echec": {
+      "fiche": "État=échec; opération=impression du bordereau; implication=l'expédition peut être retardée.",
+      "criteres": [
+        "L'échec de l'impression du bordereau est annoncé.",
+        "Le retard d'expédition est présenté comme un risque."
+      ]
+    },
+    "accord": {
+      "fiche": "État=en attente d'accord; opération=déplacer les photos du projet vers le dossier Archives; poser la question à l'utilisateur.",
+      "criteres": [
+        "La réponse demande explicitement l'autorisation de déplacer les photos du projet.",
+        "La destination reste le dossier Archives."
+      ]
+    },
+    "ordre": {
+      "fiche": "État=à venir; étape 1=l'utilisateur vérifie les montants du devis; étape 2=l'assistant transmet le devis après autorisation.",
+      "criteres": [
+        "L'utilisateur vérifie d'abord les montants du devis.",
+        "L'assistant transmet ensuite le devis, sous réserve d'autorisation."
+      ]
+    }
+  }
+}

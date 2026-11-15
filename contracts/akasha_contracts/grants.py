@@ -1,8 +1,8 @@
 """Vérification des grants d'inférence distante (spec §13.7).
 
-Refus par défaut en cas de doute. Chaque appel est vérifié (grant, finalité,
-catégories, expiration, budget, révocation) avant exécution ; l'audit ne
-contient jamais le prompt, la réponse ni leur empreinte.
+Refus par défaut en cas de doute. Avant exécution, vérifier la destination,
+la finalité, les catégories, l'expiration, le budget et la révocation.
+L'audit exclut le prompt, la réponse et leur empreinte.
 """
 
 from __future__ import annotations
@@ -17,9 +17,10 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def check_grant(grant: dict, purpose: str, data_category: str,
-                now: datetime | None = None) -> AkashaError | None:
-    """Retourne None si l'appel est autorisé, sinon l'erreur typée de refus."""
+def check_grant(grant: dict, purpose: str | None, data_category: str | None,
+                now: datetime | None = None, *, provider: str | None = None,
+                endpoint: str | None = None) -> AkashaError | None:
+    """Autorise l'appel si sa destination effective et son usage sont couverts."""
     errors = validate(grant, "RemoteInferenceGrant")
     if errors:
         err = errors[0]
@@ -28,12 +29,21 @@ def check_grant(grant: dict, purpose: str, data_category: str,
     if grant.get("revoked"):
         return AkashaError(ErrorCode.GRANT_REVOKED,
                            f"Grant {grant['grant_id']} révoqué.", {"grant_id": grant["grant_id"]})
-    if moment >= datetime.fromisoformat(grant["expires_at"]):
+    try:
+        expires_at = datetime.fromisoformat(grant["expires_at"])
+    except ValueError:
+        expires_at = None
+    if expires_at is None or expires_at.tzinfo is None:
+        return AkashaError(ErrorCode.CONTRACT_SCHEMA_VIOLATION,
+                           "Le champ expires_at doit être un horodatage ISO 8601 avec décalage UTC.",
+                           {"schema": "RemoteInferenceGrant", "path": ["expires_at"]})
+    if moment >= expires_at:
         return AkashaError(ErrorCode.GRANT_EXPIRED,
                            f"Grant {grant['grant_id']} expiré.", {"grant_id": grant["grant_id"]})
-    if purpose != grant["purpose"] or data_category not in grant["data_categories"]:
+    if (provider != grant["provider"] or endpoint != grant["endpoint"]
+            or purpose != grant["purpose"] or data_category not in grant["data_categories"]):
         return AkashaError(ErrorCode.GRANT_SCOPE_MISMATCH,
-                           "Finalité ou catégorie hors périmètre du grant.",
+                           "Destination, finalité ou catégorie hors périmètre du grant.",
                            {"grant_id": grant["grant_id"]})
     budget = grant.get("budget", {})
     if ("max_calls" in budget and budget.get("calls_used", 0) >= budget["max_calls"]

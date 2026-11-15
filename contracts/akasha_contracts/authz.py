@@ -14,24 +14,32 @@ ALLOW = None
 
 
 def authorize(action: dict) -> AkashaError | None:
-    """Autorise ou refuse une action. Champs lus : voir `_read`."""
-    risk, confinement, approval, underspecified, grant, purpose, category = _read(action)
-
-    if risk == "R3" or risk not in ("R0", "R1", "R2"):
-        if grant is not None and purpose is not None and risk == "R3":
-            grant_err = check_grant(grant, purpose, category or "")
-            return grant_err
-        if approval is True and risk == "R3":
+    """Autorise une action selon son risque et la destination de l'inférence."""
+    risk = action.get("risk_class")
+    approval = action.get("human_approval")
+    if action.get("underspecified") and risk not in ("R0", "R1"):
+        return AkashaError(ErrorCode.NEEDS_CLARIFICATION,
+                           "Objectif sous-spécifié : aucune action R2/R3 avant clarification.",
+                           {"risk_class": risk or "unknown"})
+    if risk == "R3":
+        grant = action.get("grant")
+        if grant is not None:
+            return check_grant(
+                grant, action.get("purpose"), action.get("data_category"),
+                provider=action.get("provider"), endpoint=action.get("endpoint"),
+            )
+        if "provider" in action or "endpoint" in action:
+            return AkashaError(ErrorCode.APPROVAL_REQUIRED,
+                               "Inférence distante : grant obligatoire.",
+                               {"risk_class": risk})
+        if approval is True:
             return ALLOW
+    if risk not in ("R0", "R1", "R2"):
         return AkashaError(ErrorCode.APPROVAL_REQUIRED,
                            "Action R3 : approbation humaine obligatoire.",
                            {"risk_class": risk or "unknown"})
     if risk == "R0":
         return ALLOW
-    if underspecified and risk in ("R2",):
-        return AkashaError(ErrorCode.NEEDS_CLARIFICATION,
-                           "Objectif sous-spécifié : aucune action R2/R3 avant clarification.",
-                           {"risk_class": risk})
     if risk == "R2":
         if approval is True:
             return ALLOW
@@ -39,7 +47,7 @@ def authorize(action: dict) -> AkashaError | None:
                            "Action R2 : approbation par défaut en Phase 0-1.",
                            {"risk_class": risk})
     # R1 : effet borné et réversible, uniquement si le confinement est vérifié.
-    if confinement is True:
+    if action.get("confinement_verified") is True:
         return ALLOW
     return AkashaError(ErrorCode.PERMISSION_DENIED,
                        "Action R1 hors confinement vérifié : refusée.",
@@ -51,15 +59,3 @@ def escalate(risk: str | None, destructive_hint: bool) -> str:
     if destructive_hint and risk in (None, "R0", "R1"):
         return "R2"
     return risk or "R3"
-
-
-def _read(action: dict) -> tuple:
-    return (
-        action.get("risk_class"),
-        action.get("confinement_verified"),
-        action.get("human_approval"),
-        action.get("underspecified", False),
-        action.get("grant"),
-        action.get("purpose"),
-        action.get("data_category"),
-    )

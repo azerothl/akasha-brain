@@ -40,6 +40,8 @@ class NotesApp(tk.Tk):
         )
         self.notes_list = tk.Listbox(self, width=70, height=8)
         self.notes_list.grid(row=4, column=0, columnspan=2, padx=8, pady=4)
+        self.notes_list.bind("<<ListboxSelect>>", self.on_select)
+        self._shown: list = []
         self.refresh_list()
 
     def on_save(self) -> None:
@@ -49,9 +51,20 @@ class NotesApp(tk.Tk):
         self.status_var.set("Note sauvegardée.")
         self.refresh_list()
 
+    def on_select(self, _event: object = None) -> None:
+        """Ré-affiche le titre et le contenu de la note sélectionnée."""
+        selection = self.notes_list.curselection()
+        if not selection:
+            return
+        note = self._shown[selection[0]]
+        self.title_var.set(note.title)
+        self.content_text.delete("1.0", tk.END)
+        self.content_text.insert("1.0", note.content)
+
     def refresh_list(self) -> None:
         self.notes_list.delete(0, tk.END)
-        for note in self.store.list_notes():
+        self._shown = self.store.list_notes()
+        for note in self._shown:
             self.notes_list.insert(tk.END, f"#{note.id} {note.title}")
 
 

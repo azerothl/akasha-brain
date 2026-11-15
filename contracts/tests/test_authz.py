@@ -1,5 +1,7 @@
 """Autorisation : permissions accordées, refus et échecs typés (spec §13.5-13.7)."""
 
+import pytest
+
 from akasha_contracts import authorize, escalate
 from akasha_contracts.errors import ErrorCode
 
@@ -23,8 +25,13 @@ def test_r2_exige_approbation_par_defaut():
     assert authorize({"risk_class": "R2", "human_approval": True}) is None
 
 
-def test_sous_specifie_bloque_avant_clarification():
-    err = authorize({"risk_class": "R2", "underspecified": True})
+@pytest.mark.parametrize("risk_class", ["R2", "R3"])
+def test_sous_specifie_bloque_avant_clarification(risk_class):
+    err = authorize({
+        "risk_class": risk_class,
+        "underspecified": True,
+        "human_approval": True,
+    })
     assert err is not None and err.code == ErrorCode.NEEDS_CLARIFICATION
 
 
