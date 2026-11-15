@@ -192,6 +192,130 @@ Les réponses intégrales, les relevés HTTP, le journal et le script sont
 dans `rbitnet-communication-holdout/` sous le dossier de preuves de
 la phase 0. Le rapport est `qwen35-2b-fr-validation-v1.json`.
 
+#### Rejeu avec la consigne v2 sans exemples
+
+La [consigne v2](communication/qwen35-2b-fr-v2.json) associe chaque
+action à son auteur, demande d'énoncer toutes les étapes dans l'ordre
+et maintient la condition attachée à l'action concernée. Elle précise
+la forme de réponse à partir de l'état de la fiche.
+
+Le contrôle avant exécution compare les empreintes du binaire, du
+GGUF et du tokenizer, ainsi que les paramètres d'inférence, aux
+valeurs du rejeu v1. Les six fiches, leurs critères et leur ordre de
+passage sont identiques. Ce rejeu mesure l'effet de la consigne sur
+des fiches déjà évaluées avec la v1.
+
+| Fiche | v1 | v2 | Observation en v2 |
+| --- | --- | --- | --- |
+| Attente | Réussite · 28,28 s | Réussite · 18,63 s | Conserve la relecture par l'utilisateur et l'attente de sa décision avant publication. |
+| Clarification | Échec · 29,12 s | Échec · 18,55 s | Parle du dossier à archiver. La réponse reste déclarative et se termine par « vous désigne ». |
+| Résultat chiffré | Réussite · 29,72 s | Réussite · 19,07 s | Rapporte 7 réussites sur 9 pour les tests de connexion et conserve les 11,8 secondes. |
+| Avis d'échec | Échec · 28,65 s | Réussite · 18,87 s | Nomme l'échec d'impression du bordereau et le risque de retarder l'expédition. |
+| Demande d'accord | Réussite · 28,27 s | Réussite · 18,97 s | Demande l'autorisation pour le déplacement des photos vers Archives. |
+| Ordre des actions | Échec · 28,71 s | Échec · 18,20 s | Mentionne uniquement la vérification des montants par l'utilisateur. |
+
+Le score passe de **3/6 à 4/6**. Les six requêtes v2 renvoient HTTP 200
+et s'arrêtent normalement. Le temps total, démarrage et arrêt compris,
+passe de **175,70 s à 114,94 s** (**−34,6 %**). Les requêtes v2
+comptent chacune 134 jetons en entrée de moins que leurs équivalents v1.
+Le rapport `qwen35-2b-fr-validation-v2.json`, le journal et le script
+de rejeu sont dans `rbitnet-communication-v2/` sous le dossier de
+preuves de la phase 0.
+
+#### Rejeu avec la consigne v3 sans exemples
+
+La [consigne v3](communication/qwen35-2b-fr-v3.json) exige une question
+directe commençant par un mot interrogatif et se terminant par un point
+d'interrogation. Pour les étapes, elle demande une ligne numérotée par
+champ, avec l'auteur, l'action complète et sa condition éventuelle.
+Le rejeu reprend les six fiches de la v2, leurs critères et leur ordre,
+avec les mêmes empreintes du binaire, du tokenizer et des poids sur CPU.
+Les paramètres d'inférence sont identiques.
+
+| Fiche | v2 | v3 | Observation en v3 |
+| --- | --- | --- | --- |
+| Attente | Réussite · 18,63 s | Échec · 21,04 s | Demande la relecture puis dit attendre. Omet la décision avant publication. |
+| Clarification | Échec · 18,55 s | Échec · 22,12 s | Demande indirectement d'identifier le dossier sous forme de déclaration. |
+| Résultat chiffré | Réussite · 19,07 s | Réussite · 26,34 s | Préserve les 7 réussites sur 9, les tests de connexion au serveur local et les 11,8 secondes. |
+| Avis d'échec | Réussite · 18,87 s | Échec · 21,95 s | Indique le risque de retard d'expédition et omet l'échec d'impression du bordereau. |
+| Demande d'accord | Réussite · 18,97 s | Échec · 21,69 s | Présente l'autorisation comme une obligation pour l'utilisateur. |
+| Ordre des actions | Échec · 18,20 s | Réussite · 23,23 s | L'utilisateur vérifie les montants puis l'assistant transmet le devis après autorisation. Les deux phrases sont sans numérotation. |
+
+Le score selon les critères existants passe de **4/6 à 2/6**. Ces
+critères évaluent le fond de la fiche d'ordre, pour laquelle la v3
+restitue les deux actions, leurs auteurs et la condition. Les six
+requêtes renvoient HTTP 200 et s'arrêtent normalement. Le temps total,
+démarrage et arrêt compris, passe de **114,94 s à 139,40 s**
+(**+21,3 %**). Chaque requête compte 57 jetons supplémentaires en entrée.
+Le rapport `qwen35-2b-fr-validation-v3.json`, le journal et le script
+se trouvent dans `rbitnet-communication-v3/` sous le dossier de preuves
+de la phase 0.
+
+#### Rejeu de la v4 à partir de la v2
+
+La [consigne v4](communication/qwen35-2b-fr-v4.json) reprend la v2 avec
+deux règles révisées et sans exemples. La clarification doit formuler
+directement la question avec l'objet et l'action de la fiche. Pour les
+étapes, chaque proposition conserve son auteur, son action et sa
+condition. Le mot « puis » relie les propositions dans l'ordre.
+
+Le contrôle avant exécution vérifie que seules ces deux règles
+changent. Les six fiches, les critères, l'ordre de passage, les
+paramètres d'inférence et les empreintes du binaire, du tokenizer et
+des poids correspondent au rejeu v2 sur Rbitnet CPU.
+
+| Fiche | v2 | v4 | Observation en v4 |
+| --- | --- | --- | --- |
+| Attente | Réussite · 18,63 s | Échec · 20,73 s | Demande à l'utilisateur d'attendre lui-même une décision avant de relire le sommaire. |
+| Clarification | Échec · 18,55 s | Échec · 21,21 s | Dit à l'utilisateur d'identifier le dossier sous forme déclarative. |
+| Résultat chiffré | Réussite · 19,07 s | Réussite · 21,43 s | Conserve les 7 réussites sur 9 pour les tests de connexion au serveur local et les 11,8 secondes. |
+| Avis d'échec | Réussite · 18,87 s | Réussite · 21,04 s | Conserve l'échec d'impression du bordereau et le risque de retard d'expédition. |
+| Demande d'accord | Réussite · 18,97 s | Échec · 20,87 s | Interroge l'utilisateur sur son obligation de confirmer. La demande d'autorisation explicite manque. |
+| Ordre des actions | Échec · 18,20 s | Échec · 21,24 s | Attribue la transmission à l'utilisateur et l'autorisation à l'assistant. |
+
+Le score passe de **4/6 à 2/6**. Les six requêtes renvoient HTTP 200
+et s'arrêtent normalement. Le temps total, démarrage et arrêt compris,
+passe de **114,94 s à 129,00 s** (**+12,2 %**). Chaque requête compte
+49 jetons supplémentaires en entrée.
+Le rapport `qwen35-2b-fr-validation-v4.json`, le journal et le script se
+trouvent dans `rbitnet-communication-v4/` sous le dossier de preuves
+de la phase 0.
+
+#### Communication v2 avec deux gabarits déterministes
+
+Le [rendu local](communication/templates.py) lit l'état de la fiche.
+Pour une information manquante, il forme une question directe à partir
+du champ objet. Pour des étapes à venir, il trie les numéros et
+reproduit la proposition de chaque étape avec son auteur et sa
+condition. Les quatre autres fiches passent à Qwen3.5-2B Q8_0 sur
+Rbitnet CPU avec la consigne v2. Le banc vérifie les empreintes,
+les réglages et l'identité des six fiches avec leurs critères de la v2.
+
+Les temps des quatre générations couvrent la requête HTTP et la
+lecture de la réponse. Les temps locaux couvrent le routage, la lecture
+des champs et le rendu de la réponse. Le temps total inclut le démarrage
+et l'arrêt de Rbitnet.
+
+| Fiche | v2 seule | v2 et gabarits | Rendu |
+| --- | --- | --- | --- |
+| Attente | Réussite · 18,63 s | Réussite · 18,07 s | Rbitnet v2 |
+| Clarification | Échec · 18,55 s | Réussite · 21,8 µs | Local |
+| Résultat chiffré | Réussite · 19,07 s | Réussite · 18,49 s | Rbitnet v2 |
+| Avis d'échec | Réussite · 18,87 s | Réussite · 17,84 s | Rbitnet v2 |
+| Demande d'accord | Réussite · 18,97 s | Réussite · 17,82 s | Rbitnet v2 |
+| Ordre des actions | Échec · 18,20 s | Réussite · 138,5 µs | Local |
+
+Le score passe de **4/6 à 6/6** selon les mêmes critères. Les quatre
+réponses Rbitnet sont identiques au texte du rejeu v2. La clarification
+demande de préciser le dossier à archiver. Le gabarit d'ordre donne
+la vérification des montants par l'utilisateur, puis la transmission
+du devis par l'assistant après autorisation. Le temps total passe de
+**114,94 s à 74,29 s** (**−35,4 %**). La mesure porte sur ces six fiches.
+
+Le rapport `qwen35-2b-fr-hybrid-v1.json`, le journal et le script sont
+dans `rbitnet-communication-hybrid/` sous le dossier de preuves de la
+phase 0.
+
 ### Chargement, changements et reprise
 
 - Six changements dans le même PID. Le modèle attendu est visible

@@ -1,16 +1,17 @@
 # Statut de la phase 0 — 15 novembre 2026
 
-**Phase 0 ouverte.** Le parcours code des notes satisfait le contrôle
-de répétabilité dans Windows Sandbox. La qualification du spécialiste
-communication, les preuves restantes du bac et le contrat de restauration
-conditionnent le passage en phase 1.
+**Phase 0 validée pour le banc Windows CPU.** Le parcours code des
+notes satisfait le contrôle de répétabilité. La v2 avec deux gabarits
+est retenue pour la communication. Le contrat de restauration est
+défini. Les essais de confinement et leur portée sont consignés
+ci-dessous.
 [Critères du plan](development-plan.md#phase-0--contrats-et-tâches-représentatives)
 
 ## Contrats et banc figé
 
-- Les huit schémas JSON Schema 2020-12 sont versionnés en `1.0.0`, avec une
-  fenêtre de compatibilité d'un majeur. Les 8 schémas, les 2 exemples
-  `GoalSpec` et les **37 tests de contrats** passent. La suite couvre
+- Dix schémas JSON Schema 2020-12 sont versionnés en `1.0.0`, avec une
+  fenêtre de compatibilité d'un majeur. Les dix schémas, les deux exemples
+  `GoalSpec` et les **44 tests de contrats** passent. La suite couvre
   notamment l'autorisation R0–R3, la clarification avant action R2/R3,
   la vérification du fournisseur et de l'endpoint effectifs du grant,
   et le refus typé d'une expiration invalide ou sans décalage UTC.
@@ -22,10 +23,11 @@ conditionnent le passage en phase 1.
   bout et **9,1 s** dans le bac. Les tests du candidat s'exécutent
   dans le bac, avec les fixtures et le vérificateur en lecture seule.
   [Banc](../../bench/README.md) · [Baseline fixe](../../bench/run_baseline.py)
-- Rétention à 90/30/7 jours, sauvegarde chiffrée quotidienne sur 7 jours,
-  consentement par projet et catégorie, effacement vérifié et registre
-  de marqueurs hors de la version restaurée sont documentés. Le contrat
-  de restauration et de récupération des clés reste à compléter.
+- Le contrat de rétention définit le consentement de sauvegarde distinct,
+  les échéances par filiation, la récupération des clés, les états
+  d'effacement et la barrière de restauration. `BackupConsent` et
+  `RetentionCopy` ont des schémas et des tests. Le coffre et sa validation
+  bout en bout sont prévus aux phases 1 et 2.
   [Conception rétention et sauvegarde](../../contracts/retention_design.md)
 
 ## Windows Sandbox et observation
@@ -49,6 +51,28 @@ conditionnent le passage en phase 1.
   `UIAutomationClient` managé fonctionnait et que la voie COM
   `CUIAutomation` n'était pas enregistrée sur ce poste.
   [Sonde et relevé antérieur](../../bench/harness/uia_coverage.md)
+- La sonde de canaux ne détecte ni route par défaut, ni caméra
+  présente, ni entrée audio active, ni imprimante redirigée.
+  Avec `ClipboardRedirection=Disable`, un marqueur texte synthétique
+  a été écrit et relu localement de chaque côté. Les deux transferts
+  sont bloqués dans le profil nominal et dans le profil demandant
+  Protected Client. Les huit formats initiaux du presse-papiers hôte
+  ont été restaurés après chaque essai.
+- Le parcours clavier avec garde de focus UIA et Win32 a été joué
+  sur les deux copies. Après fermeture, une lecture SQLite
+  indépendante retrouve la note synthétique dans la copie
+  corrigée et une table vide dans la copie fautive. La mise au
+  premier plan a demandé de reconnecter la session. Le vGPU
+  désactivé permet ce parcours. Le profil définit aussi le périmètre
+  du courtier MVP pour les rapports JSON et les diffs unifiés.
+  [Profil et parcours clavier](../../bench/harness/sandbox_profile.md)
+- Le profil avec `ProtectedClient=Enable` a démarré. L'import en
+  lecture seule et le parcours clavier passent, avec la note présente
+  dans SQLite sur la référence corrigée et absente sur le témoin.
+  Le jeton du processus client externe est hors AppContainer.
+  La frontière interne reste non attestée et le profil nominal
+  s'appuie sur les contrôles de confinement vérifiés.
+  [Essai Protected Client](../../bench/harness/sandbox_profile.md#essai-protected-client)
 - RapidOCR ONNX 1.4.4 sur ONNX Runtime 1.32.0 fonctionne en CPU. Sur
   l'image synthétique, les mots attendus sont retrouvés en **0,6 à
   0,8 s** après normalisation des accents. Une lecture indépendante
@@ -71,6 +95,31 @@ Le rejeu de cette [consigne figée](../../bench/communication/qwen35-2b-fr-v1.js
 sur six fiches inédites donne **3/6 en 28,27–29,72 s par fiche**.
 Deux réponses reprennent un exemple hors sujet et une omet la seconde
 action. [Détail par fiche](../../bench/measurements_phase0.md#validation-de-la-consigne-figée-sur-six-nouvelles-fiches)
+La [consigne v2 sans exemples](../../bench/communication/qwen35-2b-fr-v2.json)
+valide **4/6 en 18,20–19,07 s par fiche** sur ces mêmes six fiches.
+Elle corrige l'avis d'échec. La clarification et l'ordre des actions
+échouent encore. [Comparaison v1 et v2](../../bench/measurements_phase0.md#rejeu-avec-la-consigne-v2-sans-exemples)
+La [consigne v3](../../bench/communication/qwen35-2b-fr-v3.json) obtient
+**2/6 en 21,04–26,34 s par fiche**. Elle rétablit les deux actions
+ordonnées et leur condition. La clarification reste déclarative.
+L'attente, l'avis d'échec et la demande d'accord régressent.
+[Comparaison v2 et v3](../../bench/measurements_phase0.md#rejeu-avec-la-consigne-v3-sans-exemples)
+La [consigne v4](../../bench/communication/qwen35-2b-fr-v4.json) obtient
+**2/6 en 20,73–21,43 s par fiche**. La clarification et l'ordre des
+actions restent en échec. L'attente et la demande d'accord régressent
+par rapport à la v2.
+[Comparaison v2 et v4](../../bench/measurements_phase0.md#rejeu-de-la-v4-à-partir-de-la-v2)
+La v2 avec [deux gabarits locaux](../../bench/communication/templates.py)
+valide **6/6** sur les mêmes fiches. Les quatre sorties Rbitnet sont
+identiques à celles de la v2. Les gabarits valident la clarification
+et l'ordre. La série dure **74,29 s**, contre 114,94 s en v2 seule.
+[Comparaison par fiche](../../bench/measurements_phase0.md#communication-v2-avec-deux-gabarits-déterministes)
+La v2 et les deux gabarits sont retenus pour le parcours courant.
+Après passage du 2B au 0,8B dans le processus dédié, `/ready` rend
+toujours HTTP 200 et `/v1/models` conserve le même identifiant logique.
+Le mappage GGUF distingue les deux modèles.
+Après déchargement, `/ready` recharge le 2B initial. L'adaptateur
+doit lier l'admission à la version des poids.
 [Mesures CPU et provenance](../../bench/measurements_phase0.md#qualification-native-de-rbitnet--15-novembre) · [Contrat minimal des adaptateurs](../architecture/brain-system-spec.md#62-décision-v08--moteurs-et-gestion-des-ressources)
 
 Campagne du 15 novembre sur le même poste Windows (Ryzen 7 9800X3D),
@@ -128,6 +177,21 @@ Les deux rejeux de Qwen3.5-2B et leurs consignes sont dans
 `rbitnet-communication-prompt/`.
 L'évaluation sur les six nouvelles fiches est dans
 `rbitnet-communication-holdout/qwen35-2b-fr-validation-v1.json`.
+Le rejeu v2 des mêmes fiches est dans
+`rbitnet-communication-v2/qwen35-2b-fr-validation-v2.json`.
+Le rejeu v3 est dans
+`rbitnet-communication-v3/qwen35-2b-fr-validation-v3.json`.
+Le rejeu v4 est dans
+`rbitnet-communication-v4/qwen35-2b-fr-validation-v4.json`.
+Le rejeu v2 avec gabarits est dans
+`rbitnet-communication-hybrid/qwen35-2b-fr-hybrid-v1.json`.
+Les preuves de canaux, de focus et d'identité du GGUF sont dans
+`phase0-closure/`. Le témoin fautif après reconnexion est dans
+`notes-faulty-reconnected.json`.
+Les essais de presse-papiers sont dans `clipboard-nominal-active.json`
+et `clipboard-disabled-active.json`. Les autres relevés sont dans
+`protected-client.json`, `protected-faulty.json`,
+`protected-import.json` et `protected-client-token.json`.
 
 ## Baseline humaine (relevée par l'utilisateur, 2026-11-14)
 
@@ -206,24 +270,14 @@ validés conservent la docstring décrivant le bug initial.
 Le rapport détaillé et les six propositions sont sous
 `rbitnet-guided-v1/` dans le dossier de preuves locales indiqué plus haut.
 
-## Conditions restantes pour entrer en phase 1
+## Entrée en phase 1
 
-1. **Qualifier le spécialiste communication.** Avec la consigne v1,
-   Qwen3.5-2B valide les six fiches de réglage et trois des six fiches
-   inédites. Les échecs concernent la clarification, l'avis d'échec et
-   l'ordre des actions. À l'intégration, vérifier le modèle actif après
-   `/ready`, qui peut recharger le modèle initial après déchargement.
-2. **Compléter la preuve du banc durci.** Vérifier dans le bac l'effet
-   des désactivations réseau, presse-papiers, imprimantes et entrées
-   audio/vidéo, puis consigner la compatibilité de vGPU et Protected
-   Client pour les tâches retenues. Le prototype d'export couvre le
-   rapport JSON. Définir le périmètre des fichiers que le courtier doit
-   prendre en charge pour le MVP. Pour le parcours des notes, assurer
-   le focus via UIA et spécifier un moyen complémentaire d'action et
-   d'observation, avec contrôle indépendant de la persistance.
-3. **Compléter le contrat de rétention et de restauration.** Spécifier
-   la récupération des clés, la liaison des échéances aux copies et à
-   leur filiation, le consentement de sauvegarde distinct et les états
-   d'effacement. L'implémentation et la validation de la restauration
-   bout en bout suivent le découpage des phases 1 et 2.
-   [Plan de développement](development-plan.md#questions-ouvertes-à-trancher-avant-la-phase-concernée)
+Le banc Notes utilise le profil durci avec vGPU désactivé. La
+compatibilité d'un profil avec vGPU activé reste à mesurer si une
+tâche le requiert. Une preuve de la frontière Protected Client
+devient nécessaire si un profil choisit de s'appuyer sur elle.
+L'adaptateur de communication, l'export de diff et l'intégration
+OCR du formulaire relèvent du parcours de phase 1. Le coffre et la
+restauration sont à implémenter sur le contrat versionné et à éprouver
+pendant les phases 1 et 2.
+[Plan de développement](development-plan.md#phase-1--parcours-bureaucode-et-évolution-bornée-mvp)

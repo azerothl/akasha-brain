@@ -6,15 +6,17 @@ fermée de prédicats et vérification des grants (spec §5-6, §5.4, §6.1,
 
 ## Disposition
 
-- `schemas/<Nom>/v1.0.0.json` — 8 schémas gelés (`$id` `akasha://schemas/…/1.0.0`,
-  SemVer exacte, aucune plage) : GoalSpec, SuccessPredicate,
+- `schemas/<Nom>/v1.0.0.json` — schémas versionnés (`$id` `akasha://schemas/…/1.0.0`,
+  SemVer exacte) : GoalSpec, SuccessPredicate,
   CapabilityManifest, ArtifactEnvelope, ExperienceRecord, RemoteInferenceGrant,
-  RetentionPolicy, EvolutionConsent.
+  RetentionPolicy, EvolutionConsent, BackupConsent et RetentionCopy.
 - `akasha_contracts/` — `validate.py` (validation + erreurs typées),
   `errors.py` (taxonomie stable), `predicates.py` (évaluateurs fermés),
   `grants.py` (vérification des grants, refus par défaut).
 - `tests/` — suite maintenue des contrats.
 - `examples/` — deux GoalSpec du banc (parcours code, transfert).
+
+[Contrat de rétention et restauration](retention_design.md).
 
 ## Gel v0 et support
 

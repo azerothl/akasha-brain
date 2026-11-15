@@ -8,11 +8,12 @@ majeur (le courant) avant le gel Phase 0 (spec §16.1).
 
 from __future__ import annotations
 
+from datetime import datetime
 import json
 import os
 import re
 
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT202012
 
@@ -30,13 +31,27 @@ SUPPORTED_MAJOR: dict[str, int] = {
     "RemoteInferenceGrant": 1,
     "RetentionPolicy": 1,
     "EvolutionConsent": 1,
+    "BackupConsent": 1,
+    "RetentionCopy": 1,
 }
 
 _SEMVER_EXACT = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 _SEMVER_RANGE = re.compile(r"[\^~<>=x*]")
+_UTC_INSTANT = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?Z")
+_FORMAT_CHECKER = FormatChecker()
 
 _cache: dict[str, dict] = {}
 _registry: Registry | None = None
+
+
+@_FORMAT_CHECKER.checks("akasha-utc", raises=ValueError)
+def _is_utc_instant(value: object) -> bool:
+    if not isinstance(value, str):
+        return True
+    if not _UTC_INSTANT.fullmatch(value):
+        return False
+    datetime.fromisoformat(value)
+    return True
 
 
 def _get_registry() -> Registry:
@@ -87,7 +102,7 @@ def validate(instance: object, schema_name: str,
             {"schema": schema_name, "version": version},
         )]
 
-    validator = Draft202012Validator(schema, registry=_get_registry())
+    validator = Draft202012Validator(schema, registry=_get_registry(), format_checker=_FORMAT_CHECKER)
     errors: list[AkashaError] = []
     for err in sorted(validator.iter_errors(instance), key=lambda e: list(e.path)):
         errors.append(AkashaError(

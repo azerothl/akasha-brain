@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "akasha://schemas/BackupConsent/1.0.0",
+  "title": "BackupConsent",
+  "type": "object",
+  "required": ["version", "consent_id", "project", "categories", "purpose", "granted_at", "expires_at", "status"],
+  "properties": {
+    "version": {"const": "1.0.0"},
+    "consent_id": {"type": "string", "format": "uuid"},
+    "project": {"type": "string", "minLength": 1},
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "purpose": {"const": "local_backup"},
+    "granted_at": {"type": "string", "format": "akasha-utc"},
+    "expires_at": {"type": ["string", "null"], "format": "akasha-utc"},
+    "status": {"enum": ["active", "revoked"]}
+  },
+  "additionalProperties": false
+}
