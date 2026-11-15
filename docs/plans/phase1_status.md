@@ -856,4 +856,32 @@ des deux projets concordent. Les opérations ont été vérifiées via le
 service de l'écran et les états ont été observés dans la fenêtre.
 Le rapport est sous `phase1-desktop-data/report.json` dans le dossier de preuves.
 
+### Aperçu et approbation du diff dans le desktop
+
+**Aperçu du diff** ouvre une proposition de remplacement préparée pour
+le projet sélectionné. La fenêtre affiche le diff unifié en lecture
+seule, le fichier visé et le résultat du test dans Windows Sandbox.
+La case d'approbation concerne l'empreinte de la proposition affichée.
+Chaque tentative consomme cet accord. Si le projet a changé, la fenêtre
+demande une nouvelle proposition et une nouvelle approbation.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.desktop `
+    --project $dossierProjet --proposal $dossierProposition
+```
+
+Deux copies jetables du projet Notes ont servi à l'essai. Les propositions
+ont passé le test de persistance SQLite dans des bacs neufs en **23,746 s**
+et **22,910 s**. Les trois tentatives d'application ont été faites
+depuis la fenêtre.
+
+| Cas | Résultat | Contrôle du disque |
+| --- | --- | --- |
+| Case d'approbation décochée | Accord requis | Empreintes initiales conservées |
+| Case d'approbation cochée | Diff appliqué | Fichier identique au remplacement testé, autres fichiers intacts |
+| Fichier modifié après l'ouverture de l'aperçu et l'accord | Diff refusé, `project_changed` | Édition concurrente conservée |
+
+Le rapport est sous `phase1-desktop-diff/report.json` dans le dossier
+de preuves.
+
 [Plan de la phase 1](development-plan.md#phase-1--parcours-bureaucode-et-évolution-bornée-mvp)

@@ -71,6 +71,30 @@ def test_refuses_modified_diff_after_review(prepared):
     assert (root / "app.py").read_bytes() == b"value = 1\n"
 
 
+def test_preview_binds_the_displayed_diff_to_the_reviewed_manifest(prepared):
+    root, proposal, approval = prepared
+    review = project.preview_replacement(root, proposal)
+    assert review.diff.encode("utf-8") == (proposal / "proposal.diff").read_bytes()
+    assert review.approval_sha256 == approval
+    with pytest.raises(project.ProjectError) as error:
+        review.apply(False)
+    assert error.value.error.code == ErrorCode.APPROVAL_REQUIRED
+    manifest = proposal / "proposal.json"
+    manifest.write_bytes(manifest.read_bytes() + b"\n")
+    with pytest.raises(project.ProjectError) as error:
+        review.apply(True)
+    assert error.value.error.code == ErrorCode.APPROVAL_REQUIRED
+    assert (root / "app.py").read_bytes() == b"value = 1\n"
+
+
+def test_preview_rejects_a_diff_whose_bytes_do_not_match_the_manifest(prepared):
+    root, proposal, _ = prepared
+    (proposal / "proposal.diff").write_bytes(b"replacement diff")
+    with pytest.raises(project.ProjectError) as error:
+        project.preview_replacement(root, proposal)
+    assert error.value.error.details["reason"] == "proposal_changed"
+
+
 @pytest.mark.parametrize("name", ["../other.py", "dir\\..\\other.py", "C:outside.py", ".git/config", "AUX"])
 def test_rejects_paths_outside_the_editable_scope(tmp_path: Path, name):
     with pytest.raises(project.ProjectError) as error:

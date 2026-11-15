@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import filedialog, font, ttk
 
 from .desktop_data import DataWindow
+from .desktop_review import ReviewWindow
 from .desktop_tasks import NotesTasks, STATUSES, STEP_TITLES, latest_steps, layers, saved_tasks, test_counts
 from .notes_evolution import STAGES, rollback, set_evolution_paused
 from .notes_repair import RbitnetPaths
@@ -158,12 +159,14 @@ class GraphView(tk.Canvas):
 
 
 class Desktop:
-    def __init__(self, root, tasks, *, data_registry=None, data_project=None):
+    def __init__(self, root, tasks, *, data_registry=None, data_project=None, proposal=None):
         self.root = root
         self.tasks = tasks
         self.data_registry = (data_registry or tasks.directory.parent / "project-evolution.db").resolve()
         self.data_project = data_project
         self.data_window = None
+        self.proposal = proposal
+        self.review_window = None
         self.records = dict(saved_tasks(tasks.directory))
         self.current = None
         self.message = None
@@ -230,6 +233,7 @@ class Desktop:
         self.launch_button.pack(side="right")
         ttk.Button(task_header, text="Python portable…", command=self.choose_runtime).pack(side="right", padx=10)
         ttk.Button(task_header, text="Données", command=self.open_data).pack(side="right")
+        ttk.Button(task_header, text="Aperçu du diff", command=self.open_review).pack(side="right", padx=(0, 10))
         if self.tasks.evolution_db:
             self.build_evolution(header)
 
@@ -284,6 +288,13 @@ class Desktop:
         if self.data_window is None:
             self.data_window = DataWindow(self.root, self.data_registry, self.data_project)
         self.data_window.show()
+
+    def open_review(self):
+        if self.review_window is None:
+            selected = self.data_window.data if self.data_window is not None else None
+            project = selected.project if selected is not None else self.data_project
+            self.review_window = ReviewWindow(self.root, project, self.proposal)
+        self.review_window.show()
 
     def build_evolution(self, header):
         bar = tk.Frame(header, bg=PANEL, padx=12, pady=8)
@@ -498,7 +509,9 @@ def main():
     parser.add_argument("--rapidocr", action="store_true")
     parser.add_argument("--evolution-db", type=Path, help="Registre d’évolution du banc synthétique Notes")
     parser.add_argument("--data-db", type=Path, help="Registre des données du parcours projet")
-    parser.add_argument("--data-project", type=Path, help="Dossier initial de l’écran Données")
+    parser.add_argument("--project", "--data-project", dest="data_project", type=Path,
+                        help="Dossier initial des écrans projet")
+    parser.add_argument("--proposal", type=Path, help="Dossier initial de la proposition à examiner")
     args = parser.parse_args()
     if args.rapidocr and not args.rbitnet:
         parser.error("--rapidocr exige --rbitnet")
@@ -508,7 +521,7 @@ def main():
     app = NotesTasks(args.runs.resolve(), args.python_runtime, repair, args.rapidocr,
                      evolution_db=args.evolution_db.resolve() if args.evolution_db else None)
     root = tk.Tk()
-    Desktop(root, app, data_registry=args.data_db, data_project=args.data_project)
+    Desktop(root, app, data_registry=args.data_db, data_project=args.data_project, proposal=args.proposal)
     root.mainloop()
 
 

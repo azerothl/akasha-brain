@@ -2,6 +2,7 @@
 
 import argparse
 from contextlib import contextmanager
+from dataclasses import dataclass
 from difflib import unified_diff
 import json
 import os
@@ -331,13 +332,7 @@ def apply_replacement(project: Path, proposal: Path, manifest: dict, original: b
             temporary.unlink(missing_ok=True)
 
 
-def apply(project: Path, proposal: Path, approved_digest: str | None = None, *,
-          approved_delete: str | None = None, approved_move: tuple[str, str] | None = None) -> dict:
-    encoded = (proposal / "proposal.json").read_bytes()
-    proposal_digest = digest(encoded)
-    denied = authorize({"risk_class": "R2", "human_approval": approved_digest == proposal_digest})
-    if denied:
-        raise ProjectError(denied)
+def validated_manifest(encoded: bytes) -> dict:
     manifest = json.loads(encoded)
     target = manifest["target"]
     files = manifest["files"]
@@ -352,6 +347,19 @@ def apply(project: Path, proposal: Path, approved_digest: str | None = None, *,
             or manifest["validation"]["guest_exit_code"] != 0x4700
             or target not in files or manifest["test"] not in files or manifest["test"] == target):
         reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Proposition non validée.")
+    return manifest
+
+
+def apply(project: Path, proposal: Path, approved_digest: str | None = None, *,
+          approved_delete: str | None = None, approved_move: tuple[str, str] | None = None) -> dict:
+    encoded = (proposal / "proposal.json").read_bytes()
+    proposal_digest = digest(encoded)
+    denied = authorize({"risk_class": "R2", "human_approval": approved_digest == proposal_digest})
+    if denied:
+        raise ProjectError(denied)
+    manifest = validated_manifest(encoded)
+    operation = manifest.get("operation", "replace")
+    target, destination = manifest["target"], manifest.get("destination")
     require_operation_approval(manifest, approved_delete, approved_move)
     expected, absent = expected_files(manifest)
 
@@ -378,6 +386,40 @@ def apply(project: Path, proposal: Path, approved_digest: str | None = None, *,
             reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "Opération effectuée, état du projet à vérifier.")
     return {"status": "applied", "operation": operation, "file": target, "destination": destination,
             "proposal_sha256": proposal_digest}
+
+
+@dataclass(frozen=True)
+class ReplacementReview:
+    """Lie les octets présentés à l'accord transmis au parcours projet."""
+
+    project: Path
+    proposal: Path
+    target: str
+    test: str
+    diff: str
+    approval_sha256: str
+
+    def apply(self, approved: bool) -> dict:
+        return apply(self.project, self.proposal, self.approval_sha256 if approved else None)
+
+
+def preview_replacement(project: Path, proposal: Path) -> ReplacementReview:
+    project, proposal = project.resolve(strict=True), proposal.resolve(strict=True)
+    if proposal.is_relative_to(project):
+        reject(ErrorCode.PERMISSION_DENIED, "La proposition doit être stockée hors du projet.")
+    encoded = (proposal / "proposal.json").read_bytes()
+    manifest = validated_manifest(encoded)
+    if identity(project) != manifest["project"]:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Cette proposition appartient à un autre projet.",
+               reason="consent_scope_mismatch")
+    if manifest.get("operation", "replace") != "replace":
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Sélectionnez une proposition contenant un diff de remplacement.")
+    patch = (proposal / "proposal.diff").read_bytes()
+    if digest(patch) != manifest["diff_sha256"]:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le diff ne correspond pas à la proposition validée.",
+               reason="proposal_changed")
+    return ReplacementReview(project, proposal, manifest["target"], manifest["test"], patch.decode("utf-8"),
+                             digest(encoded))
 
 
 def main() -> int:
