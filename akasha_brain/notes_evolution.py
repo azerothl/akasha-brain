@@ -8,7 +8,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import sqlite3
-from time import monotonic
+from time import monotonic, sleep
 from uuid import uuid4
 
 from bench.run_guided_repair import execution_limits, write_report
@@ -76,6 +76,11 @@ def initialize(path: Path, catalog: dict) -> dict:
         db.execute("""CREATE TABLE IF NOT EXISTS evolution_events (
             seq INTEGER PRIMARY KEY, payload TEXT NOT NULL, digest TEXT NOT NULL
         )""")
+        db.execute("""CREATE TABLE IF NOT EXISTS evolution_control (
+            singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+            paused INTEGER NOT NULL CHECK (paused IN (0, 1))
+        )""")
+        db.execute("INSERT OR IGNORE INTO evolution_control VALUES (1, 0)")
         for plan, base in zip(plans, (None, PARENT)):
             snapshot = json.dumps(plan, sort_keys=True)
             graph_id = plan["graph_id"]
@@ -88,6 +93,54 @@ def initialize(path: Path, catalog: dict) -> dict:
 
 def active_workflow(db) -> str:
     return db.execute("SELECT workflow FROM active_workflow WHERE singleton = 1").fetchone()[0]
+
+
+def evolution_paused(db) -> bool:
+    return bool(db.execute("SELECT paused FROM evolution_control WHERE singleton = 1").fetchone()[0])
+
+
+def evolution_overview(path: Path) -> dict:
+    with transaction(path) as db:
+        db.execute("BEGIN")
+        active = active_workflow(db)
+        versions = {key: (parent, json.loads(plan))
+                    for key, parent, plan in db.execute("SELECT id, parent, plan FROM workflow_versions")}
+        parent, plan = versions[active]
+        latest = db.execute("SELECT payload FROM evolution_events ORDER BY seq DESC LIMIT 1").fetchone()
+        return {
+            "active": plan,
+            "candidate": versions[CANDIDATE][1] if active == PARENT else None,
+            "can_rollback": parent is not None,
+            "paused": evolution_paused(db),
+            "latest": json.loads(latest[0]) if latest else {},
+        }
+
+
+def set_evolution_paused(path: Path, paused: bool) -> None:
+    with transaction(path) as db:
+        db.execute("BEGIN IMMEDIATE")
+        if evolution_paused(db) != paused:
+            db.execute("UPDATE evolution_control SET paused = ? WHERE singleton = 1", (int(paused),))
+            audit(db, str(uuid4()), "pause_requested" if paused else "resume_requested", {"paused": paused})
+
+
+@contextmanager
+def evolution_checkpoint(path: Path, cycle_id: str, before: str, deadline: float):
+    """Sérialise le départ d'un essai ou la promotion avec la commande de pause."""
+    waiting = False
+    while monotonic() < deadline:
+        with transaction(path) as db:
+            db.execute("BEGIN IMMEDIATE")
+            if monotonic() >= deadline:
+                break
+            if not evolution_paused(db):
+                yield db
+                return
+            if not waiting:
+                audit(db, cycle_id, "pause_reached", {"before": before})
+                waiting = True
+        sleep(min(0.25, max(0, deadline - monotonic())))
+    yield None
 
 
 def evolution_status(path: Path) -> dict:
@@ -159,15 +212,14 @@ def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, 
     sandbox_ids = {reference.get("sandbox_id")}
     expected = evidence(reference, desktop=False)
     for stage in STAGES:
-        if monotonic() >= deadline:
+        with evolution_checkpoint(path, cycle_id, stage, deadline) as db:
+            if db is not None:
+                denied = check_reuse(db, reuse)
+                parent_active = active_workflow(db) == PARENT
+                if denied is None and parent_active:
+                    audit(db, cycle_id, "trial_started", {"stage": stage, "parent": PARENT, "candidate": CANDIDATE})
+        if db is None:
             return finish("waiting", "resource_budget_exceeded")
-        with transaction(path) as db:
-            if reuse:
-                db.execute("BEGIN IMMEDIATE")
-            denied = check_reuse(db, reuse)
-            parent_active = active_workflow(db) == PARENT
-            if denied is None and parent_active:
-                audit(db, cycle_id, "trial_started", {"stage": stage, "parent": PARENT, "candidate": CANDIDATE})
         if denied:
             return finish("retained", denied.details["reason"])
         if not parent_active:
@@ -191,21 +243,23 @@ def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, 
         if not expected["verified"] or not proof["verified"] or not proof["fresh_sandbox"] or proof["diff"] != expected["diff"]:
             return finish("retained", "insufficient_evidence")
 
-    with transaction(path) as db:
-        db.execute("BEGIN IMMEDIATE")
-        denied = check_reuse(db, reuse)
-        if denied is None and monotonic() < deadline and active_workflow(db) == PARENT:
-            db.execute("UPDATE active_workflow SET workflow = ? WHERE singleton = 1", (CANDIDATE,))
-            audit(db, cycle_id, "activated", {"parent": PARENT, "active": CANDIDATE,
-                                             "reference": expected["experience"],
-                                             "evidence": [trial["experience"] for trial in trials]})
-            return {"cycle_id": cycle_id, "status": "promoted", "active": CANDIDATE, "trials": trials,
-                    "wall_s": round(monotonic() - started, 3)}
+    with evolution_checkpoint(path, cycle_id, "promotion", deadline) as db:
+        if db is not None:
+            denied = check_reuse(db, reuse)
+            if denied is None and active_workflow(db) == PARENT:
+                db.execute("UPDATE active_workflow SET workflow = ? WHERE singleton = 1", (CANDIDATE,))
+                audit(db, cycle_id, "activated", {"parent": PARENT, "active": CANDIDATE,
+                                                 "reference": expected["experience"],
+                                                 "evidence": [trial["experience"] for trial in trials]})
+                return {"cycle_id": cycle_id, "status": "promoted", "active": CANDIDATE, "trials": trials,
+                        "wall_s": round(monotonic() - started, 3)}
+    if db is None:
+        return finish("waiting", "resource_budget_exceeded")
     return finish("retained", denied.details["reason"] if denied else "promotion_precondition_changed")
 
 
 def run_managed(goal: dict, catalog: dict, runtime: Path, output: Path, repair: RbitnetPaths,
-                path: Path, budget: EvolutionBudget) -> dict:
+                path: Path, budget: EvolutionBudget, *, progress=None) -> dict:
     with lease(path):
         synthetic_goal = initialize(path, catalog)
         if goal != synthetic_goal:
@@ -215,7 +269,8 @@ def run_managed(goal: dict, catalog: dict, runtime: Path, output: Path, repair: 
         with transaction(path) as db:
             active = active_workflow(db)
         task = run_notes(goal, catalog, runtime, output, repair, first_diff_seed=742,
-                         rapidocr=active == CANDIDATE, experience_db=path)
+                         rapidocr=active == CANDIDATE, experience_db=path,
+                         **({"progress": progress} if progress is not None else {}))
         if active == PARENT and task.get("experience_record_id"):
             cycle_id = str(uuid4())
             with transaction(path) as db:

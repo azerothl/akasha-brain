@@ -9,8 +9,8 @@ from akasha_brain import notes_evolution
 from akasha_brain.evolution_consent import ReuseScope, grant, revoke
 from akasha_brain.experience import record_experience, transaction
 from akasha_brain.notes_evolution import (
-    CANDIDATE, GOAL_FILE, PARENT, STAGES, EvolutionBudget, evolve, evolution_status, initialize, lease, rollback,
-    run_managed,
+    CANDIDATE, GOAL_FILE, PARENT, STAGES, EvolutionBudget, evolve, evolution_overview, evolution_status,
+    initialize, lease, rollback, run_managed, set_evolution_paused,
 )
 from akasha_brain.planning import PlanningError, compile_goal, load_catalog
 from contracts.akasha_contracts.validate import validate
@@ -86,6 +86,60 @@ def test_notes_registry_lease_prevents_concurrent_trials(tmp_path):
             pytest.fail("Le second lanceur a obtenu le bail.")
     with lease(path):
         pass
+
+
+@pytest.mark.parametrize("pause_before,expires", [("shadow", False), ("promotion", False), ("replay", True)])
+def test_pause_at_safe_point_and_resume_same_cycle(tmp_path, monkeypatch, pause_before, expires):
+    path = tmp_path / "journal.db"
+    catalog = load_catalog()
+    goal = initialize(path, catalog)
+    parent = compile_goal(goal, catalog, rbitnet=True)
+    candidate = compile_goal(goal, catalog, rbitnet=True, rapidocr=True)
+    reference = {**report_for(parent), "experience_record_id": str(uuid4())}
+    clock = [100.0]
+    stages = []
+    pauses = []
+    before = (*STAGES, "promotion")
+
+    def trial(stage):
+        stages.append(stage)
+        if before[len(stages)] == pause_before:
+            set_evolution_paused(path, True)
+        return {**report_for(candidate), "experience_record_id": str(uuid4())}
+
+    def wait(seconds):
+        state = evolution_overview(path)
+        assert state["active"] == parent and state["candidate"] == candidate
+        assert state["paused"]
+        event = state["latest"]
+        assert event["event"] == "pause_reached"
+        assert event["cycle_id"] == "cycle"
+        assert event["details"] == {"before": pause_before}
+        assert tuple(stages) == STAGES[:before.index(pause_before)]
+        pauses.append(event)
+        clock[0] += seconds if not expires else 30
+        if not expires:
+            set_evolution_paused(path, False)
+
+    monkeypatch.setattr(notes_evolution, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(notes_evolution, "sleep", wait)
+    if pause_before == "replay":
+        set_evolution_paused(path, True)
+        initialize(path, catalog)
+    with lease(path):
+        result = evolve(path, "cycle", EvolutionBudget(30, 3, 2, 8192), reference, trial)
+    assert len(pauses) == 1
+    if expires:
+        assert result["reason"] == "resource_budget_exceeded"
+        assert not stages and evolution_overview(path)["paused"]
+    else:
+        assert result["status"] == "promoted" and tuple(stages) == STAGES
+        state = evolution_overview(path)
+        assert state["active"] == candidate and state["candidate"] is None
+        assert not state["paused"] and state["can_rollback"]
+        rollback(path)
+        assert evolution_overview(path)["active"] == parent
+        assert evolution_overview(path)["candidate"] == candidate
 
 
 @pytest.mark.parametrize("failure,reason", [

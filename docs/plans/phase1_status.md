@@ -739,4 +739,121 @@ dans le dossier de preuves.
 Les [résultats consolidés du bloc données](../../bench/results/project-data-v1.json)
 couvrent le consentement, le rejeu, l'effacement et la restauration.
 
+## Interface desktop du graphe et des exécutions
+
+`akasha_brain.desktop` ouvre une fenêtre native Windows avec le plan
+Notes compilé, son graphe de dépendances et l'historique des tâches.
+La molette et les boutons règlent le zoom. Le fond glissé déplace le
+graphe et la sélection d'un nœud affiche sa capacité, sa version,
+ses dépendances et les résultats disponibles.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.desktop `
+    --python-runtime $pythonPortable --runs $dossierExecutions
+```
+
+Le bouton **Lancer Notes** démarre le lanceur du banc dans un thread de
+travail. Le lanceur publie le début et la fin de chaque étape et la
+fenêtre actualise le graphe et le décompte. Les rapports et l'historique
+restent consultables depuis le dossier d'exécutions. `--rbitnet` accepte
+le binaire, le GGUF et le tokenizer du protocole Notes. `--rapidocr`
+ajoute le contrôle après relance lorsque ces artefacts sont fournis.
+
+L'essai dans la fenêtre Windows a vérifié le zoom, le déplacement,
+l'inspection d'un nœud et la consultation de l'historique après
+réouverture. Un second lancement du parcours Notes avec référence fixe
+a affiché la progression puis **3/3 étapes**, **4/4 tests** et SQLite au
+vert en **39,127 s**. Le bac dédié s'est arrêté. Le rapport est sous
+`phase1-desktop/runs/e4be8f77-0fd8-4cc3-bb02-dfc93a04c380/result/report.json`
+dans le dossier de preuves.
+
+### Commandes desktop de l'évolution Notes
+
+Le mode `--evolution-db` ouvre le registre local du banc synthétique.
+Il prend la version active dans le registre et affiche la version
+candidate tant que celle-ci attend sa promotion. **Voir le plan Notes**
+ouvre le graphe actif. Les exécutions passées conservent leur graphe.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.desktop `
+    --python-runtime $pythonPortable --runs $dossierExecutions `
+    --rbitnet $binaireRbitnet $ggufNotes $tokenizerNotes `
+    --evolution-db $registreNotes
+```
+
+**Pause** laisse l'essai en cours se terminer. Le cycle attend ensuite
+avant l'essai suivant ou la promotion. Le registre conserve la demande
+de pause. **Reprendre** autorise le cycle à continuer avec les preuves
+déjà acquises. L'attente compte dans le budget de **480 s** du cycle,
+qui admet au plus trois essais sur huit threads CPU avec un plafond
+Rbitnet de **8 192 Mio**. Si le budget expire pendant la pause, le
+cycle se termine et la demande de pause reste en vigueur.
+
+**Retour arrière** restaure le parent enregistré après la fin du cycle.
+Le registre journalise les commandes, le point de pause atteint et le
+changement de version active.
+
+#### Validation du 16 novembre 2026
+
+La fenêtre a lancé le cycle `7213ed78-600f-41b6-bf64-b28fe04bcb1c`
+avec Rbitnet CPU, graine 742. Une demande de pause pendant `replay`
+a laissé cet essai se terminer. Le registre a marqué la pause avant
+`shadow` et Windows Sandbox ne listait alors aucun bac actif.
+Après **32,557 s** d'attente, **Reprendre** a lancé `shadow` dans le
+même cycle.
+
+| Parcours | Temps | Tests | SQLite | RapidOCR après relance |
+| --- | ---: | --- | --- | --- |
+| Référence | 88,344 s | 4/4 | Réussi | — |
+| `replay` | 126,839 s | 4/4 | Réussi | Réussi |
+| `shadow` | 115,256 s | 4/4 | Réussi | Réussi |
+| `limited` | 116,150 s | 4/4 | Réussi | Réussi |
+
+Chaque parcours a appliqué son premier diff dans un bac neuf et a
+produit un `ExperienceRecord` distinct. Le diff avait la même empreinte
+sur les quatre parcours. Le cycle candidat a duré **390,938 s sur 480 s**,
+pause comprise. La fenêtre a affiché `notes-rbitnet-ocr v1.0.0` comme
+version active et son graphe à quatre étapes. **Retour arrière** a
+rétabli `notes-rbitnet v1.0.0` et son graphe à trois étapes. Le registre
+confirme la promotion et le retour arrière. Les quatre bacs sont fermés.
+
+Le rapport se trouve sous
+`phase1-desktop-evolution/runs/8f724249-b66c-4557-a469-d9e7233d9489/result/report.json`
+dans le dossier de preuves, et le journal sous
+`phase1-desktop-evolution/registry.db`.
+
+### Écran desktop des données d’évolution
+
+Le bouton **Données** ouvre le registre du parcours projet. Le dossier
+sélectionné détermine le périmètre des accords, copies et demandes
+d'effacement affichés. L'écran propose les deux catégories collectées
+par le parcours projet, **Code source** et **Diffs**. Il affiche l'état
+des accords et l'échéance de chaque copie sans lire son contenu.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.desktop `
+    --data-db $registreProjet --data-project $dossierProjet
+```
+
+La révocation bloque les copies liées à l'accord sélectionné.
+La demande d'effacement porte sur les copies de la même proposition
+et leurs rapports de rejeu. L'écran affiche le motif d'attente et permet
+de reprendre la même demande après résolution du problème.
+
+Le 16 novembre 2026, une proposition Notes a été préparée dans un bac
+neuf en **22,319 s**, puis le diff autorisé a été rejoué dans un autre bac
+en **22,735 s**. Les contrôles ont refusé la collecte sans accord, la
+collecte hors catégorie ou hors projet et la révocation inter-projets.
+Révoquer l'accord Code source a bloqué son rejeu, et le diff restait
+disponible sous son propre accord.
+
+Un rapport de rejeu temporairement inaccessible a laissé la demande
+en attente avec le motif affiché dans la fenêtre. Le rejeu a été refusé
+dès l'enregistrement de cette demande. Après rétablissement de l'accès
+au rapport, la reprise a effacé **deux copies et un rapport**. La même
+demande apparaît comme effacée et les empreintes des fichiers d'origine
+des deux projets concordent. Les opérations ont été vérifiées via le
+service de l'écran et les états ont été observés dans la fenêtre.
+Le rapport est sous `phase1-desktop-data/report.json` dans le dossier de preuves.
+
 [Plan de la phase 1](development-plan.md#phase-1--parcours-bureaucode-et-évolution-bornée-mvp)

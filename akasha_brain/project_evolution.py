@@ -28,11 +28,11 @@ class ProjectSample:
     expires_at: str
 
 
-def registry_path(project: Path, registry: Path) -> Path:
+def registry_path(project: Path, registry: Path, *, require_existing: bool = True) -> Path:
     path = registry.resolve()
     if path.is_relative_to(project):
         reject(ErrorCode.PERMISSION_DENIED, "Le registre d'évolution doit être hors du projet.")
-    if not path.is_file():
+    if require_existing and not path.is_file():
         reject(ErrorCode.APPROVAL_REQUIRED, "Consentement explicite requis.", reason="consent_missing")
     return path
 

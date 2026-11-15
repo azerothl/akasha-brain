@@ -1,6 +1,7 @@
 """Exécution du graphe de référence Notes dans un bac dédié."""
 
 from contextlib import contextmanager
+from copy import deepcopy
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -67,7 +68,7 @@ def decode_validation(code: int) -> dict:
 
 def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: RbitnetPaths | None = None,
               *, first_diff_seed: int | None = None, rapidocr: bool = False,
-              experience_db: Path | None = None, origin: str = "task") -> dict:
+              experience_db: Path | None = None, origin: str = "task", progress=None) -> dict:
     plan = compile_goal(goal, catalog, rbitnet=repair is not None, rapidocr=rapidocr)
     # Le script bureau figé cible la copie préparée par le premier diff.
     if rapidocr and first_diff_seed is None:
@@ -77,7 +78,14 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
     report = {"graph": plan, "status": "running", "trace": []}
     sandbox_id = None
     wall = perf_counter()
+
+    def publish():
+        write_report(output, report)
+        if progress is not None:
+            progress(deepcopy(report))
+
     try:
+        publish()
         if active_sandboxes():
             raise RuntimeError("Une session Windows Sandbox est déjà active.")
         profile = read_profile()
@@ -114,7 +122,7 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
 
         sandbox_id = str(uuid4())
         report["sandbox_id"] = sandbox_id
-        write_report(output, report)
+        publish()
         started_id = str(UUID(wsb("start", "--id", sandbox_id, "--config", profile)["Id"]))
         if started_id != sandbox_id:
             raise RuntimeError("Windows Sandbox a renvoyé une identité différente.")
@@ -136,7 +144,7 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
         if mount != 0x450F or channels not in (0x410F, 0x411F):
             raise RuntimeError(f"Preuve de confinement incomplète ({mount}, {channels}).")
         report["authorization_controls"] = authorization_controls(plan["steps"][0], goal)
-        write_report(output, report)
+        publish()
 
         runner = f"{POWERSHELL} -File {guest_input}\\validate_guided_notes.ps1 -Tag {tag} -InputName"
         completed = set()
@@ -153,12 +161,16 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                     raise RuntimeError("Les dépendances du graphe ne sont pas vérifiées.")
                 require_step_permission(step, goal, active_sandboxes() == [sandbox_id])
                 row["authorization"] = "allowed"
+                row["status"] = "running"
+                publish()
                 yield row
                 if row["status"] == "passed":
                     completed.add(step["id"])
             finally:
+                if row["status"] == "running":
+                    row["status"] = "failed"
                 row["wall_s"] = round(perf_counter() - began, 3)
-                write_report(output, report)
+                publish()
 
         localize, prepare_step, verify, *desktop_steps = plan["steps"]
         with trace_step(localize) as row:
@@ -271,5 +283,5 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                 ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Écriture du journal ExperienceRecord impossible.",
                 {"reason": str(exc)},
             ).as_dict()
-        write_report(output, report)
+        publish()
     return report

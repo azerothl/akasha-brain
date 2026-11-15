@@ -93,7 +93,7 @@ def load_consent(db: sqlite3.Connection, consent_id: str) -> dict | None:
     return document
 
 
-def revoke(path: Path, consent_id: str) -> dict:
+def revoke(path: Path, consent_id: str, *, project: str | None = None) -> dict:
     missing = refusal(ErrorCode.APPROVAL_REQUIRED, "consent_missing", "Accord d'évolution introuvable.")
     if not path.is_file():
         raise PlanningError(missing)
@@ -102,6 +102,9 @@ def revoke(path: Path, consent_id: str) -> dict:
         document = load_consent(db, consent_id)
         if document is None:
             raise PlanningError(missing)
+        if project is not None and document["project"] != project:
+            raise PlanningError(refusal(ErrorCode.PERMISSION_DENIED, "consent_scope_mismatch",
+                                        "Cet accord appartient à un autre projet."))
         if document["status"] != "revoked":
             document["status"] = "revoked"
             db.execute("UPDATE evolution_consents SET document = ? WHERE consent_id = ?",
@@ -109,14 +112,23 @@ def revoke(path: Path, consent_id: str) -> dict:
     return {"consent_id": consent_id, **document}
 
 
+def read_consents(db: sqlite3.Connection, *, project: str | None = None) -> list[dict]:
+    if not has_registry(db):
+        return []
+    query = "SELECT consent_id, document FROM evolution_consents"
+    parameters = ()
+    if project is not None:
+        query += " WHERE json_extract(document, '$.project') = ?"
+        parameters = (project,)
+    return [{"consent_id": consent_id, **json.loads(document)}
+            for consent_id, document in db.execute(query + " ORDER BY rowid", parameters)]
+
+
 def list_consents(path: Path) -> list[dict]:
     if not path.is_file():
         return []
     with transaction(path) as db:
-        if not has_registry(db):
-            return []
-        return [{"consent_id": consent_id, **json.loads(document)}
-                for consent_id, document in db.execute("SELECT consent_id, document FROM evolution_consents ORDER BY rowid")]
+        return read_consents(db)
 
 
 def check_reuse(db: sqlite3.Connection, scopes: tuple[ReuseScope, ...], *, now: datetime | None = None) -> AkashaError | None:

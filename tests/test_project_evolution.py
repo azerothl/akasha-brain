@@ -8,9 +8,11 @@ import pytest
 
 from akasha_brain import project
 from akasha_brain.evolution_consent import grant, revoke
+from akasha_brain.planning import PlanningError
 from akasha_brain.project_backup import backup, grant_backup, restore, revoke_backup
 from akasha_brain.project_backup_vault import decode, encode, vault_path
 from akasha_brain.project_common import ProjectError, project_scope
+from akasha_brain.project_data import ProjectData
 from akasha_brain.project_evolution import collect, content_path, erase, request_erasure
 
 
@@ -170,6 +172,49 @@ def test_changed_report_keeps_erasure_pending_and_never_deletes_the_replacement(
     completed = erase(root, registry, sample_id)
     assert completed["status"] == "erased" and completed["request_id"] == pending["request_id"]
     assert not report.exists()
+
+
+def test_desktop_data_inventory_scopes_consents_and_tracks_pending_erasure(prepared_project, tmp_path):
+    root, proposal, registry, approval = prepared_project
+    other_root = tmp_path / "other"
+    other_root.mkdir()
+    data = ProjectData(root, registry)
+    other = ProjectData(other_root, registry)
+    assert data.inventory() == {"consents": [], "copies": [], "erasures": []}
+    with pytest.raises(ProjectError, match="hors du projet"):
+        ProjectData(root, root / "evolution.db")
+    consent_id = data.grant(["source_code", "diffs"])["consent_id"]
+    other_id = other.grant(["source_code"])["consent_id"]
+    with pytest.raises(PlanningError, match="autre projet"):
+        data.revoke(other_id)
+    assert [row["consent_id"] for row in data.inventory()["consents"]] == [consent_id]
+    assert [row["consent_id"] for row in other.inventory()["consents"]] == [other_id]
+
+    samples = [collect(root, proposal, registry, category, consent_id, approval) for category in ("source_code", "diffs")]
+    source, diff = samples
+    output = tmp_path / "replayed"
+    project.reuse(root, registry, diff["sample_id"], "diffs", output, tmp_path)
+    report = output / "report.json"
+    original_report = report.read_bytes()
+    assert other.inventory()["copies"] == []
+    data.revoke(consent_id)
+    assert {row["status"] for row in data.inventory()["copies"]} == {"consent_revoked"}
+
+    report.write_bytes(b"synthetic replacement")
+    pending = data.erase(source["sample_id"])
+    state = data.inventory()
+    [erasure] = state["erasures"]
+    assert erasure["request_id"] == pending["request_id"]
+    assert (erasure["status"], erasure["reason"], erasure["count"]) == ("pending", "copy_unreachable", 2)
+    assert {row["status"] for row in state["copies"]} == {"content_erasure_requested"}
+    assert other.inventory()["erasures"] == []
+
+    report.write_bytes(original_report)
+    result = data.erase(erasure["sample_id"])
+    assert result["copies_erased"] == 2 and result["reports_removed"] == 1
+    state = data.inventory()
+    assert state["copies"] == [] and state["erasures"][0]["status"] == "erased"
+    assert not report.exists() and (root / "app.py").read_bytes() == b"value = 1\n"
 
 
 def test_backup_needs_its_own_consent_before_creating_files(prepared_project, tmp_path):
