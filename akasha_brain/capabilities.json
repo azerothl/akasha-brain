@@ -1,0 +1,100 @@
+[
+  {
+    "manifest": {
+      "capability_id": "notes.locate",
+      "version": "1.0.0",
+      "kind": "tool",
+      "description": "Localiser les échecs sur une copie fautive du banc Notes.",
+      "permissions": {
+        "reads": ["bench://notes"],
+        "writes": ["bench://notes/scratch"],
+        "execute": ["notes-localization"],
+        "network": []
+      },
+      "risk_class": "R1",
+      "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+      "side_effects": "local-temporary"
+    },
+    "evaluation": {
+      "environment_id": "bench-notes",
+      "evidence": "docs/plans/phase0_status.md#rejeu-du-protocole-guidé-v1"
+    }
+  },
+  {
+    "manifest": {
+      "capability_id": "notes.restore_reference",
+      "version": "1.0.0",
+      "kind": "solver",
+      "description": "Préparer la copie du témoin corrigé de la baseline fixe.",
+      "permissions": {"reads": ["bench://notes/reference"], "writes": ["bench://notes/scratch"], "network": []},
+      "risk_class": "R1",
+      "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+      "side_effects": "local-temporary"
+    },
+    "evaluation": {
+      "environment_id": "bench-notes",
+      "evidence": "docs/plans/phase0_status.md#rejeu-du-protocole-guidé-v1"
+    }
+  },
+  {
+    "manifest": {
+      "capability_id": "notes.verify",
+      "version": "1.0.0",
+      "kind": "verifier",
+      "description": "Vérifier les quatre tests et la persistance SQLite.",
+      "permissions": {
+        "reads": ["bench://notes/scratch"],
+        "writes": ["bench://notes/scratch"],
+        "execute": ["notes-validation"],
+        "network": []
+      },
+      "risk_class": "R1",
+      "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+      "side_effects": "local-temporary"
+    },
+    "evaluation": {
+      "environment_id": "bench-notes",
+      "evidence": "docs/plans/phase0_status.md#rejeu-du-protocole-guidé-v1"
+    }
+  },
+  {
+    "manifest": {
+      "capability_id": "notes.repair_rbitnet",
+      "version": "1.0.0",
+      "kind": "model",
+      "description": "Proposer save_note via Rbitnet CPU et appliquer le diff dans le bac.",
+      "permissions": {
+        "reads": ["bench://notes"],
+        "writes": ["bench://notes/scratch"],
+        "execute": ["notes-apply-diff"],
+        "network": []
+      },
+      "risk_class": "R1",
+      "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+      "side_effects": "local-temporary",
+      "resource_profile": {
+        "engine_id": "rbitnet",
+        "model_format": "GGUF",
+        "model_architecture": "qwen3",
+        "quantization": "Q4_K_M",
+        "devices": ["cpu"]
+      }
+    },
+    "evaluation": {
+      "environment_id": "bench-notes",
+      "evidence": "docs/plans/phase0_status.md#rejeu-du-protocole-guidé-v1"
+    }
+  },
+  {
+    "manifest": {
+      "capability_id": "notes.form_ocr",
+      "version": "1.0.0",
+      "kind": "model",
+      "description": "Observer le formulaire Notes par OCR dans le bac.",
+      "permissions": {"reads": ["bench://notes/capture"], "network": []},
+      "risk_class": "R0",
+      "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+      "side_effects": "none"
+    }
+  }
+]

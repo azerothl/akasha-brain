@@ -16,6 +16,7 @@ import shutil
 import socket
 import subprocess
 import sys
+from tempfile import TemporaryFile
 import textwrap
 import time
 from urllib import error, request
@@ -56,12 +57,17 @@ def file_hash(path: Path) -> str:
 
 
 def wsb(*args: str) -> dict:
-    result = subprocess.run(["wsb.exe", *args, "--raw"], capture_output=True, timeout=65,
-                            creationflags=subprocess.CREATE_NO_WINDOW)
-    stdout = result.stdout.decode("utf-8-sig", errors="replace")
+    # Le client démarré par Windows Sandbox peut hériter des flux de la CLI.
+    # Des fichiers évitent d'attendre la fermeture de tous les descendants.
+    with TemporaryFile() as out, TemporaryFile() as err:
+        result = subprocess.run(["wsb.exe", *args, "--raw"], stdout=out, stderr=err, timeout=65,
+                                creationflags=subprocess.CREATE_NO_WINDOW)
+        out.seek(0)
+        err.seek(0)
+        stdout = out.read().decode("utf-8-sig", errors="replace")
+        stderr = err.read().decode("utf-8", errors="replace")
     if result.returncode:
-        raise RuntimeError(f"wsb {args[0]} ({result.returncode}): {stdout} "
-                           f"{result.stderr.decode('utf-8', errors='replace')}")
+        raise RuntimeError(f"wsb {args[0]} ({result.returncode}): {stdout} {stderr}")
     return json.loads(stdout) if stdout.strip() else {}
 
 
@@ -154,7 +160,7 @@ def first_code_block(response: str) -> str:
     return textwrap.dedent(block.group(1) if block else response).strip("\r\n")
 
 
-def build_diff(source: str, output: str) -> str:
+def propose_change(source: str, output: str) -> tuple[str, str]:
     proposed = first_code_block(output)
     body = ast.parse(proposed).body
     method = method_of(source)
@@ -166,7 +172,12 @@ def build_diff(source: str, output: str) -> str:
     lines = source.splitlines(keepends=True)
     replacement = (textwrap.indent(proposed, "    ") + "\n").splitlines(keepends=True)
     updated = lines[:method.lineno - 1] + replacement + lines[method.end_lineno:]
-    return "".join(difflib.unified_diff(lines, updated, fromfile="a/notes_store.py", tofile="b/notes_store.py"))
+    diff = "".join(difflib.unified_diff(lines, updated, fromfile="a/notes_store.py", tofile="b/notes_store.py"))
+    return diff, "".join(updated)
+
+
+def build_diff(source: str, output: str) -> str:
+    return propose_change(source, output)[0]
 
 
 def apply_diff(work: Path, diff: str) -> None:

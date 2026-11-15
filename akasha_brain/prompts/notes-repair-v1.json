@@ -1,0 +1,6 @@
+{
+  "version": "notes-repair-v1",
+  "instructions": "/no_think\nReturn one fenced Python block containing the complete save_note method with its original signature. Execute one parameterized INSERT of title and content into notes and commit it. ",
+  "requirements": "Keep self._conn open for later saves and list_notes. The caller closes it. Replace the entire faulty body. Remove the fake ID allocation and the session-cache append. Return the inserted row's cursor.lastrowid. Use the docstring \"\"\"Enregistre la note dans SQLite et renvoie son identifiant.\"\"\"\n",
+  "sha256": "f551c6fe5cb4fe9fd1c951a88e47ceec98ef84bcd5ab8f1256714efa1f261f13"
+}
