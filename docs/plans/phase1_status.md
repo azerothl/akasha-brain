@@ -333,4 +333,107 @@ bureau.
 Les rapports se trouvent dans `phase1-notes-rbitnet-ocr-three-seeds/`,
 sous `seed-742/`, `seed-743/`, `seed-744/` et `baseline/`.
 
+## Journal ExperienceRecord et évolution synthétique
+
+Chaque exécution du graphe Notes enregistre un `ExperienceRecord` v1
+validé dans SQLite, avec versions de capacités, verdicts techniques,
+temps et codes d'erreur. Le journal partagé du mode `--evolution-db`
+sert aussi au registre des versions et à la chaîne de décisions.
+
+Sur l'objectif synthétique figé, le premier graphe actif est
+`notes-rbitnet@1.0.0`. La fin d'une tâche gérée déclenche un cycle
+en arrière-plan lorsque ce parent est actif. Le candidat
+`notes-rbitnet-ocr@1.0.0` conserve les contrôles du parent et ajoute
+la vérification RapidOCR et SQLite après relance. Les essais
+internes écrivent leurs expériences sans déclencher d'autre cycle.
+
+Les paliers replay, observation et exposition limitée utilisent
+chacun un bac neuf. Le parent reste actif jusqu'à la décision.
+L'activation exige les preuves des trois paliers, le même premier
+diff, les quatre tests, SQLite et l'observation bureau, ainsi que
+les contrôles d'isolation et d'autorisation. Le bail du registre
+limite la concurrence à une exécution. La durée du cycle candidat,
+le nombre d'essais, les pools CPU et le budget d'admission RAM de
+Rbitnet sont configurables. Le profil invité garde le GPU désactivé.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain run contracts/examples/goal_notes_regression.json `
+    --python-runtime $pythonPortable --output $dossierRapport `
+    --rbitnet $rbitnetExe $gguf $tokenizer --evolution-db $journal `
+    --evolution-wall-s 480 --evolution-max-trials 3 `
+    --evolution-cpu-threads 8 --evolution-model-ram-mb 8192
+.\.venv\Scripts\python.exe -m akasha_brain evolution status --db $journal
+.\.venv\Scripts\python.exe -m akasha_brain evolution rollback --db $journal
+```
+
+### Rejeu et retour arrière
+
+La tâche de référence a réussi en **83,070 s** et son
+`ExperienceRecord` a déclenché le cycle. Les trois premiers diffs
+ont la même empreinte que la référence. Chaque palier a passé les
+quatre tests, le vérificateur SQLite et le parcours bureau
+RapidOCR et SQLite après relance.
+
+| Palier | Verdict | Temps |
+| --- | --- | ---: |
+| Replay | Réussi | 111,978 s |
+| Observation | Réussi | 113,856 s |
+| Exposition limitée | Réussi | 111,074 s |
+| Total du cycle candidat | Promotion automatique | 336,953 s |
+
+Le cycle a consommé **3 essais sur 3** et **336,953 s sur 480 s**.
+Le bail a refusé un lancement concurrent avant création de son
+bac. Le raccord du plafond d'admission RAM a été corrigé après le
+démarrage du cycle. Le moteur avait estimé le chargement à
+5 021 827 072 octets pour chacun des essais. Avec le raccord corrigé,
+le graphe promu a réussi en **113,623 s** sous 8 192 Mio et la
+sonde à 1 024 Mio a obtenu un refus de chargement avec `/ready`
+en HTTP 503. Ce plafond porte sur l'estimation à l'admission.
+
+Le retour arrière a rétabli `notes-rbitnet@1.0.0`. La nouvelle
+tâche a effectivement utilisé ce parent et réussi en **82,024 s**.
+Elle a déclenché une demande d'évolution avec un budget de zéro
+essai. La demande est restée en attente avec
+`resource_budget_exceeded`, avant création d'un bac candidat.
+
+Le dossier de preuves `phase1-notes-evolution/` contient six rapports
+de bac et le registre SQLite `registry.db`. La relecture a validé
+les six enregistrements `ExperienceRecord` et la chaîne des onze
+événements de décision. La promotion porte sur la vérification
+supplémentaire du scénario synthétique figé.
+
+### Rejeu avec le plafond RAM corrigé
+
+Le registre SQLite repart d'un état neuf. Le plafond d'admission
+Rbitnet de **8 192 Mio** et les pools CPU configurés à **8 threads**
+s'appliquent dès la tâche de référence, aux trois essais candidats,
+puis aux tâches de contrôle après promotion et retour arrière.
+Les six lancements consignent `RBITNET_MAX_LOAD_BYTES=8589934592`.
+La sonde à **1 024 Mio** refuse le chargement et renvoie HTTP 503
+sur `/ready`.
+
+| Palier candidat | Verdict | Temps |
+| --- | --- | ---: |
+| Replay | Réussi | 113,759 s |
+| Observation | Réussi | 111,443 s |
+| Exposition limitée | Réussi | 111,118 s |
+| Total du cycle candidat | Promotion automatique | 336,360 s |
+
+Le cycle déclenché par la tâche de référence a passé **3 essais sur 3**
+en **336,360 s sur 480 s**. Le bail a refusé un lancement concurrent.
+Le premier diff correspond à la référence dans chaque bac. Les
+quatre tests et SQLite passent, puis RapidOCR et SQLite confirment
+la persistance après relance sur les trois essais candidats.
+
+Une nouvelle tâche utilise le graphe promu et réussit en **111,348 s**.
+Le retour arrière restaure `notes-rbitnet@1.0.0`, puis une tâche
+réussit avec ce parent en **88,416 s**. Elle déclenche une demande
+avec un budget de zéro essai. Le registre consigne
+`resource_budget_exceeded` et aucun bac candidat n'est créé.
+
+L'[export du journal et des résultats](../../bench/results/notes-evolution-ram-v1.json)
+contient les six `ExperienceRecord` et les onze événements chaînés.
+Le registre SQLite et les rapports bruts sont dans le dossier
+de preuves `phase1-notes-evolution-ram-frozen/`.
+
 [Plan de la phase 1](development-plan.md#phase-1--parcours-bureaucode-et-évolution-bornée-mvp)

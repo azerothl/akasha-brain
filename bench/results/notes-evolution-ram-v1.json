@@ -1,0 +1,737 @@
+{
+  "experience_schema": "akasha://schemas/ExperienceRecord/1.0.0",
+  "scope": "bench-notes",
+  "execution_date": "2026-11-15",
+  "cycle": {
+    "status": "promoted",
+    "id": "fc8879be-ee6f-43cc-8fcc-55a87e992f3d",
+    "wall_s": 336.36,
+    "trials": 3,
+    "budget": {
+      "cpu_threads": 8,
+      "max_trials": 3,
+      "model_ram_mb": 8192,
+      "wall_s": 480
+    },
+    "active_after_promotion": "notes-rbitnet-ocr",
+    "active_after_rollback": "notes-rbitnet",
+    "common_diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+  },
+  "controls": {
+    "ram_admission_denial": {
+      "status": "passed",
+      "ram_limit_mib": 1024,
+      "ready_http": 503,
+      "load_refused": true
+    },
+    "concurrent_launch": {
+      "error_code": "resource_budget_exceeded"
+    },
+    "zero_trial_budget": {
+      "status": "waiting",
+      "launched_trials": 0,
+      "reason": "resource_budget_exceeded"
+    }
+  },
+  "runs": {
+    "reference": {
+      "experience_record_id": "d3277f06-c977-412a-8dd2-13fa26fb2f13",
+      "sandbox_id": "d1e5b1df-cf90-4b4c-83ea-08d4f19dd276",
+      "graph_id": "notes-rbitnet",
+      "wall_s": 87.234,
+      "rbitnet_cpu_pools_threads": 8,
+      "rbitnet_max_load_bytes": 8589934592,
+      "rbitnet_estimated_load_bytes": 5021827072
+    },
+    "replay": {
+      "experience_record_id": "94a1a0ab-f35e-400d-acaf-5e7322989b02",
+      "sandbox_id": "286ffce4-e2e3-43c3-a0d2-ec70294372cf",
+      "graph_id": "notes-rbitnet-ocr",
+      "wall_s": 113.759,
+      "rbitnet_cpu_pools_threads": 8,
+      "rbitnet_max_load_bytes": 8589934592,
+      "rbitnet_estimated_load_bytes": 5021827072
+    },
+    "shadow": {
+      "experience_record_id": "9fa8d23b-cbe5-475d-b55b-877f016d4064",
+      "sandbox_id": "5bfe6b24-6547-4987-a4f6-119e16e7965a",
+      "graph_id": "notes-rbitnet-ocr",
+      "wall_s": 111.443,
+      "rbitnet_cpu_pools_threads": 8,
+      "rbitnet_max_load_bytes": 8589934592,
+      "rbitnet_estimated_load_bytes": 5021827072
+    },
+    "limited": {
+      "experience_record_id": "e1da8d9b-09a2-4238-977a-c1c18ffdf980",
+      "sandbox_id": "41fbed36-5c70-4d17-90dc-d629a9d39751",
+      "graph_id": "notes-rbitnet-ocr",
+      "wall_s": 111.118,
+      "rbitnet_cpu_pools_threads": 8,
+      "rbitnet_max_load_bytes": 8589934592,
+      "rbitnet_estimated_load_bytes": 5021827072
+    },
+    "after_promotion": {
+      "experience_record_id": "92a12f74-bbd4-419d-84ca-e41314778bf5",
+      "sandbox_id": "b46448c8-7601-4b2c-91ee-d87577f493ed",
+      "graph_id": "notes-rbitnet-ocr",
+      "wall_s": 111.348,
+      "rbitnet_cpu_pools_threads": 8,
+      "rbitnet_max_load_bytes": 8589934592,
+      "rbitnet_estimated_load_bytes": 5021827072
+    },
+    "after_rollback": {
+      "experience_record_id": "52d90bf8-1ac1-4ced-aefb-747809aff94b",
+      "sandbox_id": "75106e16-924a-453b-9098-36bec67357b6",
+      "graph_id": "notes-rbitnet",
+      "wall_s": 88.416,
+      "rbitnet_cpu_pools_threads": 8,
+      "rbitnet_max_load_bytes": 8589934592,
+      "rbitnet_estimated_load_bytes": 5021827072
+    }
+  },
+  "experiences": [
+    {
+      "graph_id": "notes-rbitnet",
+      "origin": "task",
+      "record": {
+        "record_id": "d3277f06-c977-412a-8dd2-13fa26fb2f13",
+        "goal_id": "123e4567-e89b-12d3-a456-426614174001",
+        "graph_version": "1.0.0",
+        "node_versions": [
+          {
+            "capability_id": "notes.locate",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.repair_rbitnet",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify",
+            "version": "1.0.0"
+          }
+        ],
+        "verification": {
+          "status": "pass",
+          "predicate_results": [
+            {
+              "id": "localize",
+              "status": "passed",
+              "wall_s": 12.086,
+              "result": {
+                "tests": 4,
+                "failures": 2,
+                "errors": 0,
+                "skips": 0,
+                "pytest_exit": 1
+              }
+            },
+            {
+              "id": "generate_diff",
+              "status": "passed",
+              "wall_s": 50.015,
+              "result": {
+                "diff_applied": true,
+                "git_apply_check": true,
+                "guest_sha256_verified": true
+              }
+            },
+            {
+              "id": "verify",
+              "status": "passed",
+              "wall_s": 5.31,
+              "result": {
+                "passed": 4,
+                "pytest_exit": 0,
+                "sqlite_verifier_exit": 0
+              }
+            }
+          ]
+        },
+        "cost": {
+          "wall_s": 87.234
+        },
+        "contains_user_content": false,
+        "created_at": "2026-11-15T14:07:58.383487+00:00"
+      }
+    },
+    {
+      "graph_id": "notes-rbitnet-ocr",
+      "origin": "replay",
+      "record": {
+        "record_id": "94a1a0ab-f35e-400d-acaf-5e7322989b02",
+        "goal_id": "123e4567-e89b-12d3-a456-426614174001",
+        "graph_version": "1.0.0",
+        "node_versions": [
+          {
+            "capability_id": "notes.locate",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.repair_rbitnet",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify_desktop",
+            "version": "1.0.0"
+          }
+        ],
+        "verification": {
+          "status": "pass",
+          "predicate_results": [
+            {
+              "id": "localize",
+              "status": "passed",
+              "wall_s": 12.052,
+              "result": {
+                "tests": 4,
+                "failures": 2,
+                "errors": 0,
+                "skips": 0,
+                "pytest_exit": 1
+              }
+            },
+            {
+              "id": "generate_diff",
+              "status": "passed",
+              "wall_s": 50.599,
+              "result": {
+                "diff_applied": true,
+                "git_apply_check": true,
+                "guest_sha256_verified": true
+              }
+            },
+            {
+              "id": "verify",
+              "status": "passed",
+              "wall_s": 5.275,
+              "result": {
+                "passed": 4,
+                "pytest_exit": 0,
+                "sqlite_verifier_exit": 0
+              }
+            },
+            {
+              "id": "verify_desktop",
+              "status": "passed",
+              "wall_s": 24.683,
+              "result": {
+                "guest_exit_code": 18207,
+                "desktop": {
+                  "ocr_save_button_used": true,
+                  "app_restarted": true,
+                  "ocr_note_selected_after_restart": true,
+                  "ocr_content_visible": true,
+                  "sqlite_exact_row": true
+                }
+              }
+            }
+          ]
+        },
+        "cost": {
+          "wall_s": 113.759
+        },
+        "contains_user_content": false,
+        "created_at": "2026-11-15T14:09:52.154139+00:00"
+      }
+    },
+    {
+      "graph_id": "notes-rbitnet-ocr",
+      "origin": "shadow",
+      "record": {
+        "record_id": "9fa8d23b-cbe5-475d-b55b-877f016d4064",
+        "goal_id": "123e4567-e89b-12d3-a456-426614174001",
+        "graph_version": "1.0.0",
+        "node_versions": [
+          {
+            "capability_id": "notes.locate",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.repair_rbitnet",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify_desktop",
+            "version": "1.0.0"
+          }
+        ],
+        "verification": {
+          "status": "pass",
+          "predicate_results": [
+            {
+              "id": "localize",
+              "status": "passed",
+              "wall_s": 11.794,
+              "result": {
+                "tests": 4,
+                "failures": 2,
+                "errors": 0,
+                "skips": 0,
+                "pytest_exit": 1
+              }
+            },
+            {
+              "id": "generate_diff",
+              "status": "passed",
+              "wall_s": 49.761,
+              "result": {
+                "diff_applied": true,
+                "git_apply_check": true,
+                "guest_sha256_verified": true
+              }
+            },
+            {
+              "id": "verify",
+              "status": "passed",
+              "wall_s": 5.143,
+              "result": {
+                "passed": 4,
+                "pytest_exit": 0,
+                "sqlite_verifier_exit": 0
+              }
+            },
+            {
+              "id": "verify_desktop",
+              "status": "passed",
+              "wall_s": 23.61,
+              "result": {
+                "guest_exit_code": 18207,
+                "desktop": {
+                  "ocr_save_button_used": true,
+                  "app_restarted": true,
+                  "ocr_note_selected_after_restart": true,
+                  "ocr_content_visible": true,
+                  "sqlite_exact_row": true
+                }
+              }
+            }
+          ]
+        },
+        "cost": {
+          "wall_s": 111.443
+        },
+        "contains_user_content": false,
+        "created_at": "2026-11-15T14:11:43.609656+00:00"
+      }
+    },
+    {
+      "graph_id": "notes-rbitnet-ocr",
+      "origin": "limited",
+      "record": {
+        "record_id": "e1da8d9b-09a2-4238-977a-c1c18ffdf980",
+        "goal_id": "123e4567-e89b-12d3-a456-426614174001",
+        "graph_version": "1.0.0",
+        "node_versions": [
+          {
+            "capability_id": "notes.locate",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.repair_rbitnet",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify_desktop",
+            "version": "1.0.0"
+          }
+        ],
+        "verification": {
+          "status": "pass",
+          "predicate_results": [
+            {
+              "id": "localize",
+              "status": "passed",
+              "wall_s": 12.078,
+              "result": {
+                "tests": 4,
+                "failures": 2,
+                "errors": 0,
+                "skips": 0,
+                "pytest_exit": 1
+              }
+            },
+            {
+              "id": "generate_diff",
+              "status": "passed",
+              "wall_s": 50.186,
+              "result": {
+                "diff_applied": true,
+                "git_apply_check": true,
+                "guest_sha256_verified": true
+              }
+            },
+            {
+              "id": "verify",
+              "status": "passed",
+              "wall_s": 5.171,
+              "result": {
+                "passed": 4,
+                "pytest_exit": 0,
+                "sqlite_verifier_exit": 0
+              }
+            },
+            {
+              "id": "verify_desktop",
+              "status": "passed",
+              "wall_s": 22.812,
+              "result": {
+                "guest_exit_code": 18207,
+                "desktop": {
+                  "ocr_save_button_used": true,
+                  "app_restarted": true,
+                  "ocr_note_selected_after_restart": true,
+                  "ocr_content_visible": true,
+                  "sqlite_exact_row": true
+                }
+              }
+            }
+          ]
+        },
+        "cost": {
+          "wall_s": 111.118
+        },
+        "contains_user_content": false,
+        "created_at": "2026-11-15T14:13:34.739315+00:00"
+      }
+    },
+    {
+      "graph_id": "notes-rbitnet-ocr",
+      "origin": "task",
+      "record": {
+        "record_id": "92a12f74-bbd4-419d-84ca-e41314778bf5",
+        "goal_id": "123e4567-e89b-12d3-a456-426614174001",
+        "graph_version": "1.0.0",
+        "node_versions": [
+          {
+            "capability_id": "notes.locate",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.repair_rbitnet",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify_desktop",
+            "version": "1.0.0"
+          }
+        ],
+        "verification": {
+          "status": "pass",
+          "predicate_results": [
+            {
+              "id": "localize",
+              "status": "passed",
+              "wall_s": 11.779,
+              "result": {
+                "tests": 4,
+                "failures": 2,
+                "errors": 0,
+                "skips": 0,
+                "pytest_exit": 1
+              }
+            },
+            {
+              "id": "generate_diff",
+              "status": "passed",
+              "wall_s": 50.144,
+              "result": {
+                "diff_applied": true,
+                "git_apply_check": true,
+                "guest_sha256_verified": true
+              }
+            },
+            {
+              "id": "verify",
+              "status": "passed",
+              "wall_s": 5.439,
+              "result": {
+                "passed": 4,
+                "pytest_exit": 0,
+                "sqlite_verifier_exit": 0
+              }
+            },
+            {
+              "id": "verify_desktop",
+              "status": "passed",
+              "wall_s": 23.597,
+              "result": {
+                "guest_exit_code": 18207,
+                "desktop": {
+                  "ocr_save_button_used": true,
+                  "app_restarted": true,
+                  "ocr_note_selected_after_restart": true,
+                  "ocr_content_visible": true,
+                  "sqlite_exact_row": true
+                }
+              }
+            }
+          ]
+        },
+        "cost": {
+          "wall_s": 111.348
+        },
+        "contains_user_content": false,
+        "created_at": "2026-11-15T14:15:26.781590+00:00"
+      }
+    },
+    {
+      "graph_id": "notes-rbitnet",
+      "origin": "task",
+      "record": {
+        "record_id": "52d90bf8-1ac1-4ced-aefb-747809aff94b",
+        "goal_id": "123e4567-e89b-12d3-a456-426614174001",
+        "graph_version": "1.0.0",
+        "node_versions": [
+          {
+            "capability_id": "notes.locate",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.repair_rbitnet",
+            "version": "1.0.0"
+          },
+          {
+            "capability_id": "notes.verify",
+            "version": "1.0.0"
+          }
+        ],
+        "verification": {
+          "status": "pass",
+          "predicate_results": [
+            {
+              "id": "localize",
+              "status": "passed",
+              "wall_s": 12.552,
+              "result": {
+                "tests": 4,
+                "failures": 2,
+                "errors": 0,
+                "skips": 0,
+                "pytest_exit": 1
+              }
+            },
+            {
+              "id": "generate_diff",
+              "status": "passed",
+              "wall_s": 50.607,
+              "result": {
+                "diff_applied": true,
+                "git_apply_check": true,
+                "guest_sha256_verified": true
+              }
+            },
+            {
+              "id": "verify",
+              "status": "passed",
+              "wall_s": 5.321,
+              "result": {
+                "passed": 4,
+                "pytest_exit": 0,
+                "sqlite_verifier_exit": 0
+              }
+            }
+          ]
+        },
+        "cost": {
+          "wall_s": 88.416
+        },
+        "contains_user_content": false,
+        "created_at": "2026-11-15T14:16:55.871267+00:00"
+      }
+    }
+  ],
+  "audit": [
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:07:58.390145+00:00",
+        "cycle_id": "fc8879be-ee6f-43cc-8fcc-55a87e992f3d",
+        "details": {
+          "budget": {
+            "cpu_threads": 8,
+            "max_trials": 3,
+            "model_ram_mb": 8192,
+            "wall_s": 480
+          },
+          "concurrency": 1,
+          "experience": "d3277f06-c977-412a-8dd2-13fa26fb2f13"
+        },
+        "event": "triggered",
+        "previous": null
+      },
+      "digest": "3f5682970fa97abc8db5fb24e680a86c6c30a47de3cbba06a685595f432c3b65"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:07:58.392143+00:00",
+        "cycle_id": "fc8879be-ee6f-43cc-8fcc-55a87e992f3d",
+        "details": {
+          "candidate": "notes-rbitnet-ocr",
+          "parent": "notes-rbitnet",
+          "stage": "replay"
+        },
+        "event": "trial_started",
+        "previous": "3f5682970fa97abc8db5fb24e680a86c6c30a47de3cbba06a685595f432c3b65"
+      },
+      "digest": "0ac3fd65d9549c1f6fe036e2ef8c7c4c8768acd5f2b791528ade82ca1a5e1d52"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:09:52.159145+00:00",
+        "cycle_id": "fc8879be-ee6f-43cc-8fcc-55a87e992f3d",
+        "details": {
+          "experience": "94a1a0ab-f35e-400d-acaf-5e7322989b02",
+          "fresh_sandbox": true,
+          "stage": "replay",
+          "verified": true,
+          "wall_s": 113.759
+        },
+        "event": "trial_finished",
+        "previous": "0ac3fd65d9549c1f6fe036e2ef8c7c4c8768acd5f2b791528ade82ca1a5e1d52"
+      },
+      "digest": "6783a638a410f53d84de8f1b10700c8fb421d45c52f687e969bfba40493707e5"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:09:52.162147+00:00",
+        "cycle_id": "fc8879be-ee6f-43cc-8fcc-55a87e992f3d",
+        "details": {
+          "candidate": "notes-rbitnet-ocr",
+          "parent": "notes-rbitnet",
+          "stage": "shadow"
+        },
+        "event": "trial_started",
+        "previous": "6783a638a410f53d84de8f1b10700c8fb421d45c52f687e969bfba40493707e5"
+      },
+      "digest": "2b7021fc499316d7c334f70021d6af5b142e7a85504b8004eb81359fa1a1ffa3"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:11:43.615898+00:00",
+        "cycle_id": "fc8879be-ee6f-43cc-8fcc-55a87e992f3d",
+        "details": {
+          "experience": "9fa8d23b-cbe5-475d-b55b-877f016d4064",
+          "fresh_sandbox": true,
+          "stage": "shadow",
+          "verified": true,
+          "wall_s": 111.443
+        },
+        "event": "trial_finished",
+        "previous": "2b7021fc499316d7c334f70021d6af5b142e7a85504b8004eb81359fa1a1ffa3"
+      },
+      "digest": "4b9fb0190bc5e2f3f9da200523813f7bbe9bf7be0c972af862f8b1ab27d48e7b"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:11:43.619898+00:00",
+        "cycle_id": "fc8879be-ee6f-43cc-8fcc-55a87e992f3d",
+        "details": {
+          "candidate": "notes-rbitnet-ocr",
+          "parent": "notes-rbitnet",
+          "stage": "limited"
+        },
+        "event": "trial_started",
+        "previous": "4b9fb0190bc5e2f3f9da200523813f7bbe9bf7be0c972af862f8b1ab27d48e7b"
+      },
+      "digest": "f06993f32b89fcfae06e849c535422e066a6f6df20279507fdc6d7e6f043a890"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:13:34.745337+00:00",
+        "cycle_id": "fc8879be-ee6f-43cc-8fcc-55a87e992f3d",
+        "details": {
+          "experience": "e1da8d9b-09a2-4238-977a-c1c18ffdf980",
+          "fresh_sandbox": true,
+          "stage": "limited",
+          "verified": true,
+          "wall_s": 111.118
+        },
+        "event": "trial_finished",
+        "previous": "f06993f32b89fcfae06e849c535422e066a6f6df20279507fdc6d7e6f043a890"
+      },
+      "digest": "093b8fa812c1571f10fe8fb8edad211d6c0b923689fa66ea7ba527842a816595"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:13:34.749337+00:00",
+        "cycle_id": "fc8879be-ee6f-43cc-8fcc-55a87e992f3d",
+        "details": {
+          "active": "notes-rbitnet-ocr",
+          "evidence": [
+            "94a1a0ab-f35e-400d-acaf-5e7322989b02",
+            "9fa8d23b-cbe5-475d-b55b-877f016d4064",
+            "e1da8d9b-09a2-4238-977a-c1c18ffdf980"
+          ],
+          "parent": "notes-rbitnet",
+          "reference": "d3277f06-c977-412a-8dd2-13fa26fb2f13"
+        },
+        "event": "activated",
+        "previous": "093b8fa812c1571f10fe8fb8edad211d6c0b923689fa66ea7ba527842a816595"
+      },
+      "digest": "916d7dcdbc186b7274a019c9176c7526308e03548043ac072edc1734f2db245a"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:15:27.121150+00:00",
+        "cycle_id": "d1209cca-0904-4c79-ac92-752a4836f873",
+        "details": {
+          "active": "notes-rbitnet",
+          "previous_active": "notes-rbitnet-ocr"
+        },
+        "event": "rolled_back",
+        "previous": "916d7dcdbc186b7274a019c9176c7526308e03548043ac072edc1734f2db245a"
+      },
+      "digest": "1c93c2ad6804820944ea3084dc475d64b0d4f40ca1b8ba514e097eb9d960404f"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:16:55.880791+00:00",
+        "cycle_id": "8c0bb618-d01e-4af6-be2c-aa4d403df6fd",
+        "details": {
+          "budget": {
+            "cpu_threads": 8,
+            "max_trials": 0,
+            "model_ram_mb": 8192,
+            "wall_s": 480
+          },
+          "concurrency": 1,
+          "experience": "52d90bf8-1ac1-4ced-aefb-747809aff94b"
+        },
+        "event": "triggered",
+        "previous": "1c93c2ad6804820944ea3084dc475d64b0d4f40ca1b8ba514e097eb9d960404f"
+      },
+      "digest": "dfcb1844636d0c5dabf6b43587f0ddd677b274f8212f933774605c6f0acf905e"
+    },
+    {
+      "entry": {
+        "created_at": "2026-11-15T14:16:55.885587+00:00",
+        "cycle_id": "8c0bb618-d01e-4af6-be2c-aa4d403df6fd",
+        "details": {
+          "cycle_id": "8c0bb618-d01e-4af6-be2c-aa4d403df6fd",
+          "reason": "resource_budget_exceeded",
+          "status": "waiting",
+          "wall_s": 0.0
+        },
+        "event": "waiting",
+        "previous": "dfcb1844636d0c5dabf6b43587f0ddd677b274f8212f933774605c6f0acf905e"
+      },
+      "digest": "f210808c8c85b7546cec64dda65117e6fa13645ca53c5672c952d49b8a08b20a"
+    }
+  ]
+}

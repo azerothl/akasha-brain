@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import ast
+from contextlib import contextmanager
+from contextvars import ContextVar
 import difflib
 import hashlib
 from importlib.metadata import version
@@ -50,6 +52,34 @@ CLOSED_CONNECTION_PROMPT = (
     "Output one fenced Python block containing the complete corrected method with the same signature.\n\n"
 )
 
+_deadline = ContextVar("notes_deadline", default=None)
+_model_limits = ContextVar("notes_model_limits", default=None)
+
+
+class ModelAdmissionBudgetExceeded(RuntimeError):
+    pass
+
+
+@contextmanager
+def execution_limits(deadline: float | None, cpu_threads: int | None = None, model_ram_mb: int | None = None):
+    clock_token = _deadline.set(deadline)
+    model_token = _model_limits.set((cpu_threads, model_ram_mb) if cpu_threads is not None else None)
+    try:
+        yield
+    finally:
+        _model_limits.reset(model_token)
+        _deadline.reset(clock_token)
+
+
+def bounded_timeout(timeout: float) -> float:
+    deadline = _deadline.get()
+    if deadline is None:
+        return timeout
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError("Budget de temps du banc Notes épuisé.")
+    return min(timeout, remaining)
+
 
 def file_hash(path: Path) -> str:
     with path.open("rb") as source:
@@ -60,7 +90,7 @@ def wsb(*args: str) -> dict:
     # Le client démarré par Windows Sandbox peut hériter des flux de la CLI.
     # Des fichiers évitent d'attendre la fermeture de tous les descendants.
     with TemporaryFile() as out, TemporaryFile() as err:
-        result = subprocess.run(["wsb.exe", *args, "--raw"], stdout=out, stderr=err, timeout=65,
+        result = subprocess.run(["wsb.exe", *args, "--raw"], stdout=out, stderr=err, timeout=bounded_timeout(65),
                                 creationflags=subprocess.CREATE_NO_WINDOW)
         out.seek(0)
         err.seek(0)
@@ -202,7 +232,7 @@ def infer(args, work: Path, prompt: str, seed: int) -> tuple[dict, float, float]
         payload = json.dumps(data).encode("utf-8") if data is not None else None
         req = request.Request(f"http://127.0.0.1:{port}{route}", data=payload,
                               headers={"Content-Type": "application/json"})
-        with http.open(req, timeout=timeout) as response:
+        with http.open(req, timeout=bounded_timeout(timeout)) as response:
             return response.read().decode("utf-8")
 
     config = work / "rbitnet.toml"
@@ -212,18 +242,33 @@ def infer(args, work: Path, prompt: str, seed: int) -> tuple[dict, float, float]
                RBITNET_MODEL=str(args.model), RBITNET_TOKENIZER=str(args.tokenizer),
                RBITNET_CONFIG=str(config), RBITNET_CHAT_FORMAT="chatml",
                RBITNET_REQUIRE_MODEL_MATCH="1", HF_HUB_OFFLINE="1", RUST_LOG="info")
+    if limits := _model_limits.get():
+        threads, memory = limits
+        env.update(RAYON_NUM_THREADS=str(threads), RBITNET_I2S_THREADS=str(threads),
+                   RBITNET_I2S_BATCH_THREADS=str(threads), RBITNET_MAX_LOAD_BYTES=str(memory * 1024 * 1024))
+    bounded_timeout(20)
     with (work / "rbitnet.log").open("wb") as log:
+        if limits:
+            settings = ("RAYON_NUM_THREADS", "RBITNET_I2S_THREADS", "RBITNET_I2S_BATCH_THREADS", "RBITNET_MAX_LOAD_BYTES")
+            line = " ".join(f"{key}={env[key]}" for key in settings) + "\n"
+            log.write(line.encode("ascii"))
+            log.flush()
         startup = time.perf_counter()
         process = subprocess.Popen([str(args.engine)], cwd=work, env=env, stdout=log,
                                    stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
         try:
             while process.poll() is None and time.perf_counter() - startup < 20:
+                bounded_timeout(2)
                 try:
                     call("/ready")
                     break
                 except (OSError, error.URLError):
                     time.sleep(0.2)
             else:
+                if limits and "exceeds RBITNET_MAX_LOAD_BYTES" in (work / "rbitnet.log").read_text(
+                    encoding="utf-8", errors="replace",
+                ):
+                    raise ModelAdmissionBudgetExceeded("Le chargement Rbitnet dépasse le budget RAM.")
                 raise RuntimeError("Rbitnet indisponible. Voir rbitnet.log.")
             startup_s = time.perf_counter() - startup
             model_id = json.loads(call("/v1/models"))["data"][0]["id"]

@@ -6,17 +6,19 @@ import json
 from pathlib import Path
 import secrets
 import shutil
+import sqlite3
 import subprocess
 from time import perf_counter
 from uuid import UUID, uuid4
 from xml.etree import ElementTree
 
 from bench.run_guided_repair import (
-    BENCH, MAX_TOKENS, SEEDS, TEMPERATURE, check_faulty, file_hash, guest_validate, method_text, prepare,
-    write_report, wsb,
+    BENCH, MAX_TOKENS, SEEDS, TEMPERATURE, ModelAdmissionBudgetExceeded, check_faulty, execution_limits, file_hash,
+    guest_validate, method_text, prepare, write_report, wsb,
 )
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
+from .experience import record_experience
 from .notes_desktop import desktop_patch_matches, load_desktop_protocol, prepare_desktop, verify_desktop
 from .notes_repair import RbitnetPaths, generate_patch, load_repair_prompt, retry_prompt, stage_git
 from .notes_sandbox import (
@@ -64,7 +66,8 @@ def decode_validation(code: int) -> dict:
 
 
 def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: RbitnetPaths | None = None,
-              *, first_diff_seed: int | None = None, rapidocr: bool = False) -> dict:
+              *, first_diff_seed: int | None = None, rapidocr: bool = False,
+              experience_db: Path | None = None, origin: str = "task") -> dict:
     plan = compile_goal(goal, catalog, rbitnet=repair is not None, rapidocr=rapidocr)
     # Le script bureau figé cible la copie préparée par le premier diff.
     if rapidocr and first_diff_seed is None:
@@ -236,20 +239,37 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
     except PlanningError as exc:
         report["status"] = "failed"
         report["error"] = exc.error.as_dict()
+    except ModelAdmissionBudgetExceeded as exc:
+        report["status"] = "failed"
+        report["error"] = AkashaError(ErrorCode.RESOURCE_BUDGET_EXCEEDED, str(exc)).as_dict()
+    except (TimeoutError, subprocess.TimeoutExpired) as exc:
+        report["status"] = "failed"
+        report["error"] = AkashaError(ErrorCode.TIMEOUT_EXCEEDED, str(exc)).as_dict()
     except (OSError, RuntimeError, ValueError, KeyError, ElementTree.ParseError, subprocess.SubprocessError) as exc:
         report["status"] = "failed"
         report["error"] = AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, str(exc)).as_dict()
     finally:
         if sandbox_id:
             try:
-                if sandbox_id in active_sandboxes():
-                    wsb("stop", "--id", sandbox_id)
-                report["sandbox_stopped"] = sandbox_id not in active_sandboxes()
+                with execution_limits(None):
+                    if sandbox_id in active_sandboxes():
+                        wsb("stop", "--id", sandbox_id)
+                    report["sandbox_stopped"] = sandbox_id not in active_sandboxes()
                 if not report["sandbox_stopped"]:
                     raise RuntimeError("L'arrêt du bac dédié n'est pas confirmé.")
             except (OSError, RuntimeError, ValueError, KeyError, subprocess.TimeoutExpired) as exc:
                 report["status"] = "failed"
                 report["cleanup_error"] = str(exc)
         report["wall_s"] = round(perf_counter() - wall, 3)
+        try:
+            report["experience_record_id"] = record_experience(
+                experience_db if experience_db is not None else output / "experiences.db", report, origin,
+            )
+        except (OSError, sqlite3.Error, PlanningError) as exc:
+            report["status"] = "failed"
+            report["error"] = AkashaError(
+                ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Écriture du journal ExperienceRecord impossible.",
+                {"reason": str(exc)},
+            ).as_dict()
         write_report(output, report)
     return report
