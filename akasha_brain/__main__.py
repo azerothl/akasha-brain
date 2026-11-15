@@ -6,6 +6,7 @@ from pathlib import Path
 
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
+from .notes_desktop import run_desktop
 from .notes_repair import RbitnetPaths
 from .notes_runtime import run_notes
 from .planning import PlanningError, compile_goal, load_catalog
@@ -26,6 +27,11 @@ def main() -> int:
                             help="Utiliser les artefacts Rbitnet CPU du protocole évalué")
     run_parser.add_argument("--first-diff-seed", type=int,
                             help="Évaluer le premier diff Rbitnet avec cette graine")
+    desktop = subcommands.add_parser("run-desktop", help="Vérifier Notes avec RapidOCR dans le bac")
+    desktop.add_argument("goal", type=Path, help="Fichier JSON GoalSpec")
+    desktop.add_argument("--python-runtime", required=True, type=Path, help="Python portable du banc")
+    desktop.add_argument("--output", required=True, type=Path, help="Nouveau dossier de rapport")
+    desktop.add_argument("--diff", required=True, type=Path, help="Diff Rbitnet Notes validé")
     args = cli.parse_args()
     if args.command == "run" and args.first_diff_seed is not None:
         if not args.rbitnet or args.first_diff_seed < 0:
@@ -49,6 +55,8 @@ def main() -> int:
                 engine = RbitnetPaths(*(path.resolve() for path in args.rbitnet)) if args.rbitnet else None
                 result = run_notes(goal, catalog, args.python_runtime.resolve(), args.output.resolve(), engine,
                                    first_diff_seed=args.first_diff_seed)
+            elif args.command == "run-desktop":
+                result = run_desktop(goal, catalog, args.python_runtime.resolve(), args.output.resolve(), args.diff.resolve())
             else:
                 result = compile_goal(goal, catalog, rbitnet=args.rbitnet)
     except (OSError, UnicodeError, json.JSONDecodeError):
@@ -60,7 +68,7 @@ def main() -> int:
         return 1
 
     print(json.dumps(result, ensure_ascii=True, indent=2))
-    return 1 if args.command == "run" and result["status"] == "failed" else 0
+    return 1 if args.command in {"run", "run-desktop"} and result["status"] == "failed" else 0
 
 
 if __name__ == "__main__":

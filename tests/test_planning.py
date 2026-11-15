@@ -24,7 +24,7 @@ def test_compile_notes_baseline_pins_capabilities_and_validation(goal):
         ("verify", "1.0.0", ["prepare_reference"]),
     ]
     assert graph["expected_validation"] == {"tests_passed": 4, "verifier": "sqlite_persistence"}
-    assert "evaluation" not in catalog["notes.form_ocr", "1.0.0"]
+    assert all(step["capability_id"] != "notes.form_ocr" for step in graph["steps"])
 
 
 @pytest.mark.parametrize("override,error", [

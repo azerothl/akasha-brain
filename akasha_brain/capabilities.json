@@ -94,7 +94,17 @@
       "permissions": {"reads": ["bench://notes/capture"], "network": []},
       "risk_class": "R0",
       "sandbox": {"tier": "windows-sandbox", "network_egress": false},
-      "side_effects": "none"
+      "side_effects": "none",
+      "resource_profile": {
+        "engine_id": "rapidocr-onnxruntime",
+        "engine_version": "1.4.4",
+        "model_format": "ONNX",
+        "devices": ["cpu"]
+      }
+    },
+    "evaluation": {
+      "environment_id": "bench-notes",
+      "evidence": "docs/plans/phase1_status.md#parcours-bureau-notes-avec-rapidocr"
     }
   }
 ]

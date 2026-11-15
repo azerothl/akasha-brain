@@ -1,0 +1,58 @@
+{
+  "version": "notes-desktop-ocr-v2",
+  "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+  "patched_store_sha256": "96bf40038c48d9572c747b45081957e2c97cb6be58ad8ebd9a82a9933d253eaf",
+  "ocr": {
+    "packages": {
+      "rapidocr-onnxruntime": "1.4.4",
+      "onnxruntime": "1.32.0",
+      "pillow": "13.0.0",
+      "numpy": "2.5.4",
+      "opencv-python": "5.0.0.93",
+      "PyYAML": "6.0.3",
+      "shapely": "2.2.0",
+      "six": "1.17.0",
+      "flatbuffers": "25.12.19",
+      "protobuf": "7.36.2",
+      "pyclipper": "1.4.0",
+      "tqdm": "4.70.1",
+      "colorama": "0.4.6",
+      "packaging": "26.3"
+    },
+    "model_sha256": {
+      "ch_PP-OCRv4_det_infer.onnx": "d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9",
+      "ch_PP-OCRv4_rec_infer.onnx": "48fc40f24f6d2a207a2b1091d3437eb3cc3eb6b676dc3ef9c37384005483683b",
+      "ch_ppocr_mobile_v2.0_cls_infer.onnx": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c"
+    },
+    "native_dependencies": {
+      "msvcp140.dll": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca",
+      "msvcp140_1.dll": "206c931bf90fdad8816de3b5e2ef80b2bcaa9406c89ecc05fe6fddffe251e982",
+      "vcruntime140.dll": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7",
+      "vcruntime140_1.dll": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e"
+    }
+  },
+  "git": {
+    "version": "git version 2.49.0.windows.1",
+    "sha256": "fe0e064c8283dc50b1ce11a8b90d2ec1b68b5dc714ff0b8a8534bb9c43d1d02e"
+  },
+  "python_sha256": {
+    "python.exe": "6965927a96b81d1717c1d2186de7feb9b29ebf8775464020ebc2f25de6ef8ee0",
+    "pythonw.exe": "32b3eeadb9db85661a10160de22d059b10b8ffef6bf0823dfdd89a6a1292a417",
+    "python312.dll": "d5c15f80afcd0679cfe6c82e80fcd30469bc7a54a6d466e161a10a9a57e7e479",
+    "sqlite3.dll": "0ca33a3cdbd4f54084e64e8ca71ae986f6d738a20d38400470011cd794ec9c02",
+    "tcl86t.dll": "aaa0445afe3ab50b473e546b4ab3df4557c4d2a24a4b497bba84ac1cf0934c63",
+    "tk86t.dll": "a834c088405f485d50e4c0f03421941efdea728dd54ffeee5c06d7d367c0a632"
+  },
+  "inputs_sha256": {
+    "notes_ocr_guest.py": "e5e6d3e1d1a2ea6575c13ece7212a39956fe4d248ff945499886a2a302c62c27",
+    "run_notes_ocr.ps1": "a2d6fbcaa37253bad4f9747ce779921d6940249c508e2c6b6167fdaa296717a5",
+    "read_notes_ocr_error.ps1": "73ac5ecf971f08812c777674e9f2786a5408115418be925dac6b57fd14e01718",
+    "measure_ocr.py": "2856c6214b1594f923670cdb52670449e1c14015236f04c2a1b1792c9ba37874",
+    "validate_guided_notes.ps1": "add3aa4023b880132f169ddcceb4e42bd3830682bd284a7872afb00dbb65fceb",
+    "probe_notes_isolation.ps1": "43ca6674cf7af18fc8ed9d0d6b4f6796c500f155f26382459a92a26ecd85d8cd",
+    "probe_guest_channels.ps1": "0e3b749c11b3bce3ef7da7ec62d71ee2c2cbd51cb6e06c88c9e88c5ce0c63f14",
+    "notes_app.py": "d5b3e7e52210116da488e5d99f24d33b7acc2c263e7e0bfdd17293a8a4086e34",
+    "control/notes_store.py": "99894514297f9e740c07c385e9b0fad0463be4ff07ea1a49fe5e95163d62c131",
+    "akasha-bench.wsb": "3ce64b6a621173c9d1be53fb0f6a1d732634ba2648aebfdd7ca5da3d1494ee4a"
+  }
+}

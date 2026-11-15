@@ -9,8 +9,8 @@ dans Windows Sandbox pendant la phase 0.
 
 Le [registre initial](../../akasha_brain/capabilities.json) épingle
 les capacités par identifiant et version. Un relevé d'évaluation lie
-la capacité au banc vérifié. L'OCR du formulaire est déclaré dans
-le registre en attendant son évaluation sur le parcours Notes.
+la capacité au banc vérifié. L'OCR du formulaire est évalué sur
+le parcours bureau Notes décrit ci-dessous.
 
 Le compilateur valide le `GoalSpec`, les manifestes, la portée du
 banc et les permissions déclarées. Il associe les étapes de localisation,
@@ -31,7 +31,7 @@ Depuis la racine avec la venv du projet.
 ```
 
 Le lancement initial a compilé les trois étapes et refusé le
-`GoalSpec` de transfert. Les **61 tests** du parcours et des
+`GoalSpec` de transfert. Les **63 tests** du parcours et des
 contrats passent.
 
 ## Exécution dans Windows Sandbox
@@ -201,5 +201,74 @@ soit **45,085 s de plus** et **2,24 fois** le temps de la baseline.
 
 Les preuves sont dans `phase1-rbitnet-notes-frozen/` sous
 `seed-742/`, `seed-743/`, `seed-744/` et `baseline/`.
+
+## Parcours bureau Notes avec RapidOCR
+
+Le parcours `run-desktop` démarre un bac neuf sous le profil durci
+et applique le diff Rbitnet validé sur une copie jetable. Il vérifie
+l'empreinte du diff et celle du fichier appliqué. Les roues Python
+installées localement sont copiées avec leurs modèles ONNX. Le
+chargement d'ONNX Runtime a demandé `MSVCP140_1.dll`. Les DLL
+Visual C++ locales sont copiées dans le runtime jetable du bac.
+Le rapport conserve leurs empreintes et celles des modèles.
+
+Le script saisit `Note Akasha` et `Contenu durable` avec le focus
+UIA vérifié. RapidOCR 1.4.4 sur ONNX Runtime 1.32.0 détecte le bouton
+Enregistrer à partir de pixels de la fenêtre Notes. La commande
+de clic vérifie le PID avant d'agir. Les sessions de détection,
+classement et reconnaissance utilisent `CPUExecutionProvider`.
+
+Le processus Notes se ferme, puis un nouveau processus ouvre la même
+base. L'OCR retrouve la note dans la liste, la sélectionne et reconnaît
+le contenu réaffiché. Une lecture SQLite séparée, en lecture seule,
+confirme exactement une ligne avec un identifiant positif, le titre et
+le contenu attendus. Le premier essai concluant a pris `47,970 s`
+de bout en bout, avec le code invité `0x471F` et les contrôles du
+montage et des canaux réussis. Le rapport se trouve dans
+`phase1-notes-ocr/run-3/report.json` dans le dossier de preuves.
+
+### Protocole figé
+
+Le [manifeste v2](../../akasha_brain/protocols/notes-desktop-ocr-v2.json)
+fixe le diff de la graine 742, le fichier réparé, le profil Windows Sandbox,
+les sources du parcours, les versions des paquets OCR et les empreintes des
+modèles ONNX ainsi que des principaux binaires. Le lanceur vérifie les
+entrées avant de démarrer chaque bac et consigne l'empreinte du manifeste
+dans le rapport.
+
+La première série a révélé deux pertes de focus avant l'enregistrement.
+Le parcours v2 tente de rendre le focus à la fenêtre du processus Notes si
+elle le perd pendant la saisie. L'envoi de touches exige toujours que la
+fenêtre de premier plan et l'élément UIA actif appartiennent à ce processus.
+
+Pour rejouer, fournir comme `$diffNotes` le fichier
+`phase1-rbitnet-notes-frozen/seed-742/rbitnet-1/proposal.diff` du dossier de
+preuves, le Python portable du banc et un dossier de résultats neuf.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain run-desktop contracts/examples/goal_notes_regression.json `
+    --python-runtime $pythonPortable --diff $diffNotes --output $dossierRapport
+```
+
+### Trois rejeux en bacs neufs
+
+Les trois rapports attestent la même empreinte du manifeste, trois bacs
+distincts et leur arrêt. Pour chaque rejeu, le diff s'applique et le code
+invité `0x471F` confirme le clic sur Enregistrer, le redémarrage de Notes,
+la sélection de la note et la reconnaissance de son contenu par RapidOCR,
+ainsi que la lecture SQLite indépendante.
+
+| Rejeu | OCR après redémarrage | Ligne exacte dans SQLite | Temps total |
+| --- | --- | --- | ---: |
+| 1 | Réussi | Confirmée | 50,748 s |
+| 2 | Réussi | Confirmée | 49,871 s |
+| 3 | Réussi | Confirmée | 49,240 s |
+
+Le temps couvre la préparation des entrées, le démarrage du bac, le
+parcours et la confirmation de l'arrêt du bac. Les rapports se trouvent
+dans `phase1-notes-ocr-frozen-v2-validation/run-1/`, `run-2/` et `run-3/`
+sous le dossier de preuves. La série initiale est conservée dans
+`phase1-notes-ocr-frozen/`. Les rejeux 1 et 3 s'étaient arrêtés avant
+l'enregistrement (code 22) et le rejeu 2 avait réussi en 49,060 s.
 
 [Plan de la phase 1](development-plan.md#phase-1--parcours-bureaucode-et-évolution-bornée-mvp)
