@@ -1,0 +1,147 @@
+{
+  "protocol": "project-data-v1",
+  "scope": "disposable-projects",
+  "consent": {
+    "missing": {
+      "status": "refused",
+      "reason": "consent_missing"
+    },
+    "in_scope": {
+      "status": "allowed"
+    },
+    "different_project": {
+      "status": "refused",
+      "reason": "consent_scope_mismatch"
+    },
+    "different_category": {
+      "status": "refused",
+      "reason": "consent_scope_mismatch"
+    },
+    "reserved_transfer": {
+      "status": "refused",
+      "reason": "data_excluded"
+    },
+    "secret": {
+      "status": "refused",
+      "reason": "data_excluded"
+    },
+    "revocation": {
+      "status": "revoked"
+    },
+    "after_revocation": {
+      "status": "refused",
+      "reason": "consent_revoked"
+    }
+  },
+  "collection": {
+    "checks": {
+      "prepare": {
+        "status": "awaiting_approval"
+      },
+      "without_consent": {
+        "status": "refused",
+        "reason": "consent_missing"
+      },
+      "collect_wrong_category": {
+        "status": "refused",
+        "reason": "consent_scope_mismatch"
+      },
+      "collected": {
+        "status": "collected"
+      },
+      "reuse_wrong_project": {
+        "status": "refused",
+        "reason": "consent_scope_mismatch"
+      },
+      "reuse_wrong_category": {
+        "status": "refused",
+        "reason": "consent_scope_mismatch"
+      },
+      "reuse": {
+        "status": "reused"
+      },
+      "revoke": {
+        "status": "revoked"
+      },
+      "reuse_after_revocation": {
+        "status": "refused",
+        "reason": "consent_revoked"
+      },
+      "collect_after_revocation": {
+        "status": "refused",
+        "reason": "consent_revoked"
+      }
+    },
+    "replay": {
+      "wall_s": 22.954,
+      "guest_exit_code": 18176
+    },
+    "collected_samples": 1,
+    "original_projects_unchanged": true,
+    "separate_content_store": true
+  },
+  "erasure": {
+    "replays": {
+      "source_code": {
+        "wall_s": 20.975,
+        "guest_exit_code": 18176
+      },
+      "diffs": {
+        "wall_s": 22.251,
+        "guest_exit_code": 18176
+      }
+    },
+    "blocked_while_pending": {
+      "source_code": {
+        "status": "refused",
+        "reason": "content_erasure_requested"
+      },
+      "diffs": {
+        "status": "refused",
+        "reason": "content_erasure_requested"
+      }
+    },
+    "copies_erased": 2,
+    "reports_removed": 2,
+    "remaining_managed_copies": 0,
+    "remaining_registered_reports": 0,
+    "canary_absent_from_evolution_store": true,
+    "original_project_unchanged": true
+  },
+  "backup": {
+    "without_backup_approval": {
+      "status": "refused",
+      "reason": "backup_consent_missing"
+    },
+    "evolution_approval_only": {
+      "status": "refused",
+      "reason": "backup_consent_missing"
+    },
+    "archive": {
+      "copies": 3,
+      "reports": 2,
+      "cipher": "AES-256-GCM",
+      "key_protection": "DPAPI CurrentUser"
+    },
+    "stale_registry": {
+      "status": "refused",
+      "reason": "ledger_unverified"
+    },
+    "restore": {
+      "copies_restored": 1,
+      "reports_restored": 1,
+      "skipped_erased": 2,
+      "skipped_inactive": 0
+    },
+    "witness": {
+      "wall_s": 21.792,
+      "guest_exit_code": 18176
+    },
+    "archive_unchanged": true,
+    "archive_ciphertext_checked": true,
+    "erased_object_keys_absent": true,
+    "managed_store_emptied_before_restore": true,
+    "original_project_unchanged": true,
+    "only_admissible_source_and_report_restored": true
+  }
+}

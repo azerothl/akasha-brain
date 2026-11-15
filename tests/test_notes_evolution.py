@@ -6,6 +6,7 @@ from uuid import uuid4
 import pytest
 
 from akasha_brain import notes_evolution
+from akasha_brain.evolution_consent import ReuseScope, grant, revoke
 from akasha_brain.experience import record_experience, transaction
 from akasha_brain.notes_evolution import (
     CANDIDATE, GOAL_FILE, PARENT, STAGES, EvolutionBudget, evolve, evolution_status, initialize, lease, rollback,
@@ -116,3 +117,52 @@ def test_evolution_retains_parent_after_a_failed_promotion_gate(tmp_path, monkey
     result = evolve(path, "test", EvolutionBudget(30, 3, 2, 8192), reference, trial)
     assert result["reason"] == reason
     assert evolution_status(path)["active"] == PARENT
+
+
+@pytest.mark.parametrize("revoke_at,expected_stages", [
+    ("pending", ()), ("running", ("replay",)), ("promotion", STAGES),
+])
+def test_revocation_blocks_reuse_at_safe_points(tmp_path, monkeypatch, revoke_at, expected_stages):
+    catalog = load_catalog()
+    path = tmp_path / "journal.db"
+    goal = initialize(path, catalog)
+    consent_id = grant(path, "project-a", ["source_code"])["consent_id"]
+    scope = ReuseScope("project-a", "source_code", consent_id, "project", False)
+    reference = report_for(compile_goal(goal, catalog, rbitnet=True))
+    reference["experience_record_id"] = record_experience(path, reference, "task")
+    stages = []
+    last_finished = False
+    audit = notes_evolution.audit
+
+    def observe_audit(db, cycle, event, details):
+        nonlocal last_finished
+        audit(db, cycle, event, details)
+        if event == "trial_finished" and details["stage"] == STAGES[-1]:
+            last_finished = True
+
+    def clock():
+        nonlocal last_finished
+        if revoke_at == "promotion" and last_finished:
+            last_finished = False
+            revoke(path, consent_id)
+        return 100
+
+    def trial(stage):
+        stages.append(stage)
+        if revoke_at == "running":
+            revoke(path, consent_id)
+        result = report_for(compile_goal(goal, catalog, rbitnet=True, rapidocr=True))
+        result["experience_record_id"] = record_experience(path, result, stage)
+        return result
+
+    monkeypatch.setattr(notes_evolution, "audit", observe_audit)
+    monkeypatch.setattr(notes_evolution, "monotonic", clock)
+    if revoke_at == "pending":
+        revoke(path, consent_id)
+    result = evolve(path, "test", EvolutionBudget(30, 3, 2, 8192), reference, trial, reuse=(scope,))
+    assert result["status"] == "retained"
+    assert result["reason"] == "consent_revoked"
+    assert tuple(stages) == expected_stages
+    state = evolution_status(path)
+    assert state["active"] == PARENT
+    assert all(item["entry"]["event"] != "activated" for item in state["events"])

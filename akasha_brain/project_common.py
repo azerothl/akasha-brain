@@ -1,6 +1,7 @@
 """Primitives partagées par le parcours projet et son résolveur."""
 
 from hashlib import sha256
+import json
 from pathlib import Path
 import stat
 from typing import NoReturn
@@ -27,3 +28,9 @@ def identity(project: Path) -> dict:
     if not stat.S_ISDIR(info.st_mode):
         reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le projet doit être un dossier.")
     return {"path": str(project), "device": info.st_dev, "inode": info.st_ino}
+
+
+def project_scope(project: Path) -> str:
+    """Identifiant d'accord lié au dossier effectivement ouvert."""
+    record = identity(project.resolve(strict=True))
+    return "local-project:" + digest(json.dumps(record, sort_keys=True).encode("utf-8"))

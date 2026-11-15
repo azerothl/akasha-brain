@@ -566,4 +566,177 @@ sous `phase1-project-dependency-approval/` dans le dossier de preuves.
 Les [résultats consolidés du parcours projet](../../bench/results/local-project-v1.json)
 reprennent les contrôles d'approbation, d'obsolescence et d'installation.
 
+## Consentement pour l'évolution locale
+
+Le registre SQLite conserve chaque accord `EvolutionConsent` avec son
+identifiant, le projet, les catégories autorisées et son état de
+révocation. Sa finalité est `local_evolution`. Les équipes qui intègrent
+une source lient son identifiant de projet et sa catégorie à l'accord
+exact. Un dérivé doit présenter chacune des sources dont il dépend.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.evolution_consent --db $registre grant `
+    --project $projet --category source_code
+.\.venv\Scripts\python.exe -m akasha_brain.evolution_consent --db $registre check `
+    --project $projet --category source_code --provenance project --consent $accord
+.\.venv\Scripts\python.exe -m akasha_brain.evolution_consent --db $registre revoke --consent $accord
+.\.venv\Scripts\python.exe -m akasha_brain.evolution_consent --db $registre status
+```
+
+La CLI vérifie les métadonnées déclarées. Le contrôle runtime refuse les
+sources de provenance inconnue, les secrets ou un état de sensibilité
+indéterminé et les variantes de transfert. L'accord peut porter une
+échéance. La révocation persiste après réouverture du registre. Un nouvel
+accord reçoit son propre identifiant et les travaux liés à l'ancien
+accord restent refusés.
+
+| Contrôle sur le registre de test | Verdict |
+| --- | --- |
+| Absence d'accord | `consent_missing` |
+| Projet et catégorie approuvés | Autorisé |
+| Autre projet ou autre catégorie | `consent_scope_mismatch` |
+| Secret déclaré ou variante de transfert | `data_excluded` |
+| Accord révoqué | `consent_revoked` |
+
+Le moteur d'évolution vérifie les accords transmis au début et à la fin
+des essais, puis dans la transaction de promotion. Les tests pilotent
+des cycles avec des résultats d'essai simulés. La révocation empêche le
+démarrage d'un essai en attente, arrête le cycle en cours à la fin de
+l'essai démarré et empêche la promotion après la dernière preuve. Le
+graphe parent reste actif dans les trois cas. Le rapport CLI est sous
+`phase1-evolution-consent/report.json` dans le dossier de preuves.
+
+## Collecte et rejeu du parcours projet local
+
+Une proposition de remplacement validée dans Windows Sandbox permet de
+sélectionner deux catégories de collecte. `source_code` désigne le code
+de remplacement et `diffs` le diff de la proposition. L'accord créé via
+`--project-root` est lié à l'identité du dossier local. La collecte exige
+le consentement de la catégorie choisie et l'empreinte de la proposition
+examinée et déclarée sans secrets. Elle contrôle l'empreinte de l'artefact
+avant de le copier dans une base mutable distincte du registre d'évolution.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.evolution_consent --db $registre grant `
+    --project-root $projet --category source_code
+.\.venv\Scripts\python.exe -m akasha_brain.project collect `
+    --project $projet --proposal $proposition --evolution-db $registre `
+    --category source_code --consent $accord --reviewed-without-secrets $empreinteProposition
+.\.venv\Scripts\python.exe -m akasha_brain.project reuse `
+    --project $projet --evolution-db $registre --sample $copie --category source_code `
+    --python-runtime $pythonPortable --output $rapport
+```
+
+Le rejeu vérifie le projet, la catégorie, l'accord et l'échéance avant
+d'accéder à la copie. Il refait les contrôles du projet et du consentement
+avant l'essai isolé, puis vérifie le consentement après l'arrêt du bac.
+Le contenu du rejeu est temporaire et seul un rapport technique est
+publié. L'échéance de la copie est fixée à 30 jours. La révocation bloque
+la lecture et la collecte. L'effacement de la copie suit une demande
+distincte.
+
+| Sur les deux copies jetables de Notes | Verdict |
+| --- | --- |
+| Préparation normale | Diff validé en 23,919 s, aucune copie d'évolution créée |
+| Collecte sans accord | `consent_missing` |
+| Collecte `diffs` avec un accord `source_code` | `consent_scope_mismatch` |
+| Collecte `source_code` autorisée | Un artefact copié dans la base de contenus |
+| Rejeu depuis l'autre projet ou sous une autre catégorie | `consent_scope_mismatch`, aucun bac démarré |
+| Rejeu dans le périmètre | Tests Notes et SQLite réussis en 22,954 s |
+| Nouvelle collecte et nouvelle tentative de rejeu après révocation | `consent_revoked` |
+
+Les fichiers des deux projets gardent leurs empreintes. Le rapport est
+sous `phase1-project-evolution-data/report.json` dans le dossier de
+preuves. Ce premier essai en bac portait sur `source_code`.
+
+## Effacement des copies d'évolution du parcours projet
+
+`project erase` enregistre une demande dans le registre de consentement
+avant la suppression. Le marqueur porte l'identifiant opaque de la
+demande, ceux des copies visées, l'heure et l'état. Dès son enregistrement,
+les rejeux sont bloqués. Pour les propositions dont l'identifiant de
+source est enregistré, une nouvelle collecte est également bloquée.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.project erase `
+    --project $projet --evolution-db $registre --sample $copie
+```
+
+La demande regroupe les copies d'une même proposition. Le lanceur
+supprime les rapports techniques inscrits à l'inventaire, puis les
+contenus SQLite avec `secure_delete`. Si un rejeu est encore actif,
+l'effacement est repris à son point sûr. Si un rapport a été remplacé
+ou que son emplacement est inaccessible, la demande reste en attente
+et conserve le blocage. Une nouvelle invocation reprend la même demande.
+
+Sur une copie jetable de Notes, `source_code` et `diffs` ont chacun été
+collectés puis rejoués dans Windows Sandbox. L'essai a enregistré la
+demande et mesuré le blocage avant le nettoyage, pour distinguer ces deux
+étapes.
+
+| Vérification | Résultat |
+| --- | --- |
+| Demande enregistrée, copies encore présentes | Deux rejeux et une nouvelle collecte refusés |
+| Traitement de la demande | Deux copies SQLite et deux rapports enregistrés supprimés |
+| Contrôle après traitement | Aucune entrée ni aucun rapport restant pour la demande, témoin absent des fichiers SQLite de l'évolution |
+| Nouvelle invocation par l'identifiant de la copie `diffs` | Même demande, état `erased` |
+| Fichiers d'origine et proposition de travail | Empreintes identiques |
+
+Cette preuve couvre le stockage local et les rapports enregistrés depuis
+l'ajout de l'inventaire. La restauration des sauvegardes relève de ses
+propres essais. Le rapport est sous `phase1-project-erasure/report.json`
+dans le dossier de preuves.
+
+## Sauvegarde locale chiffrée et restauration filtrée
+
+`backup-grant` enregistre un `BackupConsent` distinct de l'accord
+d'évolution. La sauvegarde inclut les copies admissibles dans les
+catégories accordées et leurs rapports enregistrés. L'archive locale
+est valable sept jours. La restauration conserve l'échéance la plus
+proche de la copie et de l'archive.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.project backup-grant `
+    --project $projet --evolution-db $registre --category source_code --category diffs
+.\.venv\Scripts\python.exe -m akasha_brain.project backup `
+    --project $projet --evolution-db $registre --consent $accordSauvegarde --output $archive
+.\.venv\Scripts\python.exe -m akasha_brain.project restore `
+    --project $projet --evolution-db $registre --backup $archive
+```
+
+Le manifeste d'archive et chaque paquet de copie avec ses rapports
+utilisent AES-256-GCM avec une clé propre et un nonce aléatoire. Les clés
+sont enveloppées par DPAPI à portée utilisateur dans le coffre courant,
+hors de l'archive. L'archive est produite à la demande sous Windows avec
+PowerShell 7. [AES-GCM (.NET)](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesgcm) · [DPAPI (.NET)](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.protecteddata)
+
+L'effacement supprime les clés des objets visés et avance la tête
+authentifiée des marqueurs dans le coffre. La restauration confronte le
+registre courant à cette tête, filtre le manifeste avant de déchiffrer
+les objets et revérifie la tête avant de publier sous le verrou SQLite
+du registre. Les rapports admissibles restaurés rejoignent la base de
+contenus avec leur identifiant de copie. Les chemins des anciens rapports
+et les fichiers du projet restent intacts.
+
+Sur une copie jetable de Notes, l'archive contenait trois copies et deux
+rapports de rejeu avant l'effacement. Deux copies et un rapport étaient
+liés à la proposition effacée. La troisième copie et son rapport ont
+servi de témoin. Le stockage courant du banc a été vidé avant la
+restauration pour vérifier que le témoin provenait de l'archive.
+
+| Contrôle | Résultat |
+| --- | --- |
+| Accord absent ou accord d'évolution présenté seul | `backup_consent_missing` |
+| Effacement | Clés des deux objets effacés retirées du coffre courant |
+| Restauration avec le registre d'avant l'effacement | `ledger_unverified` |
+| Restauration avec le registre courant | Deux copies filtrées, seul le témoin et son rapport restaurés |
+| Contrôle après restauration | Rejeu du témoin réussi dans Windows Sandbox, rejeu des deux copies effacées refusé |
+
+Les empreintes du projet et de l'archive antérieure concordent avant et
+après l'essai. Le rapport est sous `phase1-project-backup/report.json`
+dans le dossier de preuves.
+
+Les [résultats consolidés du bloc données](../../bench/results/project-data-v1.json)
+couvrent le consentement, le rejeu, l'effacement et la restauration.
+
 [Plan de la phase 1](development-plan.md#phase-1--parcours-bureaucode-et-évolution-bornée-mvp)

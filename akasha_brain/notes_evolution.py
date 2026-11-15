@@ -14,6 +14,7 @@ from uuid import uuid4
 from bench.run_guided_repair import execution_limits, write_report
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
+from .evolution_consent import ReuseScope, check_reuse
 from .experience import transaction
 from .notes_repair import RbitnetPaths
 from .notes_runtime import run_notes
@@ -134,7 +135,8 @@ def evidence(report: dict, *, desktop: bool) -> dict:
     }
 
 
-def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, run_trial) -> dict:
+def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, run_trial,
+           *, reuse: tuple[ReuseScope, ...] = ()) -> dict:
     started = monotonic()
     deadline = started + budget.wall_s
     trials = []
@@ -146,6 +148,11 @@ def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, 
             audit(db, cycle_id, status, {key: value for key, value in result.items() if key != "trials"})
         return result
 
+    if reuse:
+        with transaction(path) as db:
+            denied = check_reuse(db, reuse)
+        if denied:
+            return finish("retained", denied.details["reason"])
     if budget.max_trials < len(STAGES) or budget.wall_s <= 0:
         return finish("waiting", "resource_budget_exceeded")
 
@@ -155,11 +162,23 @@ def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, 
         if monotonic() >= deadline:
             return finish("waiting", "resource_budget_exceeded")
         with transaction(path) as db:
-            if active_workflow(db) != PARENT:
-                return finish("retained", "active_workflow_changed")
-            audit(db, cycle_id, "trial_started", {"stage": stage, "parent": PARENT, "candidate": CANDIDATE})
+            if reuse:
+                db.execute("BEGIN IMMEDIATE")
+            denied = check_reuse(db, reuse)
+            parent_active = active_workflow(db) == PARENT
+            if denied is None and parent_active:
+                audit(db, cycle_id, "trial_started", {"stage": stage, "parent": PARENT, "candidate": CANDIDATE})
+        if denied:
+            return finish("retained", denied.details["reason"])
+        if not parent_active:
+            return finish("retained", "active_workflow_changed")
         with execution_limits(deadline, budget.cpu_threads, budget.model_ram_mb):
             report = run_trial(stage)
+        if reuse:
+            with transaction(path) as db:
+                denied = check_reuse(db, reuse)
+            if denied:
+                return finish("retained", denied.details["reason"])
         proof = evidence(report, desktop=True)
         proof["fresh_sandbox"] = bool(report.get("sandbox_id")) and report["sandbox_id"] not in sandbox_ids
         sandbox_ids.add(report.get("sandbox_id"))
@@ -174,14 +193,15 @@ def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, 
 
     with transaction(path) as db:
         db.execute("BEGIN IMMEDIATE")
-        if monotonic() < deadline and active_workflow(db) == PARENT:
+        denied = check_reuse(db, reuse)
+        if denied is None and monotonic() < deadline and active_workflow(db) == PARENT:
             db.execute("UPDATE active_workflow SET workflow = ? WHERE singleton = 1", (CANDIDATE,))
             audit(db, cycle_id, "activated", {"parent": PARENT, "active": CANDIDATE,
                                              "reference": expected["experience"],
                                              "evidence": [trial["experience"] for trial in trials]})
             return {"cycle_id": cycle_id, "status": "promoted", "active": CANDIDATE, "trials": trials,
                     "wall_s": round(monotonic() - started, 3)}
-    return finish("retained", "promotion_precondition_changed")
+    return finish("retained", denied.details["reason"] if denied else "promotion_precondition_changed")
 
 
 def run_managed(goal: dict, catalog: dict, runtime: Path, output: Path, repair: RbitnetPaths,

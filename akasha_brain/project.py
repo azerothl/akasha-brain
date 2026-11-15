@@ -8,6 +8,7 @@ import os
 from pathlib import Path, PurePosixPath, PureWindowsPath
 import secrets
 import shutil
+import sqlite3
 import stat
 import subprocess
 from tempfile import NamedTemporaryFile, TemporaryDirectory, gettempdir
@@ -20,8 +21,11 @@ from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
 from .notes_repair import stage_git
 from .notes_sandbox import CHANNELS, POWERSHELL, active_sandboxes, guest_exit, read_profile, wait_for_guest
+from .planning import PlanningError
+from .project_backup import backup, grant_backup, restore, revoke_backup
 from .project_common import ProjectError, digest, identity, reject
 from .project_dependencies import create_request, download, stage_dependencies, stage_installer
+from .project_evolution import ARTIFACTS, check_sample, collect, erase, finish_replay, load_sample, register_replay
 
 
 def project_file(project: Path, name: str, *, absent: bool = False) -> Path:
@@ -87,7 +91,7 @@ def expected_files(manifest: dict) -> tuple[dict, list]:
     return files, [source]
 
 
-def validate_in_sandbox(stage: Path, runtime: Path) -> dict:
+def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None) -> dict:
     if active_sandboxes():
         reject(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Une session Windows Sandbox est déjà active.")
     profile = read_profile()
@@ -109,6 +113,8 @@ def validate_in_sandbox(stage: Path, runtime: Path) -> dict:
         if wsb("start", "--id", sandbox, "--config", profile)["Id"].lower() != sandbox:
             raise RuntimeError("Identifiant du bac inattendu.")
         wait_for_guest(sandbox)
+        if checkpoint is not None:
+            checkpoint()
         wsb("share", "--id", sandbox, "--host-path", str(stage), "--sandbox-path", mount_path)
         mount = guest_exit(sandbox, f"{POWERSHELL} -File {mount_path}\\probe_notes_isolation.ps1 -Tag {tag}")
         channels = guest_exit(sandbox, f"{POWERSHELL} -File {mount_path}\\probe_guest_channels.ps1")
@@ -117,6 +123,8 @@ def validate_in_sandbox(stage: Path, runtime: Path) -> dict:
         )})
         if denied:
             raise ProjectError(denied)
+        if checkpoint is not None:
+            checkpoint()
         result = guest_exit(sandbox, f"{POWERSHELL} -File {mount_path}\\validate_project.ps1 -Tag {tag}")
         if result != 0x4700:
             reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "La validation de la proposition dans le bac a échoué.",
@@ -155,6 +163,7 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
                 "test": test, "files": hashes}
     if move_to is not None:
         manifest["destination"] = move_to
+    patch = None
     if replacement is not None:
         candidate = replacement.read_bytes()
         patch = make_diff(target, original[target], candidate)
@@ -164,7 +173,24 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
 
     output.mkdir(parents=True)
     began = perf_counter()
+    validation, wheels = validate_copy(project, output, manifest, original, patch, runtime, dependencies)
+    manifest["validation"] = validation
+    if wheels:
+        manifest["dependencies"] = wheels
+    encoded = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    if patch is not None:
+        (output / "proposal.diff").write_bytes(patch)
+        (output / "replacement.txt").write_bytes(candidate)
+    (output / "proposal.json").write_bytes(encoded)
+    return {"status": "awaiting_approval", "proposal": str(output), "approval_sha256": digest(encoded),
+            "operation": operation, "file": target, "destination": move_to,
+            "validation": validation, "wall_s": round(perf_counter() - began, 3)}
+
+
+def validate_copy(project: Path, output: Path, manifest: dict, original: dict, patch: bytes | None,
+                  runtime: Path, dependencies, *, before_run=None, replay: bool = False) -> tuple[dict, list[dict]]:
     expected, absent = expected_files(manifest)
+    target, move_to = manifest["target"], manifest.get("destination")
     with TemporaryDirectory(prefix="stage-", dir=output) as directory:
         stage = Path(directory).resolve(strict=True)
         if stage.parent != output:
@@ -173,34 +199,61 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
             file = stage / "snapshot" / name
             file.parent.mkdir(parents=True, exist_ok=True)
             file.write_bytes(content)
-        if replacement is not None:
+        if patch is not None:
             (stage / "proposal.diff").write_bytes(patch)
         if move_to is not None:
             (stage / "snapshot" / move_to).parent.mkdir(parents=True, exist_ok=True)
         wheels = stage_dependencies(project, dependencies, stage)
+        if replay and [wheel["request_sha256"] for wheel in wheels] != manifest["dependency_requests"]:
+            reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Les dépendances diffèrent de la proposition validée.")
         guest_wheels = [{key: wheel[key] for key in ("name", "version", "filename", "sha256")} for wheel in wheels]
-        request = json.dumps({"operation": operation, "target": target, "destination": move_to,
-                              "test": test, "files": expected, "absent": absent, "dependencies": guest_wheels},
+        request = json.dumps({"operation": manifest.get("operation", "replace"), "target": target,
+                              "destination": move_to, "test": manifest["test"], "files": expected,
+                              "absent": absent, "dependencies": guest_wheels},
                              ensure_ascii=False).encode("utf-8")
         (stage / "validation.json").write_bytes(request)
-        validation = validate_in_sandbox(stage, runtime)
-        if (fingerprints(snapshot(stage / "snapshot", names)) != hashes
-                or (replacement is not None and (stage / "proposal.diff").read_bytes() != patch)
+        if before_run is not None:
+            before_run()
+            validation = validate_in_sandbox(stage, runtime, checkpoint=before_run)
+        else:
+            validation = validate_in_sandbox(stage, runtime)
+        if (fingerprints(snapshot(stage / "snapshot", original)) != manifest["files"]
+                or (patch is not None and (stage / "proposal.diff").read_bytes() != patch)
                 or (stage / "validation.json").read_bytes() != request
                 or any(file_hash(stage / "wheels" / wheel["filename"]) != wheel["sha256"] for wheel in wheels)):
             reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "Les entrées de validation ont changé.")
 
-    manifest["validation"] = validation
-    if wheels:
-        manifest["dependencies"] = wheels
-    encoded = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
-    if replacement is not None:
-        (output / "proposal.diff").write_bytes(patch)
-        (output / "replacement.txt").write_bytes(candidate)
-    (output / "proposal.json").write_bytes(encoded)
-    return {"status": "awaiting_approval", "proposal": str(output), "approval_sha256": digest(encoded),
-            "operation": operation, "file": target, "destination": move_to,
-            "validation": validation, "wall_s": round(perf_counter() - began, 3)}
+    return validation, wheels
+
+
+def reuse(project: Path, registry: Path, sample_id: str, category: str, output: Path, runtime: Path,
+          *, dependencies=()) -> dict:
+    project = project.resolve(strict=True)
+    output = output.resolve()
+    if output.is_relative_to(project):
+        reject(ErrorCode.PERMISSION_DENIED, "Stocker le rapport de rejeu hors du projet.")
+    sample = load_sample(project, registry, sample_id, category)
+    current = check_current(project, sample.manifest)
+    patch = (make_diff(sample.manifest["target"], current[sample.manifest["target"]], sample.payload)
+             if category == "source_code" else sample.payload)
+    if digest(patch) != sample.manifest["diff_sha256"]:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le diff à rejouer diffère du diff d'origine.")
+
+    def checkpoint():
+        check_sample(project, registry, sample)
+
+    run_id = register_replay(project, registry, sample, output)
+    began = perf_counter()
+    try:
+        validation, _ = validate_copy(project, output, sample.manifest, current, patch, runtime, dependencies,
+                                      before_run=checkpoint, replay=True)
+    except ProjectError:
+        finish_replay(project, registry, sample, run_id, None)
+        raise
+    result = {"status": "reused", "sample_id": sample_id, "category": category,
+              "validation": validation, "wall_s": round(perf_counter() - began, 3)}
+    finish_replay(project, registry, sample, run_id, result)
+    return result
 
 
 @contextmanager
@@ -355,6 +408,39 @@ def main() -> int:
     fetch.add_argument("--project", required=True, type=Path)
     fetch.add_argument("--request", required=True, type=Path)
     fetch.add_argument("--approve-download", help="Empreinte exacte de la demande après examen")
+    capture = commands.add_parser("collect", help="Conserver un artefact validé pour l'évolution locale")
+    capture.add_argument("--project", required=True, type=Path)
+    capture.add_argument("--proposal", required=True, type=Path)
+    capture.add_argument("--evolution-db", required=True, type=Path)
+    capture.add_argument("--category", required=True, choices=ARTIFACTS)
+    capture.add_argument("--consent")
+    capture.add_argument("--reviewed-without-secrets", metavar="SHA256",
+                         help="Empreinte de la proposition examinée et déclarée sans secrets")
+    playback = commands.add_parser("reuse", help="Rejouer dans Windows Sandbox une copie d'évolution autorisée")
+    playback.add_argument("--project", required=True, type=Path)
+    playback.add_argument("--evolution-db", required=True, type=Path)
+    playback.add_argument("--sample", required=True)
+    playback.add_argument("--category", required=True, choices=ARTIFACTS)
+    playback.add_argument("--output", required=True, type=Path)
+    playback.add_argument("--python-runtime", required=True, type=Path)
+    playback.add_argument("--dependency", type=Path, action="append", default=[])
+    erasure = commands.add_parser("erase", help="Bloquer puis effacer une copie d'évolution et ses dérivés")
+    erasure.add_argument("--project", required=True, type=Path)
+    erasure.add_argument("--evolution-db", required=True, type=Path)
+    erasure.add_argument("--sample", required=True)
+    backup_grant = commands.add_parser("backup-grant", help="Accorder la sauvegarde locale de catégories précises")
+    save = commands.add_parser("backup", help="Créer une sauvegarde locale chiffrée de l'évolution")
+    restore_cmd = commands.add_parser("restore", help="Restaurer les copies admissibles depuis une sauvegarde")
+    backup_revoke = commands.add_parser("backup-revoke", help="Révoquer un accord de sauvegarde")
+    for action in (backup_grant, save, restore_cmd, backup_revoke):
+        action.add_argument("--project", required=True, type=Path)
+        action.add_argument("--evolution-db", required=True, type=Path)
+    backup_grant.add_argument("--category", required=True, action="append", choices=ARTIFACTS)
+    backup_grant.add_argument("--expires-at")
+    save.add_argument("--output", required=True, type=Path)
+    save.add_argument("--consent")
+    restore_cmd.add_argument("--backup", required=True, type=Path)
+    backup_revoke.add_argument("--consent", required=True)
     application = commands.add_parser("apply", help="Appliquer une proposition validée et approuvée")
     application.add_argument("--project", required=True, type=Path)
     application.add_argument("--proposal", required=True, type=Path)
@@ -373,16 +459,32 @@ def main() -> int:
                                     url=args.url, sha256=args.sha256, license=args.license)
         elif args.command == "dependency-download":
             result = download(args.project, args.request, args.approve_download)
+        elif args.command == "collect":
+            result = collect(args.project, args.proposal, args.evolution_db, args.category, args.consent,
+                             args.reviewed_without_secrets)
+        elif args.command == "reuse":
+            result = reuse(args.project, args.evolution_db, args.sample, args.category, args.output,
+                           args.python_runtime, dependencies=args.dependency)
+        elif args.command == "erase":
+            result = erase(args.project, args.evolution_db, args.sample)
+        elif args.command == "backup-grant":
+            result = grant_backup(args.project, args.evolution_db, args.category, args.expires_at)
+        elif args.command == "backup":
+            result = backup(args.project, args.evolution_db, args.output, args.consent)
+        elif args.command == "restore":
+            result = restore(args.project, args.evolution_db, args.backup)
+        elif args.command == "backup-revoke":
+            result = revoke_backup(args.project, args.evolution_db, args.consent)
         else:
             result = apply(args.project, args.proposal, args.approve, approved_delete=args.approve_delete,
                            approved_move=tuple(args.approve_move) if args.approve_move is not None else None)
-    except ProjectError as exc:
+    except (ProjectError, PlanningError) as exc:
         result = {"status": "refused", "error": exc.error.as_dict()}
-    except (OSError, RuntimeError, ValueError, TypeError, KeyError, subprocess.SubprocessError) as exc:
+    except (OSError, RuntimeError, ValueError, TypeError, KeyError, sqlite3.Error, subprocess.SubprocessError) as exc:
         error = AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, str(exc))
         result = {"status": "failed", "error": error.as_dict()}
     print(json.dumps(result, ensure_ascii=True, indent=2))
-    return int(result["status"] in {"refused", "failed"})
+    return int(result["status"] in {"refused", "failed", "pending"})
 
 
 if __name__ == "__main__":
