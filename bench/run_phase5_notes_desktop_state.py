@@ -9,7 +9,12 @@ from pathlib import Path
 from time import perf_counter
 from uuid import UUID, uuid4
 
-from akasha_brain.desktop_state import NOTES_WINDOW_TITLE, decode_notes_observation
+from akasha_brain.desktop_state import (
+    NOTES_WINDOW_TITLE,
+    compare_notes_transition,
+    decode_notes_observation,
+    predict_notes_transition,
+)
 from akasha_brain.notes_sandbox import POWERSHELL, active_sandboxes, guest_exit, read_profile, wait_for_guest
 from bench.run_guided_repair import BENCH, file_hash, write_report, wsb
 
@@ -43,7 +48,58 @@ def check_states(states: dict) -> dict:
     }
 
 
-def run(runtime: Path, output: Path) -> dict:
+def capture_states(sandbox_id: str, probe: str, report: dict) -> None:
+    started_at = datetime.now(UTC).isoformat()
+    capture_begin = perf_counter()
+    capture_exit = guest_exit(sandbox_id, probe)
+    finished_at = datetime.now(UTC).isoformat()
+    report.update(capture_exit=capture_exit, capture_wall_s=round(perf_counter() - capture_begin, 3))
+    if capture_exit != 0x4600:
+        raise RuntimeError(f"La capture des états Notes a échoué ({capture_exit:#x}).")
+    for phase in PHASES:
+        packet = guest_exit(sandbox_id, f"{probe} -Mode {phase}")
+        state = decode_notes_observation(packet, started_at=started_at, finished_at=finished_at)
+        report["observations"][phase] = state
+        print(f"{phase}: PID {state['process']['pid']}, SQLite {state['sqlite']['row_count']} ligne(s)", flush=True)
+
+
+def observe(sandbox_id: str, command: str, *, started_at: str) -> dict:
+    packet = guest_exit(sandbox_id, command)
+    return decode_notes_observation(packet, started_at=started_at, finished_at=datetime.now(UTC).isoformat())
+
+
+def run_transitions(sandbox_id: str, probe: str, output: Path, report: dict) -> None:
+    capture_begin = perf_counter()
+    states = report["observations"]
+    transitions = report["transitions"] = {}
+    states["before_save"] = observe(sandbox_id, f"{probe} -Mode begin", started_at=datetime.now(UTC).isoformat())
+    for action, before_phase, after_phase in (
+        ("save", "before_save", "after_save"),
+        ("restart", "after_save", "after_restart"),
+    ):
+        before = states[before_phase]
+        prediction = predict_notes_transition(before, action)
+        transition = transitions[action] = {
+            "from": before_phase,
+            "to": after_phase,
+            "prediction": prediction,
+            "prediction_created_at": datetime.now(UTC).isoformat(),
+        }
+        # Le fichier contient déjà la prévision quand la commande part vers le bac.
+        write_report(output, report)
+        transition["action_dispatched_at"] = datetime.now(UTC).isoformat()
+        pid = before["process"]["pid"]
+        after = states[after_phase] = observe(
+            sandbox_id, f"{probe} -Mode {action} -NotesId {pid}", started_at=transition["action_dispatched_at"],
+        )
+        comparison = transition["comparison"] = compare_notes_transition(prediction, after)
+        write_report(output, report)
+        print(f"{action}: PID {pid} -> {after['process']['pid']}, "
+              f"{comparison['matched']}/{len(comparison['variables'])} conformes", flush=True)
+    report["capture_wall_s"] = round(perf_counter() - capture_begin, 3)
+
+
+def run(runtime: Path, output: Path, *, predict: bool = False) -> dict:
     begin = perf_counter()
     profile = read_profile()
     if active_sandboxes():
@@ -60,7 +116,7 @@ def run(runtime: Path, output: Path) -> dict:
     guest = fr"C:\AkashaGuidedInput-{tag}"
     probe = fr"{POWERSHELL} -File {guest}\observe_notes_desktop.ps1 -Tag {tag}"
     report = {
-        "protocol": "phase5-notes-desktop-state-v1",
+        "protocol": "phase5-notes-desktop-transition-v1" if predict else "phase5-notes-desktop-state-v1",
         "status": "running",
         "scope": "synthetic_notes_reference",
         "save_action": "fixed synthetic fixture through the Notes Tk save button",
@@ -83,19 +139,15 @@ def run(runtime: Path, output: Path) -> dict:
             raise RuntimeError("Les sondes d'isolation de Notes ont échoué.")
         print("Bac neuf prêt, montage en lecture seule et canaux contrôlés.", flush=True)
 
-        started_at = datetime.now(UTC).isoformat()
-        capture_begin = perf_counter()
-        capture_exit = guest_exit(sandbox_id, probe)
-        finished_at = datetime.now(UTC).isoformat()
-        report.update(capture_exit=capture_exit, capture_wall_s=round(perf_counter() - capture_begin, 3))
-        if capture_exit != 0x4600:
-            raise RuntimeError(f"La capture des états Notes a échoué ({capture_exit:#x}).")
-        for phase in PHASES:
-            packet = guest_exit(sandbox_id, f"{probe} -Mode {phase}")
-            state = decode_notes_observation(packet, started_at=started_at, finished_at=finished_at)
-            report["observations"][phase] = state
-            print(f"{phase}: PID {state['process']['pid']}, SQLite {state['sqlite']['row_count']} ligne(s)", flush=True)
+        if predict:
+            run_transitions(sandbox_id, probe, output, report)
+        else:
+            capture_states(sandbox_id, probe, report)
         checks = check_states(report["observations"])
+        if predict:
+            checks["predictions_agree_with_observations"] = all(
+                item["comparison"]["status"] == "passed" for item in report["transitions"].values()
+            )
         checks["staged_sources_unchanged"] = all(file_hash(stage / name) == digest for name, digest in hashes.items())
         report["checks"] = checks
         if not all(checks.values()):
@@ -122,8 +174,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runtime", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--predict", action="store_true", help="Enregistre une prévision avant chaque action.")
     args = parser.parse_args()
-    report = run(args.runtime.resolve(strict=True), args.output.resolve())
+    report = run(args.runtime.resolve(strict=True), args.output.resolve(), predict=args.predict)
     print(json.dumps({name: report[name] for name in ("status", "capture_wall_s", "wall_s")}), flush=True)
 
 

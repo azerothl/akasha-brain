@@ -20,3 +20,19 @@ Les sondes ont confirmé la lecture seule du montage hôte, l’écriture dans l
 .\.venv\Scripts\python.exe -m bench.run_phase5_notes_desktop_state --runtime $pythonPortable `
     --output $dossierDeValidation
 ```
+
+## Prévision avant enregistrement et relance de Notes
+
+Le prédicteur symbolique part du dernier `DesktopState` observé. L’hôte écrit la prévision dans le rapport avant d’envoyer la commande au bac. La relance prend comme point de départ le relevé obtenu après l’enregistrement. Le banc active la fenêtre pendant la préparation, puis observe le premier plan et le focus sans les rétablir après les actions.
+
+| Action | Prévision | Relevé dans Windows Sandbox | Variables conformes |
+| --- | --- | --- | ---: |
+| Enregistrement | Même PID et même état de fenêtre. Base intègre avec une note exacte. | PID 8032 conservé. Fenêtre visible, au premier plan, avec le focus UIA. Une note exacte. | 9/9 |
+| Relance | Nouveau PID. Fenêtre visible, au premier plan, avec le focus UIA. Même note. | PID 8032 → 8804. Fenêtre et focus confirmés. Base intègre avec la même note exacte. | 9/9 |
+
+Les neuf variables par action couvrent le processus, la fenêtre et SQLite. Le rejeu a duré 38,8 s et le bac a été arrêté. Le rapport contient les prévisions, les horodatages des commandes, les observations et la comparaison champ par champ. [Relevé des transitions Notes](../../bench/results/phase5-notes-desktop-transition-v1.json)
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_phase5_notes_desktop_state --predict --runtime $pythonPortable `
+    --output $dossierDeValidation
+```

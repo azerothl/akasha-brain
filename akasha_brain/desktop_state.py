@@ -42,3 +42,62 @@ def decode_notes_observation(packet: int, *, started_at: str, finished_at: str) 
         },
         "unobserved": ["widget_values", "screenshot"],
     }
+
+
+def notes_variables(state: dict) -> dict:
+    if (state.get("type"), state.get("version")) != ("DesktopState", VERSION):
+        raise ValueError("La prévision Notes exige un DesktopState v1.")
+    return {
+        "process.alive": state["process"]["alive"],
+        **{f"window.{key}": value for key, value in state["window"].items()},
+        **{f"sqlite.{key}": value for key, value in state["sqlite"].items()},
+    }
+
+
+def predict_notes_transition(before: dict, action: str) -> dict:
+    """Projette l'état stabilisé de Notes dans le scénario synthétique."""
+    expected = notes_variables(before)
+    if not expected["process.alive"]:
+        raise ValueError("Notes doit être en cours d'exécution.")
+    if action == "save":
+        if expected["sqlite.row_count"] != 0:
+            raise ValueError("Le scénario d'enregistrement commence avec une base vide.")
+        expected.update({"sqlite.row_count": 1, "sqlite.exact_fixture_present": True})
+        expected["process.pid_relation"] = "same"
+    elif action == "restart":
+        expected.update({
+            "process.pid_relation": "different",
+            "window.title": NOTES_WINDOW_TITLE,
+            "window.visible": True,
+            "window.foreground_owned_by_process": True,
+            "window.uia_focus_owned_by_process": True,
+        })
+    else:
+        raise ValueError(f"Action Notes non prise en charge ({action}).")
+
+    return {
+        "type": "DesktopStatePrediction",
+        "version": VERSION,
+        "action": action,
+        "from_observation_window": dict(before["observation_window"]),
+        "from_pid": before["process"]["pid"],
+        "expected": expected,
+    }
+
+
+def compare_notes_transition(prediction: dict, after: dict) -> dict:
+    if (prediction.get("type"), prediction.get("version")) != ("DesktopStatePrediction", VERSION):
+        raise ValueError("Prévision Notes v1 attendue.")
+    observed = notes_variables(after)
+    observed["process.pid_relation"] = "same" if after["process"]["pid"] == prediction["from_pid"] else "different"
+    expected = prediction["expected"]
+    if expected.keys() != observed.keys():
+        raise ValueError("Variables Notes incohérentes entre prévision et observation.")
+    variables = {name: {"predicted": value, "observed": observed[name]} for name, value in expected.items()}
+    mismatches = [name for name, values in variables.items() if values["predicted"] != values["observed"]]
+    return {
+        "status": "failed" if mismatches else "passed",
+        "matched": len(variables) - len(mismatches),
+        "variables": variables,
+        "mismatches": mismatches,
+    }

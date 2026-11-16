@@ -1,12 +1,14 @@
 param(
     [Parameter(Mandatory = $true)][ValidatePattern('^[a-f0-9]{8}$')][string]$Tag,
-    [ValidateSet('capture', 'before_save', 'after_save', 'after_restart')][string]$Mode = 'capture'
+    [ValidateSet('capture', 'before_save', 'after_save', 'after_restart', 'begin', 'save', 'restart')]
+    [string]$Mode = 'capture',
+    [int]$NotesId
 )
 
 $ErrorActionPreference = 'Stop'
 $work = Join-Path ([IO.Path]::GetTempPath()) "AkashaDesktopState-$Tag"
 $replayPath = Join-Path $work 'observations.json'
-if ($Mode -ne 'capture') {
+if ($Mode -in 'before_save', 'after_save', 'after_restart') {
     $observations = Get-Content -LiteralPath $replayPath -Raw | ConvertFrom-Json
     exit ([int]$observations.$Mode)
 }
@@ -33,6 +35,7 @@ $python = Join-Path $runtime 'python.exe'
 $pythonw = Join-Path $runtime 'pythonw.exe'
 $title = "Notes $([char]0x2014) banc Akasha"
 $app = $null
+$keepOpen = $false
 $failure = 21
 
 function Get-NotesWindow([int]$AppId) {
@@ -68,6 +71,13 @@ function Focus-Notes([int]$AppId) {
     throw 'Notes did not expose a foreground window and UIA focus.'
 }
 
+function Wait-NotesWindow([int]$AppId) {
+    for ($attempt = 0; $attempt -lt 40; $attempt++) {
+        if ($null -ne (Get-NotesWindow $AppId)) { return }
+        Start-Sleep -Milliseconds 200
+    }
+}
+
 function Read-Database {
     & $python $driver sqlite $db
     if ($LASTEXITCODE -notin 0x4650, 0x4651) {
@@ -90,50 +100,80 @@ function Observe-Notes([int]$AppId, [int]$DatabaseResult) {
     return $packet
 }
 
-try {
+function Initialize-Notes {
     $null = New-Item -ItemType Directory -Path $work
     foreach ($name in @('python', 'notes_app.py', 'notes_store.py', 'observe_notes_desktop.py')) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination $work -Recurse
     }
-    $env:PYTHONHOME = $runtime
-    $env:PYTHONNOUSERSITE = '1'
-    $env:PYTHONDONTWRITEBYTECODE = '1'
-    $env:PYTHONUTF8 = '1'
-    $env:TCL_LIBRARY = Join-Path $runtime 'tcl8.6'
-    $env:TK_LIBRARY = Join-Path $runtime 'tk8.6'
+}
 
-    $failure = 22
-    $argsOpen = '"{0}" open "{1}"' -f $driver, $db
-    $app = Start-Process -FilePath $pythonw -ArgumentList $argsOpen -WorkingDirectory $work -WindowStyle Hidden -PassThru
-    Focus-Notes $app.Id
-    $before = Observe-Notes $app.Id (Read-Database)
-
-    $failure = 23
+function Invoke-NotesSave {
     $null = New-Item -ItemType File -Path (Join-Path $work 'save.request')
     $dbResult = 0
     for ($attempt = 0; $attempt -lt 20 -and $dbResult -eq 0; $attempt++) {
         Start-Sleep -Milliseconds 100
         $dbResult = Read-Database
     }
-    Focus-Notes $app.Id
-    $after = Observe-Notes $app.Id $dbResult
-    $oldId = $app.Id
+    return $dbResult
+}
+
+$env:PYTHONHOME = $runtime
+$env:PYTHONNOUSERSITE = '1'
+$env:PYTHONDONTWRITEBYTECODE = '1'
+$env:PYTHONUTF8 = '1'
+$env:TCL_LIBRARY = Join-Path $runtime 'tcl8.6'
+$env:TK_LIBRARY = Join-Path $runtime 'tk8.6'
+
+try {
+    if ($Mode -in 'capture', 'begin') {
+        Initialize-Notes
+        $failure = 22
+        $argsOpen = '"{0}" open "{1}"' -f $driver, $db
+        $app = Start-Process -FilePath $pythonw -ArgumentList $argsOpen -WorkingDirectory $work -WindowStyle Hidden -PassThru
+        Focus-Notes $app.Id
+        $before = Observe-Notes $app.Id (Read-Database)
+        if ($Mode -eq 'begin') {
+            $keepOpen = $true
+            exit $before
+        }
+    } else {
+        $ownedApp = Get-Process -Id $NotesId
+        if ($ownedApp.Path -ne $pythonw) { throw 'Unexpected Notes executable.' }
+        $app = $ownedApp
+    }
+
+    if ($Mode -in 'capture', 'save') {
+        $failure = 23
+        $dbResult = Invoke-NotesSave
+        if ($Mode -eq 'capture') { Focus-Notes $app.Id }
+        $after = Observe-Notes $app.Id $dbResult
+        if ($Mode -eq 'save') {
+            $keepOpen = $true
+            exit $after
+        }
+    }
 
     $failure = 24
+    $oldId = $app.Id
     if (!$app.CloseMainWindow() -or !$app.WaitForExit(4000)) { throw 'Notes did not close.' }
     $appPath = Join-Path $work 'notes_app.py'
     $argsRestart = '"{0}" "{1}"' -f $appPath, $db
     $app = Start-Process -FilePath $pythonw -ArgumentList $argsRestart -WorkingDirectory $work -WindowStyle Hidden -PassThru
-    if ($app.Id -eq $oldId) { throw 'Notes PID reused.' }
-    Focus-Notes $app.Id
+    if ($Mode -eq 'capture') {
+        if ($app.Id -eq $oldId) { throw 'Notes PID reused.' }
+        Focus-Notes $app.Id
+    } else {
+        Wait-NotesWindow $app.Id
+    }
     $restarted = Observe-Notes $app.Id (Read-Database)
+    if ($Mode -eq 'restart') { exit $restarted }
     @{ before_save = $before; after_save = $after; after_restart = $restarted } |
         ConvertTo-Json -Compress | Set-Content -LiteralPath $replayPath -Encoding Ascii
     exit 0x4600
 } catch {
     exit $failure
 } finally {
-    if ($null -ne $app -and !$app.HasExited) {
+    if (!$keepOpen -and $null -ne $app -and !$app.HasExited) {
         if (!$app.CloseMainWindow() -or !$app.WaitForExit(1500)) {
             Stop-Process -InputObject $app -ErrorAction SilentlyContinue
         }
