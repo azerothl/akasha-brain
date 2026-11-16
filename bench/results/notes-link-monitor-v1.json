@@ -1,0 +1,340 @@
+{
+  "status": "passed",
+  "freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+  "published_promotion_sha256": "4c9d8701feb7e60227ca58a909c6ceb216de60646b81aa58c55230f62f8ef4d4",
+  "max_consecutive_failures": 1,
+  "runs": {
+    "failure_1": {
+      "arm": "candidate",
+      "case": "missing_digest",
+      "seed": 742,
+      "active_after": "notes-rbitnet-ocr-typed-patch",
+      "measurement": {
+        "evaluated": true,
+        "expected_behavior": true,
+        "handoff_verdict": "rejected",
+        "sandbox_id": "1ee50721-6af5-44d7-ae97-1490aee7eff3",
+        "handoff": {
+          "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+          "received_digest": null,
+          "received_path": "rbitnet-1/proposal.diff",
+          "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+        },
+        "verify_calls": 0,
+        "false_handoff_acceptances": 0,
+        "retries": 0,
+        "workflow_status": "failed",
+        "error": {
+          "code": "contract_precondition_failed",
+          "family": "contrat",
+          "message": "Reçu Git incompatible.",
+          "details": {
+            "invalid_checks": [
+              "diff_sha256"
+            ]
+          }
+        },
+        "invalid_checks": [
+          "diff_sha256"
+        ],
+        "tests_passed": null,
+        "sqlite_exit": null,
+        "desktop": null,
+        "steps_s": {
+          "localize": 21.846,
+          "generate_diff": 84.685,
+          "adapt_patch_receipt": 0.412
+        },
+        "total_s": 143.241,
+        "downstream_s": 0
+      },
+      "monitor": {
+        "proof": {
+          "run_id": "1ee50721-6af5-44d7-ae97-1490aee7eff3",
+          "sandbox_id": "1ee50721-6af5-44d7-ae97-1490aee7eff3",
+          "verified": false,
+          "status": "failed",
+          "error_code": "contract_precondition_failed",
+          "report_sha256": "9b9cbf8c31688d2e0aee39baf22db724031ef0b7b2ba4409605d49b1640366ee"
+        },
+        "observation_sha256": "947a537e4a4d9b32d1226687b7c24f0359ff43d4b1b54276c5f936b1195d7a33",
+        "consecutive_failures": 1,
+        "max_consecutive_failures": 1,
+        "active": "notes-rbitnet-ocr-typed-patch"
+      }
+    },
+    "failure_2": {
+      "arm": "candidate",
+      "case": "wrong_attempt",
+      "seed": 743,
+      "active_after": "notes-rbitnet-ocr",
+      "measurement": {
+        "evaluated": true,
+        "expected_behavior": true,
+        "handoff_verdict": "rejected",
+        "sandbox_id": "37a32637-312f-49bb-be76-c9ed42b6f016",
+        "handoff": {
+          "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+          "received_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+          "received_path": "rbitnet-2/proposal.diff",
+          "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+        },
+        "verify_calls": 0,
+        "false_handoff_acceptances": 0,
+        "retries": 0,
+        "workflow_status": "failed",
+        "error": {
+          "code": "contract_precondition_failed",
+          "family": "contrat",
+          "message": "Reçu Git incompatible.",
+          "details": {
+            "invalid_checks": [
+              "diff_file"
+            ]
+          }
+        },
+        "invalid_checks": [
+          "diff_file"
+        ],
+        "tests_passed": null,
+        "sqlite_exit": null,
+        "desktop": null,
+        "steps_s": {
+          "localize": 19.624,
+          "generate_diff": 84.42,
+          "adapt_patch_receipt": 0.382
+        },
+        "total_s": 139.261,
+        "downstream_s": 0
+      },
+      "monitor": {
+        "proof": {
+          "run_id": "37a32637-312f-49bb-be76-c9ed42b6f016",
+          "sandbox_id": "37a32637-312f-49bb-be76-c9ed42b6f016",
+          "verified": false,
+          "status": "failed",
+          "error_code": "contract_precondition_failed",
+          "report_sha256": "0f19c142898ac93aa78c767c6b0799dfb134c06284993c11b8cdcffebaa9daa3"
+        },
+        "observation_sha256": "e27357056dc8a85a05e6fad8d86c47a8bc6e16336178240450cce96837c1b8ad",
+        "consecutive_failures": 2,
+        "max_consecutive_failures": 1,
+        "active": "notes-rbitnet-ocr",
+        "rollback": {
+          "document": {
+            "version": 1,
+            "action": "rollback",
+            "cycle": "26934658-3de8-45c7-ab50-072236c10f60",
+            "environment": "bench-notes",
+            "from": "notes-rbitnet-ocr-typed-patch",
+            "to": "notes-rbitnet-ocr",
+            "plans": {
+              "notes-rbitnet-ocr": "195226f66bd8332a06608bdb45bdafff2bdc4affaef621c3d099c8ef6c4dbdca",
+              "notes-rbitnet-ocr-typed-patch": "1b2d62f44f49c97bd25671887174d360bc5208e666e112bb0d4e029baa3b1240"
+            },
+            "freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+            "reference_sha256": "4c9d8701feb7e60227ca58a909c6ceb216de60646b81aa58c55230f62f8ef4d4",
+            "previous_decision_sha256": "52c870821d286527ba090e1dd916039bbf0f7f3f53c871cbf0bc922dd1f49be5",
+            "trials": [
+              {
+                "stage": "replay",
+                "proof_sha256": "4bba8037f17199a17a1c93e46a2099c03d55d976864cf5014f825e5efe46563c"
+              },
+              {
+                "stage": "shadow_parent",
+                "proof_sha256": "98e7bdbc6df89c3f6ef591f8505ce1e9f17788803731ca899f2a28c59f0d896c"
+              },
+              {
+                "stage": "shadow_candidate",
+                "proof_sha256": "697a6dbacafdf5d108960e8a3c5e80734a00fa18a895b97bbe7689cb0fe5d3ea"
+              },
+              {
+                "stage": "limited",
+                "proof_sha256": "602bd161dea82677e22b736ba6b8e40aa4e03361921e2413d698c1b083a9cced"
+              }
+            ],
+            "automatic_trigger": {
+              "observation_sha256": "e27357056dc8a85a05e6fad8d86c47a8bc6e16336178240450cce96837c1b8ad",
+              "consecutive_failures": 2,
+              "max_consecutive_failures": 1
+            }
+          },
+          "signature": "-----BEGIN SSH SIGNATURE-----\r\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgH1O1n5Df4tkgDvbRrhsKERhTUV\r\nIDI2ujWZwjP3PDMYUAAAAdYWthc2hhLm5vdGVzLWxpbmsuZGVjaXNpb24udjEAAAAAAAAA\r\nBnNoYTUxMgAAAFMAAAALc3NoLWVkMjU1MTkAAABAS6SrEYuEtWtog8exrZXzpNCqAzzwhA\r\nzE3y10jvv5zfbtRCeghyBID33XDmYDwUDThv1uEtn1Z1xyNqm1m+BYCw==\r\n-----END SSH SIGNATURE-----\r\n"
+        }
+      }
+    },
+    "after_rollback": {
+      "arm": "parent",
+      "case": "valid_control",
+      "seed": 744,
+      "active_after": "notes-rbitnet-ocr",
+      "measurement": {
+        "evaluated": false,
+        "expected_behavior": false,
+        "handoff_verdict": "undetermined",
+        "sandbox_id": "366bfa53-368a-4337-a42e-b6a1ac5466f6",
+        "handoff": null,
+        "verify_calls": 0,
+        "false_handoff_acceptances": 0,
+        "retries": 0,
+        "workflow_status": "failed",
+        "error": {
+          "code": "environment_observation_failed",
+          "family": "environnement",
+          "message": "wsb start (2148734208):  Status(StatusCode=\"Internal\", Detail=\"Error starting gRPC call. HttpRequestException: The operation has timed out. (localhost:80) TimeoutException: The operation has timed out.\", DebugException=\"System.Net.Http.HttpRequestException: The operation has timed out. (localhost:80)\")\r\n",
+          "details": {}
+        },
+        "invalid_checks": [],
+        "tests_passed": null,
+        "sqlite_exit": null,
+        "desktop": null,
+        "steps_s": {},
+        "total_s": 40.313,
+        "downstream_s": 0
+      },
+      "monitor": null,
+      "sandbox_start_timeout": true
+    },
+    "parent_recheck": {
+      "arm": "parent",
+      "case": "valid_control",
+      "seed": 744,
+      "active_after": "notes-rbitnet-ocr",
+      "measurement": {
+        "evaluated": true,
+        "expected_behavior": true,
+        "handoff_verdict": "accepted",
+        "sandbox_id": "59ef8a58-5b30-44a2-b2d7-f81345a9e99d",
+        "handoff": {
+          "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+          "received_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+          "received_path": "rbitnet-1/proposal.diff",
+          "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+        },
+        "verify_calls": 1,
+        "false_handoff_acceptances": 0,
+        "retries": 0,
+        "workflow_status": "passed",
+        "error": null,
+        "invalid_checks": [],
+        "tests_passed": 4,
+        "sqlite_exit": 0,
+        "desktop": {
+          "ocr_save_button_used": true,
+          "app_restarted": true,
+          "ocr_note_selected_after_restart": true,
+          "ocr_content_visible": true,
+          "sqlite_exact_row": true
+        },
+        "steps_s": {
+          "localize": 20.878,
+          "generate_diff": 85.816,
+          "verify": 7.945,
+          "verify_desktop": 41.461
+        },
+        "total_s": 188.625,
+        "downstream_s": 49.406
+      },
+      "monitor": null
+    }
+  },
+  "decisions": {
+    "promote": {
+      "document": {
+        "version": 1,
+        "action": "promote",
+        "cycle": "26934658-3de8-45c7-ab50-072236c10f60",
+        "environment": "bench-notes",
+        "from": "notes-rbitnet-ocr",
+        "to": "notes-rbitnet-ocr-typed-patch",
+        "plans": {
+          "notes-rbitnet-ocr": "195226f66bd8332a06608bdb45bdafff2bdc4affaef621c3d099c8ef6c4dbdca",
+          "notes-rbitnet-ocr-typed-patch": "1b2d62f44f49c97bd25671887174d360bc5208e666e112bb0d4e029baa3b1240"
+        },
+        "freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+        "reference_sha256": "4c9d8701feb7e60227ca58a909c6ceb216de60646b81aa58c55230f62f8ef4d4",
+        "previous_decision_sha256": null,
+        "trials": [
+          {
+            "stage": "replay",
+            "proof_sha256": "4bba8037f17199a17a1c93e46a2099c03d55d976864cf5014f825e5efe46563c"
+          },
+          {
+            "stage": "shadow_parent",
+            "proof_sha256": "98e7bdbc6df89c3f6ef591f8505ce1e9f17788803731ca899f2a28c59f0d896c"
+          },
+          {
+            "stage": "shadow_candidate",
+            "proof_sha256": "697a6dbacafdf5d108960e8a3c5e80734a00fa18a895b97bbe7689cb0fe5d3ea"
+          },
+          {
+            "stage": "limited",
+            "proof_sha256": "602bd161dea82677e22b736ba6b8e40aa4e03361921e2413d698c1b083a9cced"
+          }
+        ],
+        "monitor": {
+          "max_consecutive_failures": 1
+        }
+      },
+      "signature": "-----BEGIN SSH SIGNATURE-----\r\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgH1O1n5Df4tkgDvbRrhsKERhTUV\r\nIDI2ujWZwjP3PDMYUAAAAdYWthc2hhLm5vdGVzLWxpbmsuZGVjaXNpb24udjEAAAAAAAAA\r\nBnNoYTUxMgAAAFMAAAALc3NoLWVkMjU1MTkAAABAm7OdUQrnVOopzFkYYtLs7gSc6FIDvu\r\nAk+GHDcyDxi4dXDSU3TFTT4HXgcsLtuExpElatBw9kRwpey7DOfkTgCA==\r\n-----END SSH SIGNATURE-----\r\n"
+    },
+    "rollback": {
+      "document": {
+        "version": 1,
+        "action": "rollback",
+        "cycle": "26934658-3de8-45c7-ab50-072236c10f60",
+        "environment": "bench-notes",
+        "from": "notes-rbitnet-ocr-typed-patch",
+        "to": "notes-rbitnet-ocr",
+        "plans": {
+          "notes-rbitnet-ocr": "195226f66bd8332a06608bdb45bdafff2bdc4affaef621c3d099c8ef6c4dbdca",
+          "notes-rbitnet-ocr-typed-patch": "1b2d62f44f49c97bd25671887174d360bc5208e666e112bb0d4e029baa3b1240"
+        },
+        "freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+        "reference_sha256": "4c9d8701feb7e60227ca58a909c6ceb216de60646b81aa58c55230f62f8ef4d4",
+        "previous_decision_sha256": "52c870821d286527ba090e1dd916039bbf0f7f3f53c871cbf0bc922dd1f49be5",
+        "trials": [
+          {
+            "stage": "replay",
+            "proof_sha256": "4bba8037f17199a17a1c93e46a2099c03d55d976864cf5014f825e5efe46563c"
+          },
+          {
+            "stage": "shadow_parent",
+            "proof_sha256": "98e7bdbc6df89c3f6ef591f8505ce1e9f17788803731ca899f2a28c59f0d896c"
+          },
+          {
+            "stage": "shadow_candidate",
+            "proof_sha256": "697a6dbacafdf5d108960e8a3c5e80734a00fa18a895b97bbe7689cb0fe5d3ea"
+          },
+          {
+            "stage": "limited",
+            "proof_sha256": "602bd161dea82677e22b736ba6b8e40aa4e03361921e2413d698c1b083a9cced"
+          }
+        ],
+        "automatic_trigger": {
+          "observation_sha256": "e27357056dc8a85a05e6fad8d86c47a8bc6e16336178240450cce96837c1b8ad",
+          "consecutive_failures": 2,
+          "max_consecutive_failures": 1
+        }
+      },
+      "signature": "-----BEGIN SSH SIGNATURE-----\r\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgH1O1n5Df4tkgDvbRrhsKERhTUV\r\nIDI2ujWZwjP3PDMYUAAAAdYWthc2hhLm5vdGVzLWxpbmsuZGVjaXNpb24udjEAAAAAAAAA\r\nBnNoYTUxMgAAAFMAAAALc3NoLWVkMjU1MTkAAABAS6SrEYuEtWtog8exrZXzpNCqAzzwhA\r\nzE3y10jvv5zfbtRCeghyBID33XDmYDwUDThv1uEtn1Z1xyNqm1m+BYCw==\r\n-----END SSH SIGNATURE-----\r\n"
+    }
+  },
+  "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB9TtZ+Q3+LZIA720a4bChEYU1FSAyNro1mcIz9zwzGF",
+  "promoted_active": "notes-rbitnet-ocr-typed-patch",
+  "restored_active": "notes-rbitnet-ocr",
+  "events": [
+    "initialized",
+    "trial_verified",
+    "trial_verified",
+    "trial_verified",
+    "limited_admitted",
+    "trial_verified",
+    "promote",
+    "link_observed",
+    "link_observed",
+    "rollback"
+  ],
+  "signatures_reverified": true,
+  "distinct_new_sandboxes": 3
+}

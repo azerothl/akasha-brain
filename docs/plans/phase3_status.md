@@ -125,3 +125,27 @@ Chez le parent, le cas de l’empreinte absente a abouti. Le reçu de la mauvais
 Les deux bras du témoin valide ont franchi la liaison et passé les quatre tests et le vérificateur SQLite. Le parent a retrouvé la note après relance avec RapidOCR et SQLite. Les deux contrôles après relance ont échoué au premier passage du candidat. Un rejeu séparé de ce bras dans un bac neuf, avec le même gel et la graine 742, a réussi les quatre tests et les vérifications RapidOCR et SQLite après relance en 188,871 s. Les deux mesures du candidat figurent dans le relevé.
 
 Les neuf bacs se sont arrêtés et les neuf journaux d’expériences ont passé le contrôle d’intégrité SQLite. [Relevé par cas et par étape](../../bench/results/notes-link-handoff-reserved-v1.json)
+
+## Surveillance après promotion
+
+Le contrôleur Notes vérifie la décision de promotion et le seuil signé avant de router une tâche vers le candidat promu. Il évalue le rapport terminé avec les preuves du parcours Notes et journalise son empreinte. Un résultat vérifié remet le compteur d’échecs consécutifs à zéro. Chaque identifiant d’exécution est compté une seule fois.
+
+Le banc fixe la limite à un échec consécutif. Au deuxième, le signataire du contrôleur signe le retour arrière avec l’empreinte de la promotion, le seuil et la preuve qui a déclenché la décision. Le registre inscrit l’observation et la décision, puis rétablit le parent dans la même transaction. L’exécution suivante lit la nouvelle version active dans ce registre.
+
+Le lanceur revérifie la signature et les preuves des paliers publiés, puis crée une promotion surveillée dans un registre jetable. Il injecte deux reçus invalides après le succès de Git dans deux bacs neufs, puis soumet un reçu valide au graphe sélectionné après le retour arrière. Rbitnet CPU génère les diffs sur l’hôte. Git, les tests et les contrôles SQLite et RapidOCR tournent dans les bacs.
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_notes_link_monitor --runtime $pythonPortable `
+    --rbitnet $moteur $gguf $tokenizer --output $dossierEssai
+```
+
+| Exécution | Graine | Échecs consécutifs du candidat | Graphe actif après exécution | Durée |
+| --- | ---: | ---: | --- | ---: |
+| Candidat, empreinte absente | 742 | 1 | Candidat | 143,241 s |
+| Candidat, mauvaise tentative | 743 | 2 | Parent | 139,261 s |
+| Parent, délai de démarrage Windows Sandbox dépassé | 744 | — | Parent | 40,313 s |
+| Parent, rejeu après expiration du démarrage | 744 | — | Parent | 188,625 s |
+
+Dans les deux bacs du candidat, le premier diff s’est appliqué et l’adaptateur a refusé la remise avant le vérificateur. Le premier refus a laissé le candidat actif. Le second a déclenché le retour arrière signé. Le premier démarrage du parent a expiré avant l’application du diff. Le rejeu a relu le même registre, sélectionné le parent, appliqué le premier diff et réussi les quatre tests, le vérificateur SQLite, puis RapidOCR et SQLite après relance.
+
+Les signatures, la chaîne d’audit et l’intégrité du registre SQLite ont été contrôlées après fermeture des bacs et suppression de la clé de test. [Relevé et décision signée](../../bench/results/notes-link-monitor-v1.json)

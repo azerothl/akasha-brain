@@ -10,7 +10,7 @@ import subprocess
 from tempfile import TemporaryDirectory
 
 from .experience import transaction
-from .notes_evolution import active_workflow, audit
+from .notes_evolution import active_workflow, audit, evidence
 from .planning import ENVIRONMENT
 
 STAGES = ("replay", "shadow_parent", "shadow_candidate", "limited")
@@ -67,7 +67,11 @@ def verify_signature(document, signature: str, public_key: str) -> bool:
 
 
 class NotesLinkPromotion:
-    def __init__(self, path: Path, cycle_id: str, graphs: dict, freeze_sha256: str, reference_sha256: str, public_key: str):
+    def __init__(self, path: Path, cycle_id: str, graphs: dict, freeze_sha256: str, reference_sha256: str, public_key: str,
+                 *, max_consecutive_failures: int | None = None):
+        if max_consecutive_failures is not None and (
+                type(max_consecutive_failures) is not int or max_consecutive_failures < 0):
+            raise ValueError("Le seuil de surveillance doit être un entier positif ou nul.")
         self.path = path
         self.cycle_id = cycle_id
         self.graphs = graphs
@@ -75,6 +79,8 @@ class NotesLinkPromotion:
         self.freeze_sha256 = freeze_sha256
         self.reference_sha256 = reference_sha256
         self.public_key = public_key
+        self.monitor = ({"max_consecutive_failures": max_consecutive_failures}
+                        if max_consecutive_failures is not None else None)
 
     def initialize(self) -> None:
         self.path.touch(exist_ok=False)
@@ -86,7 +92,11 @@ class NotesLinkPromotion:
             db.execute("CREATE TABLE link_trials (position INTEGER PRIMARY KEY, stage TEXT UNIQUE, proof TEXT NOT NULL)")
             db.execute("CREATE TABLE link_decisions (action TEXT PRIMARY KEY, document TEXT NOT NULL, signature TEXT NOT NULL)")
             db.execute("CREATE TABLE limited_exposure (singleton INTEGER PRIMARY KEY CHECK (singleton = 1))")
-            for table in ("evolution_events", "workflow_versions", "link_trials", "link_decisions"):
+            db.execute("""CREATE TABLE link_observations (
+                position INTEGER PRIMARY KEY, run_id TEXT UNIQUE NOT NULL,
+                verified INTEGER NOT NULL CHECK (verified IN (0, 1)), proof TEXT NOT NULL
+            )""")
+            for table in ("evolution_events", "workflow_versions", "link_trials", "link_decisions", "link_observations"):
                 for action in ("UPDATE", "DELETE"):
                     db.execute(f"""CREATE TRIGGER freeze_{table}_{action.lower()} BEFORE {action} ON {table}
                                    BEGIN SELECT RAISE(ABORT, 'append-only'); END""")
@@ -101,15 +111,68 @@ class NotesLinkPromotion:
     def active(self) -> str:
         with transaction(self.path) as db:
             db.execute("BEGIN")
-            current = active_workflow(db)
-            latest = db.execute("SELECT document, signature FROM link_decisions ORDER BY rowid DESC LIMIT 1").fetchone()
-            if latest is None and current == self.parent:
+            return self._active(db)
+
+    def _active(self, db) -> str:
+        current = active_workflow(db)
+        latest = db.execute("SELECT document, signature FROM link_decisions ORDER BY rowid DESC LIMIT 1").fetchone()
+        if latest is None and current == self.parent:
+            return current
+        if latest is not None:
+            decision = json.loads(latest[0])
+            if (decision["to"] == current and (current != self.candidate or decision.get("monitor") == self.monitor)
+                    and verify_signature(decision, latest[1], self.public_key)):
                 return current
-            if latest is not None:
-                decision = json.loads(latest[0])
-                if decision["to"] == current and verify_signature(decision, latest[1], self.public_key):
-                    return current
-            raise RuntimeError("Le graphe actif ne correspond pas à une décision vérifiée.")
+        raise RuntimeError("Le graphe actif ou son seuil ne correspond pas à une décision vérifiée.")
+
+    def run_active(self, execute, *, sign=None) -> tuple[dict, dict | None]:
+        selected = self.active()
+        if selected == self.candidate and self.monitor is not None:
+            if sign is None:
+                raise RuntimeError("La surveillance du candidat exige le signataire du retour arrière.")
+            report = execute(selected)
+            return report, self._observe_active(report, sign)
+        return execute(selected), None
+
+    def _observe_active(self, report: dict, sign) -> dict | None:
+        run_id = report.get("sandbox_id") or report.get("experience_record_id")
+        if (not run_id or report["graph"] != self.graphs["candidate"]
+                or report["status"] not in ("passed", "failed")):
+            raise RuntimeError("La surveillance exige un rapport terminé du candidat actif.")
+        verified = evidence(report, desktop=True)["verified"]
+        proof = {
+            "run_id": run_id, "sandbox_id": report.get("sandbox_id"), "verified": verified,
+            "status": report["status"], "error_code": (report.get("error") or {}).get("code"),
+            "report_sha256": digest(report),
+        }
+        with transaction(self.path) as db:
+            db.execute("BEGIN IMMEDIATE")
+            if self._active(db) != self.candidate:
+                return None
+            recorded = db.execute("SELECT proof FROM link_observations WHERE run_id = ?", (run_id,)).fetchone()
+            if recorded:
+                if json.loads(recorded[0]) != proof:
+                    raise RuntimeError("L'observation de cette exécution a changé.")
+                return None
+            db.execute("INSERT INTO link_observations (run_id, verified, proof) VALUES (?, ?, ?)",
+                       (run_id, verified, canonical(proof).decode()))
+            consecutive, = db.execute("""SELECT COUNT(*) FROM link_observations
+                WHERE position > COALESCE((SELECT MAX(position) FROM link_observations WHERE verified = 1), 0)
+            """).fetchone()
+            limit = self.monitor["max_consecutive_failures"]
+            condition = {"observation_sha256": digest(proof), "consecutive_failures": consecutive,
+                         "max_consecutive_failures": limit}
+            audit(db, self.cycle_id, "link_observed", condition)
+            result = {"proof": proof, **condition, "active": self.candidate}
+            if consecutive > limit:
+                rollback = self.decision(db, "rollback")
+                rollback["automatic_trigger"] = condition
+                signature = sign(json.loads(canonical(rollback)))
+                if not verify_signature(rollback, signature, self.public_key):
+                    raise RuntimeError("Signature Ed25519 invalide pour le retour arrière automatique.")
+                self._save_decision(db, rollback, signature)
+                result.update(active=self.parent, rollback={"document": rollback, "signature": signature})
+            return result
 
     def trials(self, db) -> dict:
         return {stage: json.loads(proof) for stage, proof in db.execute("SELECT stage, proof FROM link_trials ORDER BY position")}
@@ -162,12 +225,15 @@ class NotesLinkPromotion:
             if not verify_signature(parent_decision, prior[2], self.public_key):
                 raise RuntimeError("La décision de promotion antérieure est invérifiable.")
             previous = digest({"document": parent_decision, "signature": prior[2]})
-        return {
+        document = {
             "version": 1, "action": action, "cycle": self.cycle_id, "environment": ENVIRONMENT,
             "from": source, "to": target, "plans": plans, "freeze_sha256": self.freeze_sha256,
             "reference_sha256": self.reference_sha256, "previous_decision_sha256": previous,
             "trials": [{"stage": stage, "proof_sha256": digest(proof)} for stage, proof in trials.items()],
         }
+        if action == "promote" and self.monitor is not None:
+            document["monitor"] = self.monitor.copy()
+        return document
 
     def prepare(self, action: str) -> dict:
         with transaction(self.path) as db:
@@ -183,8 +249,13 @@ class NotesLinkPromotion:
             db.execute("BEGIN IMMEDIATE")
             if document != self.decision(db, document["action"]):
                 raise RuntimeError("La décision signée ne correspond pas à l'état du registre.")
-            db.execute("INSERT INTO link_decisions VALUES (?, ?, ?)",
-                       (document["action"], snapshot.decode(), signature))
-            db.execute("UPDATE active_workflow SET workflow = ? WHERE singleton = 1", (document["to"],))
-            audit(db, self.cycle_id, document["action"], {"from": document["from"], "to": document["to"],
-                                                       "decision_sha256": digest(document)})
+            self._save_decision(db, document, signature)
+
+    def _save_decision(self, db, document: dict, signature: str) -> None:
+        db.execute("INSERT INTO link_decisions VALUES (?, ?, ?)",
+                   (document["action"], canonical(document).decode(), signature))
+        db.execute("UPDATE active_workflow SET workflow = ? WHERE singleton = 1", (document["to"],))
+        event = {"from": document["from"], "to": document["to"], "decision_sha256": digest(document)}
+        if "automatic_trigger" in document:
+            event["automatic_trigger"] = document["automatic_trigger"]
+        audit(db, self.cycle_id, document["action"], event)
