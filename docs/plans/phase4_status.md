@@ -109,3 +109,32 @@ Chaque réexécution ouvre un bac neuf avec les mêmes poids, la graine 742, hui
 La référence obtient **0/2 au premier diff et 1/2 en fin de parcours**. Le premier diff « Terminées » laisse une ligne en trop, corrigée à la reprise. Les deux diffs « Toutes » omettent respectivement deux et trois lignes. La v3 obtient **2/2 au premier diff et 2/2 en fin de parcours**.
 
 Les six diffs se sont appliqués avec Git et ont passé le contrôle d’empreinte. Les filtres hors cible et SQLite ont été vérifiés sur chaque diff. Les deux diffs v3 ont franchi la garde de couverture et passé les trois filtres. Les quatre bacs ont été arrêtés. Les temps incluent le démarrage et l’arrêt des bacs. [Relevé comparatif réservé](../../bench/results/phase4-tasks-reserved-v1.json)
+
+## Routage et retrait du spécialiste Tâches
+
+Le point d’entrée `python -m akasha_brain.tasks_routing` gère le routage SQL du seul banc `bench-tasks`. Il admet la v3 sur la qualification publiée, un objectif Tâches et un contrat de couverture lié aux fichiers du cas et à la consigne. Pour la v3, le schéma SQLite doit correspondre à celui du banc figé. Dans le bac, le filtre localisé doit aussi correspondre au contrat avant la génération.
+
+Le registre local conserve la progression candidat, actif, déprécié puis retiré. Une proposition sans contrat compatible ou un spécialiste devenu invérifiable est dirigé vers la référence. Le registre journalise le retrait et chaque nouvel appel Tâches sélectionne alors la référence. La vérification rejoue « Terminées » à contrat identique dans deux bacs et exerce les parcours Notes et projet jetable pendant que la v3 est active.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.tasks_routing init --registry $registre
+.\.venv\Scripts\python.exe -m akasha_brain.tasks_routing bind --case $cas --plan $plan --target $filtre --output $contrat
+.\.venv\Scripts\python.exe -m akasha_brain.tasks_routing activate --registry $registre
+.\.venv\Scripts\python.exe -m akasha_brain.tasks_routing run --registry $registre --case $cas --coverage $contrat `
+    --runtime $pythonPortable --rbitnet $moteur $gguf $tokenizer --output $dossierEssai
+.\.venv\Scripts\python.exe -m akasha_brain.tasks_routing retire --registry $registre
+```
+
+| État du registre | Graphe sélectionné sur « Terminées » | Verdict | Durée |
+| --- | --- | --- | ---: |
+| Actif | V3 | Premier diff accepté | 102,969 s |
+| Retiré | Référence | Second diff accepté | 201,572 s |
+
+Le premier diff de la référence a reproduit l’écart d’une ligne en trop. Le second a validé les trois filtres. SQLite est resté intact après chaque diff. Les deux décisions de routage et le retrait figurent dans le journal vérifié après réouverture du registre.
+
+Pendant l’activation, Notes a passé les quatre tests, le vérificateur SQLite, puis RapidOCR et SQLite après relance. Le projet jetable a passé la validation isolée, le refus d’application sans accord et l’application avec accord. Les trois graphes Notes, le routage des autres familles et les sorties des gabarits de communication ont donné le même résultat à l’initialisation, à l’activation et après retrait. Les quatre bacs se sont arrêtés. [Relevé de routage et de retrait](../../bench/results/phase4-tasks-routing-v1.json)
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_phase4_tasks_routing --runtime $pythonPortable `
+    --rbitnet $moteur $gguf $tokenizer --output $dossierDeValidation
+```
