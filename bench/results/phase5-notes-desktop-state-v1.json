@@ -1,0 +1,135 @@
+{
+  "protocol": "phase5-notes-desktop-state-v1",
+  "status": "passed",
+  "scope": "synthetic_notes_reference",
+  "save_action": "fixed synthetic fixture through the Notes Tk save button",
+  "inputs_sha256": {
+    "notes_app.py": "d5b3e7e52210116da488e5d99f24d33b7acc2c263e7e0bfdd17293a8a4086e34",
+    "notes_store.py": "f9f41e1680d1f6d3c55b64cf9b873ab18dd386aca516e316c2472bab4af1e9dc",
+    "observe_notes_desktop.ps1": "6924ce9b457dfcddee614088139ba029afc6172d492449bcac079f0fde083eb8",
+    "observe_notes_desktop.py": "fcd8d3f7c82bfe53f26254856ff2b1fdfc40d47ff688be4dad7508d8bdf19bcf",
+    "probe_notes_isolation.ps1": "43ca6674cf7af18fc8ed9d0d6b4f6796c500f155f26382459a92a26ecd85d8cd",
+    "probe_guest_channels.ps1": "0e3b749c11b3bce3ef7da7ec62d71ee2c2cbd51cb6e06c88c9e88c5ce0c63f14"
+  },
+  "sandbox_id": "db00b86f-e61a-4102-80e3-4868979319cc",
+  "observations": {
+    "before_save": {
+      "type": "DesktopState",
+      "version": "1.0.0",
+      "observation_window": {
+        "started_at": "2026-11-16T22:16:40.910102+00:00",
+        "finished_at": "2026-11-16T22:16:51.088464+00:00",
+        "clock": "host_utc"
+      },
+      "provenance": {
+        "scope": "disposable_notes_in_windows_sandbox",
+        "process": "Windows Get-Process",
+        "window": "Windows UI Automation and Win32 GetForegroundWindow",
+        "sqlite": "separate Python process, SQLite read-only"
+      },
+      "process": {
+        "pid": 8788,
+        "alive": true
+      },
+      "window": {
+        "title": "Notes — banc Akasha",
+        "visible": true,
+        "foreground_owned_by_process": true,
+        "uia_focus_owned_by_process": true
+      },
+      "sqlite": {
+        "integrity_check": "ok",
+        "row_count": 0,
+        "exact_fixture_present": false
+      },
+      "unobserved": [
+        "widget_values",
+        "screenshot"
+      ]
+    },
+    "after_save": {
+      "type": "DesktopState",
+      "version": "1.0.0",
+      "observation_window": {
+        "started_at": "2026-11-16T22:16:40.910102+00:00",
+        "finished_at": "2026-11-16T22:16:51.088464+00:00",
+        "clock": "host_utc"
+      },
+      "provenance": {
+        "scope": "disposable_notes_in_windows_sandbox",
+        "process": "Windows Get-Process",
+        "window": "Windows UI Automation and Win32 GetForegroundWindow",
+        "sqlite": "separate Python process, SQLite read-only"
+      },
+      "process": {
+        "pid": 8788,
+        "alive": true
+      },
+      "window": {
+        "title": "Notes — banc Akasha",
+        "visible": true,
+        "foreground_owned_by_process": true,
+        "uia_focus_owned_by_process": true
+      },
+      "sqlite": {
+        "integrity_check": "ok",
+        "row_count": 1,
+        "exact_fixture_present": true
+      },
+      "unobserved": [
+        "widget_values",
+        "screenshot"
+      ]
+    },
+    "after_restart": {
+      "type": "DesktopState",
+      "version": "1.0.0",
+      "observation_window": {
+        "started_at": "2026-11-16T22:16:40.910102+00:00",
+        "finished_at": "2026-11-16T22:16:51.088464+00:00",
+        "clock": "host_utc"
+      },
+      "provenance": {
+        "scope": "disposable_notes_in_windows_sandbox",
+        "process": "Windows Get-Process",
+        "window": "Windows UI Automation and Win32 GetForegroundWindow",
+        "sqlite": "separate Python process, SQLite read-only"
+      },
+      "process": {
+        "pid": 4592,
+        "alive": true
+      },
+      "window": {
+        "title": "Notes — banc Akasha",
+        "visible": true,
+        "foreground_owned_by_process": true,
+        "uia_focus_owned_by_process": true
+      },
+      "sqlite": {
+        "integrity_check": "ok",
+        "row_count": 1,
+        "exact_fixture_present": true
+      },
+      "unobserved": [
+        "widget_values",
+        "screenshot"
+      ]
+    }
+  },
+  "isolation": {
+    "mount_and_scratch_exit": 17679,
+    "channels_exit": 16655
+  },
+  "capture_exit": 17920,
+  "capture_wall_s": 10.178,
+  "checks": {
+    "notes_process_alive_each_time": true,
+    "window_visible_and_focused_each_time": true,
+    "same_process_after_save": true,
+    "different_process_after_restart": true,
+    "independent_sqlite_empty_then_exact_fixture_twice": true,
+    "staged_sources_unchanged": true
+  },
+  "sandbox_stopped": true,
+  "wall_s": 35.599
+}

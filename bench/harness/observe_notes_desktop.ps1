@@ -1,0 +1,141 @@
+param(
+    [Parameter(Mandatory = $true)][ValidatePattern('^[a-f0-9]{8}$')][string]$Tag,
+    [ValidateSet('capture', 'before_save', 'after_save', 'after_restart')][string]$Mode = 'capture'
+)
+
+$ErrorActionPreference = 'Stop'
+$work = Join-Path ([IO.Path]::GetTempPath()) "AkashaDesktopState-$Tag"
+$replayPath = Join-Path $work 'observations.json'
+if ($Mode -ne 'capture') {
+    $observations = Get-Content -LiteralPath $replayPath -Raw | ConvertFrom-Json
+    exit ([int]$observations.$Mode)
+}
+
+Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public static class DesktopStateForeground {
+    [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr handle, out uint pid);
+    public static uint Owner() {
+        uint pid;
+        GetWindowThreadProcessId(GetForegroundWindow(), out pid);
+        return pid;
+    }
+}
+'@
+
+$runtime = Join-Path $work 'python'
+$db = Join-Path $work 'notes.db'
+$driver = Join-Path $work 'observe_notes_desktop.py'
+$python = Join-Path $runtime 'python.exe'
+$pythonw = Join-Path $runtime 'pythonw.exe'
+$title = "Notes $([char]0x2014) banc Akasha"
+$app = $null
+$failure = 21
+
+function Get-NotesWindow([int]$AppId) {
+    $element = [System.Windows.Automation.AutomationElement]
+    $owner = [System.Windows.Automation.PropertyCondition]::new($element::ProcessIdProperty, $AppId)
+    $name = [System.Windows.Automation.PropertyCondition]::new($element::NameProperty, $title)
+    $match = [System.Windows.Automation.AndCondition]::new($owner, $name)
+    return $element::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Children, $match)
+}
+
+function Test-NotesFocus([int]$AppId) {
+    try {
+        $focused = [System.Windows.Automation.AutomationElement]::FocusedElement
+        return ($null -ne $focused -and $focused.Current.ProcessId -eq $AppId)
+    } catch [System.Windows.Automation.ElementNotAvailableException] {
+        return $false
+    }
+}
+
+function Focus-Notes([int]$AppId) {
+    $shell = New-Object -ComObject WScript.Shell
+    for ($attempt = 0; $attempt -lt 40; $attempt++) {
+        $window = Get-NotesWindow $AppId
+        if ($null -ne $window) {
+            if ([DesktopStateForeground]::Owner() -eq $AppId -and (Test-NotesFocus $AppId)) {
+                return
+            }
+            $null = $shell.AppActivate($AppId)
+            try { $window.SetFocus() } catch [System.InvalidOperationException] {}
+        }
+        Start-Sleep -Milliseconds 200
+    }
+    throw 'Notes did not expose a foreground window and UIA focus.'
+}
+
+function Read-Database {
+    & $python $driver sqlite $db
+    if ($LASTEXITCODE -notin 0x4650, 0x4651) {
+        throw "Unexpected SQLite result: $LASTEXITCODE"
+    }
+    return ($LASTEXITCODE - 0x4650)
+}
+
+function Observe-Notes([int]$AppId, [int]$DatabaseResult) {
+    if ($AppId -le 0 -or $AppId -gt 0xFFFFF) { throw 'PID outside packet range.' }
+    $packet = 0x60000000 -bor ($AppId -shl 8) -bor ($DatabaseResult -shl 5)
+    if (Get-Process -Id $AppId -ErrorAction SilentlyContinue) { $packet = $packet -bor 1 }
+    $window = Get-NotesWindow $AppId
+    if ($null -ne $window) {
+        $packet = $packet -bor 2
+        if (!$window.Current.IsOffscreen) { $packet = $packet -bor 4 }
+    }
+    if ([DesktopStateForeground]::Owner() -eq $AppId) { $packet = $packet -bor 8 }
+    if (Test-NotesFocus $AppId) { $packet = $packet -bor 16 }
+    return $packet
+}
+
+try {
+    $null = New-Item -ItemType Directory -Path $work
+    foreach ($name in @('python', 'notes_app.py', 'notes_store.py', 'observe_notes_desktop.py')) {
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination $work -Recurse
+    }
+    $env:PYTHONHOME = $runtime
+    $env:PYTHONNOUSERSITE = '1'
+    $env:PYTHONDONTWRITEBYTECODE = '1'
+    $env:PYTHONUTF8 = '1'
+    $env:TCL_LIBRARY = Join-Path $runtime 'tcl8.6'
+    $env:TK_LIBRARY = Join-Path $runtime 'tk8.6'
+
+    $failure = 22
+    $argsOpen = '"{0}" open "{1}"' -f $driver, $db
+    $app = Start-Process -FilePath $pythonw -ArgumentList $argsOpen -WorkingDirectory $work -WindowStyle Hidden -PassThru
+    Focus-Notes $app.Id
+    $before = Observe-Notes $app.Id (Read-Database)
+
+    $failure = 23
+    $null = New-Item -ItemType File -Path (Join-Path $work 'save.request')
+    $dbResult = 0
+    for ($attempt = 0; $attempt -lt 20 -and $dbResult -eq 0; $attempt++) {
+        Start-Sleep -Milliseconds 100
+        $dbResult = Read-Database
+    }
+    Focus-Notes $app.Id
+    $after = Observe-Notes $app.Id $dbResult
+    $oldId = $app.Id
+
+    $failure = 24
+    if (!$app.CloseMainWindow() -or !$app.WaitForExit(4000)) { throw 'Notes did not close.' }
+    $appPath = Join-Path $work 'notes_app.py'
+    $argsRestart = '"{0}" "{1}"' -f $appPath, $db
+    $app = Start-Process -FilePath $pythonw -ArgumentList $argsRestart -WorkingDirectory $work -WindowStyle Hidden -PassThru
+    if ($app.Id -eq $oldId) { throw 'Notes PID reused.' }
+    Focus-Notes $app.Id
+    $restarted = Observe-Notes $app.Id (Read-Database)
+    @{ before_save = $before; after_save = $after; after_restart = $restarted } |
+        ConvertTo-Json -Compress | Set-Content -LiteralPath $replayPath -Encoding Ascii
+    exit 0x4600
+} catch {
+    exit $failure
+} finally {
+    if ($null -ne $app -and !$app.HasExited) {
+        if (!$app.CloseMainWindow() -or !$app.WaitForExit(1500)) {
+            Stop-Process -InputObject $app -ErrorAction SilentlyContinue
+        }
+    }
+}
