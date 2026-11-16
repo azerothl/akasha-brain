@@ -91,3 +91,9 @@ Le registre a refusé la promotion avant les preuves et rejeté la décision alt
     --reference bench/results/notes-link-adapter-frozen-v1.json --runtime $pythonPortable `
     --rbitnet $moteur $gguf $tokenizer --output $dossierEssai
 ```
+
+## Vérificateur de transition avant suppression
+
+L’empreinte de la proposition lie désormais l’identité du fichier et ses métadonnées de révision à son contenu. Après les accords et juste avant l’effet, le vérificateur rouvre le fichier sans partage d’écriture ou de suppression. Il contrôle son identité et son empreinte, puis utilise ce même handle pour la suppression. Les propositions existantes sont vérifiées avec leur empreinte de contenu approuvée et la révision observée au début de l’application. [Partage des fichiers Windows](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew) · [Disposition d’un fichier par handle](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_disposition_info)
+
+Sur un projet jetable, Windows Sandbox a validé la proposition de suppression. La CLI a ensuite refusé l’application sans accord explicite de suppression, avec un contenu modifié et après remplacement du fichier par un autre aux mêmes octets et à la même date de modification. Le dernier cas a été bloqué par le vérificateur de transition. Les fichiers sont restés intacts lors des refus et aucun effet n’est resté en attente après le refus du vérificateur. [Relevé de validation](../../bench/results/project-delete-transition-v1.json)

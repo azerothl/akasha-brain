@@ -1,7 +1,7 @@
 """Préparer et approuver une opération sur un fichier d'un projet local."""
 
 import argparse
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from difflib import unified_diff
@@ -36,6 +36,7 @@ from .project_dependencies import create_request, download, stage_dependencies, 
 from .project_evolution import (
     ARTIFACTS, capture_project_memory, check_sample, collect, erase, finish_replay, load_sample, register_replay,
 )
+from .project_transition import deletion_revision, reject_stale_deletion, verify_deletion
 
 SECRET_PATHS = {".env", ".netrc", ".npmrc", ".pypirc", ".ssh", ".aws", "id_rsa", "id_ed25519",
                 "credentials.json", "secrets.json"}
@@ -225,11 +226,18 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
         reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Les chemins de l'opération et du test doivent être distincts.")
     if move_to is not None:
         project_file(project, move_to, absent=True)
+    if delete:
+        source = project_file(project, target)
+        revision = deletion_revision(source.stat(follow_symlinks=False))
     original = snapshot(project, names)
     hashes = fingerprints(original)
     operation = "delete" if delete else "move" if move_to is not None else "replace"
     manifest = {"version": 2, "project": project_id, "operation": operation, "target": target,
                 "test": test, "files": hashes}
+    if delete:
+        if deletion_revision(source.stat(follow_symlinks=False)) != revision:
+            reject_stale_deletion()
+        manifest["delete_revision"] = revision
     if move_to is not None:
         manifest["destination"] = move_to
     patch = None
@@ -528,8 +536,26 @@ def apply_approved(project: Path, proposal: Path, approved_digest: str | None,
             apply_replacement(project, proposal, manifest, current[target], begin_effect)
         elif operation == "delete":
             source = project_file(project, target)
+            revision = manifest.get("delete_revision")
+            if revision is None:
+                revision = deletion_revision(source.stat(follow_symlinks=False))
             begin_effect()
-            source.unlink()
+            with ExitStack() as verified:
+                try:
+                    remove = verified.enter_context(verify_deletion(source, manifest["files"][target], revision))
+                    companions = {name: checksum for name, checksum in manifest["files"].items() if name != target}
+                    check_current(project, {**manifest, "files": companions})
+                    if path.read_bytes() != encoded:
+                        reject(ErrorCode.APPROVAL_REQUIRED, "La demande d'approbation a changé.", risk_class="R3")
+                    require_fresh(expires_at)
+                except ProjectError:
+                    discard_unstarted_application(proposal, key)
+                    raise
+                except OSError:
+                    discard_unstarted_application(proposal, key)
+                    reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Impossible de vérifier la suppression.",
+                           reason="transition_unverifiable", guard="transition", risk_class="R3")
+                remove()
         else:
             source = project_file(project, target)
             target_path = project_file(project, destination, absent=True)

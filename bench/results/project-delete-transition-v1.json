@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "preparation": {
+    "status": "passed",
+    "guest_exit_code": 18176,
+    "sandbox_stopped": true,
+    "read_only_input": true
+  },
+  "cases": {
+    "explicit_approval_missing": {
+      "code": "approval_required",
+      "file_preserved": true,
+      "no_application_pending": true
+    },
+    "changed_content": {
+      "code": "contract_precondition_failed",
+      "reason": "project_changed",
+      "file_preserved": true
+    },
+    "replaced_same_bytes_and_mtime": {
+      "code": "contract_precondition_failed",
+      "reason": "project_changed",
+      "guard": "transition",
+      "file_preserved": true,
+      "no_application_pending": true
+    }
+  },
+  "companion_preserved": true,
+  "audit": {
+    "status": "passed",
+    "entries_verified": 4
+  }
+}

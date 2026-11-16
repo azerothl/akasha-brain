@@ -1,5 +1,6 @@
 import json
 from datetime import timedelta
+import os
 from pathlib import Path
 import sqlite3
 import sys
@@ -317,3 +318,56 @@ def test_stale_operation_preserves_the_source_and_any_existing_destination(file_
     else:
         assert (root / source).read_bytes() == payload
         assert (root / destination).read_bytes() == b"destination created"
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Le parcours cible Windows Sandbox.")
+@pytest.mark.parametrize("file_operation", ["delete"], indirect=True)
+def test_delete_transition_refuses_replaced_file_with_same_bytes_and_mtime(file_operation):
+    root, output, receipt, _, source, _, payload = file_operation
+    path = root / source
+    previous = path.stat()
+    path.rename(root / "reviewed.bin")
+    path.write_bytes(payload)
+    os.utime(path, ns=(previous.st_atime_ns, previous.st_mtime_ns))
+    manifest = json.loads((output / "proposal.json").read_bytes())
+    assert project.check_current(root, manifest)[source] == payload
+
+    with pytest.raises(project.ProjectError) as error:
+        project.apply(root, output, receipt, approved_delete=source)
+    assert error.value.error.details == {"reason": "project_changed", "guard": "transition", "risk_class": "R3"}
+    assert path.read_bytes() == (root / "reviewed.bin").read_bytes() == payload
+    assert project_approval.application_state(output, project_approval.action_key(manifest)) is None
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Le parcours cible Windows Sandbox.")
+@pytest.mark.parametrize("file_operation", ["delete"], indirect=True)
+def test_delete_transition_checks_after_writing_the_application_checkpoint(file_operation, monkeypatch):
+    root, output, receipt, _, source, _, _ = file_operation
+    manifest = json.loads((output / "proposal.json").read_bytes())
+    original_mark = project.mark_application
+
+    def mark(proposal, key, state):
+        original_mark(proposal, key, state)
+        if state == "applying":
+            (root / source).write_bytes(b"changed after checkpoint")
+
+    monkeypatch.setattr(project, "mark_application", mark)
+    with pytest.raises(project.ProjectError) as error:
+        project.apply(root, output, receipt, approved_delete=source)
+    assert error.value.error.details["guard"] == "transition"
+    assert (root / source).read_bytes() == b"changed after checkpoint"
+    assert project_approval.application_state(output, project_approval.action_key(manifest)) is None
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Le parcours cible Windows Sandbox.")
+@pytest.mark.parametrize("file_operation", ["delete"], indirect=True)
+def test_delete_transition_accepts_an_existing_proposal_with_its_approved_digest(file_operation):
+    root, output, _, _, source, _, _ = file_operation
+    path = output / "proposal.json"
+    manifest = json.loads(path.read_bytes())
+    del manifest["delete_revision"]
+    encoded = json.dumps(manifest).encode("utf-8")
+    path.write_bytes(encoded)
+
+    assert project.apply(root, output, project.digest(encoded), approved_delete=source)["status"] == "applied"
+    assert not (root / source).exists()
