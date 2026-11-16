@@ -15,6 +15,7 @@ from .retention import DEFAULT_POLICY, deadline, load_policy
 TECHNICAL_RESULTS = {
     "localize": ("tests", "failures", "errors", "skips", "pytest_exit"),
     "generate_diff": ("diff_applied", "git_apply_check", "guest_sha256_verified"),
+    "adapt_patch_receipt": ("input_name", "diff_sha256", "conversion_ms"),
     "prepare_reference": ("reference_sha256_verified_in_guest",),
     "verify": ("passed", "pytest_exit", "sqlite_verifier_exit"),
     "verify_desktop": ("guest_exit_code", "desktop"),

@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 from copy import deepcopy
+from dataclasses import asdict
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
@@ -21,9 +22,11 @@ from bench.run_guided_repair import (
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
 from .experience import record_experience
+from .link_diagnostics import diagnose_links
 from .memory import NotesMemory
 from .memory_store import MemoryRefusal
 from .notes_desktop import desktop_patch_matches, load_desktop_protocol, prepare_desktop, verify_desktop
+from .notes_link_candidate import adapt_patch_receipt, compile_candidate
 from .notes_repair import RbitnetPaths, generate_patch, load_repair_prompt, retry_prompt, stage_git
 from .notes_sandbox import (
     CHANNELS, POWERSHELL, active_sandboxes, guest_exit, read_profile, require_step_permission, wait_for_guest,
@@ -81,7 +84,7 @@ def stage_reused_diff(stage: Path, name: str, diff: bytes, protocol: dict) -> di
 def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: RbitnetPaths | None = None,
               *, first_diff_seed: int | None = None, rapidocr: bool = False,
               experience_db: Path | None = None, origin: str = "task", progress=None,
-              reused_diff: bytes | None = None, check_reuse=None) -> dict:
+              reused_diff: bytes | None = None, check_reuse=None, link_candidate: bool = False) -> dict:
     reused = reused_diff is not None
     if reused and (repair is not None or check_reuse is None):
         raise ValueError("Le rejeu exige un contrôle de la bibliothèque et un seul fournisseur de diff.")
@@ -91,6 +94,13 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
         raise PlanningError(AkashaError(
             ErrorCode.CONTRACT_PRECONDITION_FAILED, "Cet exécuteur est réservé au banc Notes.",
         ))
+    if link_candidate:
+        if repair is None or repair.backend != "cpu" or experience_db is not None:
+            raise PlanningError(AkashaError(
+                ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le candidat exige Rbitnet CPU et un journal isolé.",
+            ))
+        plan = compile_candidate(plan)
+        origin = "link_candidate"
     # Le script bureau figé cible la copie préparée par le premier diff.
     if (rapidocr or reused) and first_diff_seed is None:
         first_diff_seed = 742
@@ -192,9 +202,13 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
             try:
                 if not set(step["depends_on"]).issubset(completed):
                     raise RuntimeError("Les dépendances du graphe ne sont pas vérifiées.")
-                require_step_permission(step, goal, active_sandboxes() == [sandbox_id])
-                if reused:
-                    check_reuse()
+                try:
+                    require_step_permission(step, goal, active_sandboxes() == [sandbox_id])
+                    if reused:
+                        check_reuse()
+                except (PlanningError, MemoryRefusal):
+                    row["authorization"] = "denied"
+                    raise
                 row["authorization"] = "allowed"
                 row["status"] = "running"
                 publish()
@@ -207,7 +221,8 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                 row["wall_s"] = round(perf_counter() - began, 3)
                 publish()
 
-        localize, prepare_step, verify, *desktop_steps = plan["steps"]
+        localize, prepare_step, *validation_steps = plan["steps"]
+        adapter, verify, *desktop_steps = validation_steps if link_candidate else [None, *validation_steps]
         with trace_step(localize) as row:
             results = guest_validate(sandbox_id, tag, "control", locate=True)
             row["result"] = results
@@ -245,7 +260,15 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                             row["status"] = "passed"
                         else:
                             proposal["diff_detail"] = f"Guest patch rejected (exit code {code})."
-                validation = validate_prepared(name, attempt) if proposal["diff_applied"] else None
+                verify_input = name
+                if adapter is not None and proposal["diff_applied"]:
+                    with trace_step(adapter, attempt) as row:
+                        began = perf_counter()
+                        verified_patch = adapt_patch_receipt(proposal, stage, desktop_protocol["diff_sha256"])
+                        row["result"] = {**asdict(verified_patch), "conversion_ms": round((perf_counter() - began) * 1000, 3)}
+                        row["status"] = "passed"
+                    verify_input = verified_patch.input_name
+                validation = validate_prepared(verify_input, attempt) if proposal["diff_applied"] else None
                 if validation and validation["status"] == "passed":
                     report["accepted_attempt"] = attempt
                     break
@@ -315,6 +338,7 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                 report["status"] = "failed"
                 report["cleanup_error"] = str(exc)
         report["wall_s"] = round(perf_counter() - wall, 3)
+        report["link_diagnostics"] = {"version": "1.0.0", "links": diagnose_links(plan, report["trace"])}
         journal = experience_db if experience_db is not None else output / "experiences.db"
         try:
             report["experience_record_id"] = record_experience(journal, report, origin)

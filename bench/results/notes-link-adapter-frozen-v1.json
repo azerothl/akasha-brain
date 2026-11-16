@@ -1,0 +1,1120 @@
+{
+  "status": "passed",
+  "freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+  "pairs": [
+    {
+      "status": "passed",
+      "seed": 742,
+      "cpu_threads": 8,
+      "model_ram_mib": 8192,
+      "order": [
+        "parent",
+        "candidate"
+      ],
+      "pairs": 1,
+      "runs": {
+        "parent": {
+          "graph_id": "notes-rbitnet-ocr",
+          "version": "1.0.0",
+          "graph_sha256": "50ccc2baadaca1cbeb291dc13533f8f229a5347c7115727e33349d584df2f837",
+          "verified": true,
+          "sandbox_id": "80dc77e3-be8f-49d6-ba0c-8e0d095bd43e",
+          "error": null,
+          "steps_s": {
+            "localize": 13.713,
+            "generate_diff": 51.184,
+            "verify": 5.341,
+            "verify_desktop": 25.121
+          },
+          "links": [
+            {
+              "source": "localize",
+              "target": "generate_diff",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "generate_diff",
+              "target": "verify",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "verify",
+              "target": "verify_desktop",
+              "attempt": 1,
+              "status": "verified"
+            }
+          ],
+          "accepted_attempt": 1,
+          "total_s": 117.732,
+          "rbitnet_startup_s": 1.026,
+          "rbitnet_generation_s": 46.472,
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify_desktop",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": {
+              "ocr_save_button_used": true,
+              "app_restarted": true,
+              "ocr_note_selected_after_restart": true,
+              "ocr_content_visible": true,
+              "sqlite_exact_row": true
+            },
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          }
+        },
+        "candidate": {
+          "graph_id": "notes-rbitnet-ocr-typed-patch",
+          "version": "1.1.0",
+          "graph_sha256": "2969f1dd2d38d2efdb202d9f0fab4ab3707746c4996a5cc9ecbc56fb3c60b00f",
+          "verified": true,
+          "sandbox_id": "bc67b5eb-32e4-47fb-93ec-474519c7c6d5",
+          "error": null,
+          "steps_s": {
+            "localize": 12.831,
+            "generate_diff": 51.084,
+            "adapt_patch_receipt": 0.271,
+            "verify": 5.473,
+            "verify_desktop": 23.808
+          },
+          "links": [
+            {
+              "source": "localize",
+              "target": "generate_diff",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "generate_diff",
+              "target": "adapt_patch_receipt",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "adapt_patch_receipt",
+              "target": "verify",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "verify",
+              "target": "verify_desktop",
+              "attempt": 1,
+              "status": "verified"
+            }
+          ],
+          "accepted_attempt": 1,
+          "total_s": 117.126,
+          "rbitnet_startup_s": 0.517,
+          "rbitnet_generation_s": 46.915,
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "adapt_patch_receipt",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify_desktop",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": {
+              "ocr_save_button_used": true,
+              "app_restarted": true,
+              "ocr_note_selected_after_restart": true,
+              "ocr_content_visible": true,
+              "sqlite_exact_row": true
+            },
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          }
+        }
+      },
+      "same_diff_and_checks": true,
+      "separate_sandboxes": true,
+      "matched_inputs": true,
+      "adapter": {
+        "input_name": "rbitnet-1",
+        "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "conversion_ms": 0.572
+      },
+      "common_outcome": {
+        "status": "passed",
+        "steps": [
+          {
+            "id": "localize",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "generate_diff",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify_desktop",
+            "status": "passed",
+            "authorization": "allowed"
+          }
+        ],
+        "diff_applied": true,
+        "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "git_apply_check": true,
+        "guest_sha256_verified": true,
+        "tests": [
+          {
+            "name": "test_saved_note_survives_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_two_notes_with_accents_multiline_survive_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_save_acknowledged_in_session",
+            "status": "passed"
+          },
+          {
+            "name": "test_select_redisplays_content",
+            "status": "passed"
+          }
+        ],
+        "sqlite": 0,
+        "desktop": {
+          "ocr_save_button_used": true,
+          "app_restarted": true,
+          "ocr_note_selected_after_restart": true,
+          "ocr_content_visible": true,
+          "sqlite_exact_row": true
+        },
+        "isolation": {
+          "declared_disabled_channels": [
+            "Networking",
+            "ClipboardRedirection",
+            "AudioInput",
+            "VideoInput",
+            "PrinterRedirection",
+            "VGpu"
+          ],
+          "guest_read_input": true,
+          "guest_write_to_input_denied": true,
+          "guest_create_in_input_denied": true,
+          "guest_scratch_write": true,
+          "guest_no_default_route": true,
+          "guest_no_camera": true,
+          "guest_no_audio_capture": true,
+          "guest_no_redirected_printer": true,
+          "host_sources_unchanged": true,
+          "host_staging_unchanged": true
+        },
+        "authorizations": {
+          "missing_confinement": "permission_denied",
+          "out_of_scope": "permission_denied"
+        },
+        "sandbox_stopped": true
+      },
+      "candidate_minus_parent_s": {
+        "localize": -0.882,
+        "generate_diff": -0.1,
+        "verify": 0.132,
+        "verify_desktop": -1.313
+      },
+      "total_delta_s": -0.606,
+      "outside_steps_s": {
+        "parent": 22.373,
+        "candidate": 23.659
+      },
+      "outside_steps_delta_s": 1.286
+    },
+    {
+      "status": "passed",
+      "seed": 743,
+      "cpu_threads": 8,
+      "model_ram_mib": 8192,
+      "order": [
+        "candidate",
+        "parent"
+      ],
+      "pairs": 1,
+      "runs": {
+        "candidate": {
+          "graph_id": "notes-rbitnet-ocr-typed-patch",
+          "version": "1.1.0",
+          "graph_sha256": "2969f1dd2d38d2efdb202d9f0fab4ab3707746c4996a5cc9ecbc56fb3c60b00f",
+          "verified": true,
+          "sandbox_id": "870782d8-2dce-4920-bd58-97c9b4ef3d1c",
+          "error": null,
+          "steps_s": {
+            "localize": 11.938,
+            "generate_diff": 52.199,
+            "adapt_patch_receipt": 0.258,
+            "verify": 5.303,
+            "verify_desktop": 24.195
+          },
+          "links": [
+            {
+              "source": "localize",
+              "target": "generate_diff",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "generate_diff",
+              "target": "adapt_patch_receipt",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "adapt_patch_receipt",
+              "target": "verify",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "verify",
+              "target": "verify_desktop",
+              "attempt": 1,
+              "status": "verified"
+            }
+          ],
+          "accepted_attempt": 1,
+          "total_s": 116.016,
+          "rbitnet_startup_s": 0.518,
+          "rbitnet_generation_s": 47.967,
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "adapt_patch_receipt",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify_desktop",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": {
+              "ocr_save_button_used": true,
+              "app_restarted": true,
+              "ocr_note_selected_after_restart": true,
+              "ocr_content_visible": true,
+              "sqlite_exact_row": true
+            },
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          }
+        },
+        "parent": {
+          "graph_id": "notes-rbitnet-ocr",
+          "version": "1.0.0",
+          "graph_sha256": "50ccc2baadaca1cbeb291dc13533f8f229a5347c7115727e33349d584df2f837",
+          "verified": true,
+          "sandbox_id": "0cde442f-6a24-4b85-ba45-1d5639e5884a",
+          "error": null,
+          "steps_s": {
+            "localize": 13.978,
+            "generate_diff": 54.51,
+            "verify": 5.28,
+            "verify_desktop": 23.726
+          },
+          "links": [
+            {
+              "source": "localize",
+              "target": "generate_diff",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "generate_diff",
+              "target": "verify",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "verify",
+              "target": "verify_desktop",
+              "attempt": 1,
+              "status": "verified"
+            }
+          ],
+          "accepted_attempt": 1,
+          "total_s": 120.386,
+          "rbitnet_startup_s": 1.024,
+          "rbitnet_generation_s": 49.105,
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify_desktop",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": {
+              "ocr_save_button_used": true,
+              "app_restarted": true,
+              "ocr_note_selected_after_restart": true,
+              "ocr_content_visible": true,
+              "sqlite_exact_row": true
+            },
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          }
+        }
+      },
+      "same_diff_and_checks": true,
+      "separate_sandboxes": true,
+      "matched_inputs": true,
+      "adapter": {
+        "input_name": "rbitnet-1",
+        "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "conversion_ms": 0.697
+      },
+      "common_outcome": {
+        "status": "passed",
+        "steps": [
+          {
+            "id": "localize",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "generate_diff",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify_desktop",
+            "status": "passed",
+            "authorization": "allowed"
+          }
+        ],
+        "diff_applied": true,
+        "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "git_apply_check": true,
+        "guest_sha256_verified": true,
+        "tests": [
+          {
+            "name": "test_saved_note_survives_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_two_notes_with_accents_multiline_survive_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_save_acknowledged_in_session",
+            "status": "passed"
+          },
+          {
+            "name": "test_select_redisplays_content",
+            "status": "passed"
+          }
+        ],
+        "sqlite": 0,
+        "desktop": {
+          "ocr_save_button_used": true,
+          "app_restarted": true,
+          "ocr_note_selected_after_restart": true,
+          "ocr_content_visible": true,
+          "sqlite_exact_row": true
+        },
+        "isolation": {
+          "declared_disabled_channels": [
+            "Networking",
+            "ClipboardRedirection",
+            "AudioInput",
+            "VideoInput",
+            "PrinterRedirection",
+            "VGpu"
+          ],
+          "guest_read_input": true,
+          "guest_write_to_input_denied": true,
+          "guest_create_in_input_denied": true,
+          "guest_scratch_write": true,
+          "guest_no_default_route": true,
+          "guest_no_camera": true,
+          "guest_no_audio_capture": true,
+          "guest_no_redirected_printer": true,
+          "host_sources_unchanged": true,
+          "host_staging_unchanged": true
+        },
+        "authorizations": {
+          "missing_confinement": "permission_denied",
+          "out_of_scope": "permission_denied"
+        },
+        "sandbox_stopped": true
+      },
+      "candidate_minus_parent_s": {
+        "localize": -2.04,
+        "generate_diff": -2.311,
+        "verify": 0.023,
+        "verify_desktop": 0.469
+      },
+      "total_delta_s": -4.37,
+      "outside_steps_s": {
+        "candidate": 22.123,
+        "parent": 22.892
+      },
+      "outside_steps_delta_s": -0.769
+    },
+    {
+      "status": "passed",
+      "seed": 744,
+      "cpu_threads": 8,
+      "model_ram_mib": 8192,
+      "order": [
+        "parent",
+        "candidate"
+      ],
+      "pairs": 1,
+      "runs": {
+        "parent": {
+          "graph_id": "notes-rbitnet-ocr",
+          "version": "1.0.0",
+          "graph_sha256": "50ccc2baadaca1cbeb291dc13533f8f229a5347c7115727e33349d584df2f837",
+          "verified": true,
+          "sandbox_id": "fbc7645e-36e8-4dc9-bf3a-bbc562bdfa57",
+          "error": null,
+          "steps_s": {
+            "localize": 12.083,
+            "generate_diff": 51.643,
+            "verify": 5.481,
+            "verify_desktop": 24.708
+          },
+          "links": [
+            {
+              "source": "localize",
+              "target": "generate_diff",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "generate_diff",
+              "target": "verify",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "verify",
+              "target": "verify_desktop",
+              "attempt": 1,
+              "status": "verified"
+            }
+          ],
+          "accepted_attempt": 1,
+          "total_s": 117.018,
+          "rbitnet_startup_s": 0.52,
+          "rbitnet_generation_s": 47.122,
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify_desktop",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": {
+              "ocr_save_button_used": true,
+              "app_restarted": true,
+              "ocr_note_selected_after_restart": true,
+              "ocr_content_visible": true,
+              "sqlite_exact_row": true
+            },
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          }
+        },
+        "candidate": {
+          "graph_id": "notes-rbitnet-ocr-typed-patch",
+          "version": "1.1.0",
+          "graph_sha256": "2969f1dd2d38d2efdb202d9f0fab4ab3707746c4996a5cc9ecbc56fb3c60b00f",
+          "verified": true,
+          "sandbox_id": "f0cc2308-ec27-4b29-827b-deee4fb69fc0",
+          "error": null,
+          "steps_s": {
+            "localize": 12.965,
+            "generate_diff": 51.446,
+            "adapt_patch_receipt": 0.257,
+            "verify": 5.644,
+            "verify_desktop": 23.824
+          },
+          "links": [
+            {
+              "source": "localize",
+              "target": "generate_diff",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "generate_diff",
+              "target": "adapt_patch_receipt",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "adapt_patch_receipt",
+              "target": "verify",
+              "attempt": 1,
+              "status": "verified"
+            },
+            {
+              "source": "verify",
+              "target": "verify_desktop",
+              "attempt": 1,
+              "status": "verified"
+            }
+          ],
+          "accepted_attempt": 1,
+          "total_s": 124.335,
+          "rbitnet_startup_s": 0.507,
+          "rbitnet_generation_s": 47.167,
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "adapt_patch_receipt",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify_desktop",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": {
+              "ocr_save_button_used": true,
+              "app_restarted": true,
+              "ocr_note_selected_after_restart": true,
+              "ocr_content_visible": true,
+              "sqlite_exact_row": true
+            },
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          }
+        }
+      },
+      "same_diff_and_checks": true,
+      "separate_sandboxes": true,
+      "matched_inputs": true,
+      "adapter": {
+        "input_name": "rbitnet-1",
+        "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "conversion_ms": 0.572
+      },
+      "common_outcome": {
+        "status": "passed",
+        "steps": [
+          {
+            "id": "localize",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "generate_diff",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify_desktop",
+            "status": "passed",
+            "authorization": "allowed"
+          }
+        ],
+        "diff_applied": true,
+        "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "git_apply_check": true,
+        "guest_sha256_verified": true,
+        "tests": [
+          {
+            "name": "test_saved_note_survives_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_two_notes_with_accents_multiline_survive_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_save_acknowledged_in_session",
+            "status": "passed"
+          },
+          {
+            "name": "test_select_redisplays_content",
+            "status": "passed"
+          }
+        ],
+        "sqlite": 0,
+        "desktop": {
+          "ocr_save_button_used": true,
+          "app_restarted": true,
+          "ocr_note_selected_after_restart": true,
+          "ocr_content_visible": true,
+          "sqlite_exact_row": true
+        },
+        "isolation": {
+          "declared_disabled_channels": [
+            "Networking",
+            "ClipboardRedirection",
+            "AudioInput",
+            "VideoInput",
+            "PrinterRedirection",
+            "VGpu"
+          ],
+          "guest_read_input": true,
+          "guest_write_to_input_denied": true,
+          "guest_create_in_input_denied": true,
+          "guest_scratch_write": true,
+          "guest_no_default_route": true,
+          "guest_no_camera": true,
+          "guest_no_audio_capture": true,
+          "guest_no_redirected_printer": true,
+          "host_sources_unchanged": true,
+          "host_staging_unchanged": true
+        },
+        "authorizations": {
+          "missing_confinement": "permission_denied",
+          "out_of_scope": "permission_denied"
+        },
+        "sandbox_stopped": true
+      },
+      "candidate_minus_parent_s": {
+        "localize": 0.882,
+        "generate_diff": -0.197,
+        "verify": 0.163,
+        "verify_desktop": -0.884
+      },
+      "total_delta_s": 7.317,
+      "outside_steps_s": {
+        "parent": 23.103,
+        "candidate": 30.199
+      },
+      "outside_steps_delta_s": 7.096
+    }
+  ],
+  "distinct_sandboxes": 6,
+  "verified_pairs": 3,
+  "median_steps_s": {
+    "parent": {
+      "localize": 13.713,
+      "generate_diff": 51.643,
+      "verify": 5.341,
+      "verify_desktop": 24.708
+    },
+    "candidate": {
+      "localize": 12.831,
+      "generate_diff": 51.446,
+      "adapt_patch_receipt": 0.258,
+      "verify": 5.473,
+      "verify_desktop": 23.824
+    }
+  },
+  "median_paired_delta_s": {
+    "localize": -0.882,
+    "generate_diff": -0.197,
+    "verify": 0.132,
+    "verify_desktop": -0.884
+  },
+  "median_total_s": {
+    "parent": 117.732,
+    "candidate": 117.126
+  },
+  "median_total_delta_s": -0.606,
+  "median_conversion_ms": 0.572,
+  "checked_experience_journals": 6,
+  "distinct_diff_digests": 1
+}
