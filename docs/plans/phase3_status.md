@@ -97,3 +97,31 @@ Le registre a refusé la promotion avant les preuves et rejeté la décision alt
 L’empreinte de la proposition lie désormais l’identité du fichier et ses métadonnées de révision à son contenu. Après les accords et juste avant l’effet, le vérificateur rouvre le fichier sans partage d’écriture ou de suppression. Il contrôle son identité et son empreinte, puis utilise ce même handle pour la suppression. Les propositions existantes sont vérifiées avec leur empreinte de contenu approuvée et la révision observée au début de l’application. [Partage des fichiers Windows](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew) · [Disposition d’un fichier par handle](https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-file_disposition_info)
 
 Sur un projet jetable, Windows Sandbox a validé la proposition de suppression. La CLI a ensuite refusé l’application sans accord explicite de suppression, avec un contenu modifié et après remplacement du fichier par un autre aux mêmes octets et à la même date de modification. Le dernier cas a été bloqué par le vérificateur de transition. Les fichiers sont restés intacts lors des refus et aucun effet n’est resté en attente après le refus du vérificateur. [Relevé de validation](../../bench/results/project-delete-transition-v1.json)
+
+## Qualification de la liaison sur des remises invalides
+
+Le corpus réservé fixe trois défauts et un témoin valide avant exécution. Après le retour réussi de Git dans le bac, le lanceur retire l’empreinte du reçu, substitue le nom d’une autre tentative ou modifie les octets de la copie préparée du diff. Chaque cas est exécuté sur les deux graphes, à graine identique, avec Rbitnet CPU dans un bac neuf. Le lanceur vérifie les empreintes du gel, du corpus et du code du banc. [Corpus et ordre des cas](../../bench/notes-link-handoff-reserved-v1.json)
+
+La validité de la remise est déterminée à partir des empreintes observées et du nom de la tentative. Une acceptation à tort correspond à un appel effectif au vérificateur invité avec une remise invalide, y compris quand un contrôle ultérieur fait échouer le parcours. Une reprise correspond à une nouvelle génération du diff pendant l’exécution. Les traces mesurent séparément le temps total et le temps passé dans les deux étapes de vérification en aval.
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_notes_link_handoff --runtime $pythonPortable `
+    --rbitnet $moteur $gguf $tokenizer --output $dossierEssai
+```
+
+Les deux graphes ont appliqué le même premier diff avec Git dans les huit bacs de la campagne. Rbitnet a généré les diffs sur le CPU de l’hôte, comme dans la comparaison figée. L’application, les tests et les contrôles SQLite et RapidOCR ont eu lieu dans les bacs sans réseau.
+
+| Remise | Graine | Acceptations à tort parent / candidat | Reprises parent / candidat | Total parent | Total candidat |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Empreinte absente | 742 | 1 / 0 | 0 / 0 | 208,040 s | 150,761 s |
+| Mauvais nom de tentative | 743 | 1 / 0 | 0 / 0 | 209,483 s | 149,573 s |
+| Copie préparée du diff modifiée | 744 | 1 / 0 | 0 / 0 | 203,771 s | 158,063 s |
+| Témoin valide | 742 | — | 0 / 0 | 190,014 s | 207,508 s |
+
+Le candidat a refusé les trois remises à la liaison `generate_diff → verify`. Sur ces cas, l’étape d’adaptation a pris de 0,412 à 0,458 s et a évité les deux étapes aval, qui ont pris une médiane de 51,971 s chez le parent. La réduction médiane du temps total par paire est de 57,279 s. Le protocole RapidOCR v2 fixe une seule tentative de génération par exécution.
+
+Chez le parent, le cas de l’empreinte absente a abouti. Le reçu de la mauvaise tentative a passé les quatre tests et le vérificateur SQLite, puis le contrôle après relance a échoué. La copie modifiée du diff a passé les quatre tests et les contrôles SQLite et RapidOCR après relance, puis le contrôle final d’intégrité de la copie hôte a fait échouer le parcours.
+
+Les deux bras du témoin valide ont franchi la liaison et passé les quatre tests et le vérificateur SQLite. Le parent a retrouvé la note après relance avec RapidOCR et SQLite. Les deux contrôles après relance ont échoué au premier passage du candidat. Un rejeu séparé de ce bras dans un bac neuf, avec le même gel et la graine 742, a réussi les quatre tests et les vérifications RapidOCR et SQLite après relance en 188,871 s. Les deux mesures du candidat figurent dans le relevé.
+
+Les neuf bacs se sont arrêtés et les neuf journaux d’expériences ont passé le contrôle d’intégrité SQLite. [Relevé par cas et par étape](../../bench/results/notes-link-handoff-reserved-v1.json)

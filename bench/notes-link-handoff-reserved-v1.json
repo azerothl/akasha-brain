@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "adapter_freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+  "boundary": "after_guest_apply_before_verify",
+  "cases": [
+    {
+      "id": "missing_digest",
+      "seed": 742,
+      "order": ["parent", "candidate"],
+      "valid": false
+    },
+    {
+      "id": "wrong_attempt",
+      "seed": 743,
+      "order": ["candidate", "parent"],
+      "valid": false
+    },
+    {
+      "id": "staged_diff_changed",
+      "seed": 744,
+      "order": ["parent", "candidate"],
+      "valid": false
+    },
+    {
+      "id": "valid_control",
+      "seed": 742,
+      "order": ["candidate", "parent"],
+      "valid": true
+    }
+  ]
+}

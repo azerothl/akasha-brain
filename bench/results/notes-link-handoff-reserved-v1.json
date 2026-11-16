@@ -1,0 +1,433 @@
+{
+  "status": "passed",
+  "freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+  "cases_sha256": "2ab7c0a3cee2b466d89005848312dfda3f437c15c303dc4949253adc87d07eff",
+  "harness_sha256": "dbcae437b0c7d72d26475fc74cbfa7d14a3b6efa92998c47a1a5ac6ac7eecac1",
+  "cpu_threads": 8,
+  "model_ram_mib": 8192,
+  "cases": [
+    {
+      "id": "missing_digest",
+      "seed": 742,
+      "order": [
+        "parent",
+        "candidate"
+      ],
+      "valid": false,
+      "runs": {
+        "parent": {
+          "evaluated": true,
+          "expected_behavior": true,
+          "handoff_verdict": "accepted",
+          "sandbox_id": "d2a29ca9-9353-4abe-86b0-990ce2fc1764",
+          "handoff": {
+            "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_digest": null,
+            "received_path": "rbitnet-1/proposal.diff",
+            "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+          },
+          "verify_calls": 1,
+          "false_handoff_acceptances": 1,
+          "retries": 0,
+          "workflow_status": "passed",
+          "error": null,
+          "invalid_checks": [],
+          "tests_passed": 4,
+          "sqlite_exit": 0,
+          "desktop": {
+            "ocr_save_button_used": true,
+            "app_restarted": true,
+            "ocr_note_selected_after_restart": true,
+            "ocr_content_visible": true,
+            "sqlite_exact_row": true
+          },
+          "steps_s": {
+            "localize": 24.821,
+            "generate_diff": 90.001,
+            "verify": 9.857,
+            "verify_desktop": 44.073
+          },
+          "total_s": 208.04,
+          "downstream_s": 53.93
+        },
+        "candidate": {
+          "evaluated": true,
+          "expected_behavior": true,
+          "handoff_verdict": "rejected",
+          "sandbox_id": "b9976546-3594-4ebe-9e5e-d31771e30506",
+          "handoff": {
+            "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_digest": null,
+            "received_path": "rbitnet-1/proposal.diff",
+            "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+          },
+          "verify_calls": 0,
+          "false_handoff_acceptances": 0,
+          "retries": 0,
+          "workflow_status": "failed",
+          "error": {
+            "code": "contract_precondition_failed",
+            "family": "contrat",
+            "message": "Reçu Git incompatible.",
+            "details": {
+              "invalid_checks": [
+                "diff_sha256"
+              ]
+            }
+          },
+          "invalid_checks": [
+            "diff_sha256"
+          ],
+          "tests_passed": null,
+          "sqlite_exit": null,
+          "desktop": null,
+          "steps_s": {
+            "localize": 23.743,
+            "generate_diff": 88.077,
+            "adapt_patch_receipt": 0.412
+          },
+          "total_s": 150.761,
+          "downstream_s": 0
+        }
+      }
+    },
+    {
+      "id": "wrong_attempt",
+      "seed": 743,
+      "order": [
+        "candidate",
+        "parent"
+      ],
+      "valid": false,
+      "runs": {
+        "candidate": {
+          "evaluated": true,
+          "expected_behavior": true,
+          "handoff_verdict": "rejected",
+          "sandbox_id": "fb919b14-ce7a-42b9-900b-1d93c8ad0f90",
+          "handoff": {
+            "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_path": "rbitnet-2/proposal.diff",
+            "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+          },
+          "verify_calls": 0,
+          "false_handoff_acceptances": 0,
+          "retries": 0,
+          "workflow_status": "failed",
+          "error": {
+            "code": "contract_precondition_failed",
+            "family": "contrat",
+            "message": "Reçu Git incompatible.",
+            "details": {
+              "invalid_checks": [
+                "diff_file"
+              ]
+            }
+          },
+          "invalid_checks": [
+            "diff_file"
+          ],
+          "tests_passed": null,
+          "sqlite_exit": null,
+          "desktop": null,
+          "steps_s": {
+            "localize": 21.093,
+            "generate_diff": 88.655,
+            "adapt_patch_receipt": 0.426
+          },
+          "total_s": 149.573,
+          "downstream_s": 0
+        },
+        "parent": {
+          "evaluated": true,
+          "expected_behavior": false,
+          "handoff_verdict": "accepted",
+          "sandbox_id": "10caf38a-caa2-4de9-8f11-192f9572a0d4",
+          "handoff": {
+            "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_path": "rbitnet-2/proposal.diff",
+            "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+          },
+          "verify_calls": 1,
+          "false_handoff_acceptances": 1,
+          "retries": 0,
+          "workflow_status": "failed",
+          "error": {
+            "code": "environment_observation_failed",
+            "family": "environnement",
+            "message": "La vérification RapidOCR ou SQLite après relance de Notes a échoué.",
+            "details": {}
+          },
+          "invalid_checks": [],
+          "tests_passed": 4,
+          "sqlite_exit": 0,
+          "desktop": {
+            "ocr_save_button_used": true,
+            "app_restarted": true,
+            "ocr_note_selected_after_restart": false,
+            "ocr_content_visible": false,
+            "sqlite_exact_row": false
+          },
+          "steps_s": {
+            "localize": 23.198,
+            "generate_diff": 93.586,
+            "verify": 9.567,
+            "verify_desktop": 42.404
+          },
+          "total_s": 209.483,
+          "downstream_s": 51.971
+        }
+      }
+    },
+    {
+      "id": "staged_diff_changed",
+      "seed": 744,
+      "order": [
+        "parent",
+        "candidate"
+      ],
+      "valid": false,
+      "runs": {
+        "parent": {
+          "evaluated": true,
+          "expected_behavior": true,
+          "handoff_verdict": "accepted",
+          "sandbox_id": "5edfeb05-be2b-49c3-b15b-f65835961cc5",
+          "handoff": {
+            "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_path": "rbitnet-1/proposal.diff",
+            "staged_digest": "32962e023ab042c3a531505719b638718f37b2630c0f91391ebb67ac5685e38d"
+          },
+          "verify_calls": 1,
+          "false_handoff_acceptances": 1,
+          "retries": 0,
+          "workflow_status": "failed",
+          "error": {
+            "code": "environment_observation_failed",
+            "family": "environnement",
+            "message": "L'intégrité du banc hôte n'est pas vérifiée.",
+            "details": {}
+          },
+          "invalid_checks": [],
+          "tests_passed": 4,
+          "sqlite_exit": 0,
+          "desktop": {
+            "ocr_save_button_used": true,
+            "app_restarted": true,
+            "ocr_note_selected_after_restart": true,
+            "ocr_content_visible": true,
+            "sqlite_exact_row": true
+          },
+          "steps_s": {
+            "localize": 24.409,
+            "generate_diff": 93.346,
+            "verify": 8.161,
+            "verify_desktop": 39.499
+          },
+          "total_s": 203.771,
+          "downstream_s": 47.66
+        },
+        "candidate": {
+          "evaluated": true,
+          "expected_behavior": true,
+          "handoff_verdict": "rejected",
+          "sandbox_id": "43a4ec44-0c5a-4e8c-87bf-775704445c5b",
+          "handoff": {
+            "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_path": "rbitnet-1/proposal.diff",
+            "staged_digest": "32962e023ab042c3a531505719b638718f37b2630c0f91391ebb67ac5685e38d"
+          },
+          "verify_calls": 0,
+          "false_handoff_acceptances": 0,
+          "retries": 0,
+          "workflow_status": "failed",
+          "error": {
+            "code": "contract_precondition_failed",
+            "family": "contrat",
+            "message": "Le diff préparé ne correspond plus au reçu Git.",
+            "details": {
+              "invalid_checks": [
+                "staged_diff_sha256"
+              ]
+            }
+          },
+          "invalid_checks": [
+            "staged_diff_sha256"
+          ],
+          "tests_passed": null,
+          "sqlite_exit": null,
+          "desktop": null,
+          "steps_s": {
+            "localize": 23.625,
+            "generate_diff": 94.031,
+            "adapt_patch_receipt": 0.458
+          },
+          "total_s": 158.063,
+          "downstream_s": 0
+        }
+      }
+    },
+    {
+      "id": "valid_control",
+      "seed": 742,
+      "order": [
+        "candidate",
+        "parent"
+      ],
+      "valid": true,
+      "runs": {
+        "candidate": {
+          "evaluated": true,
+          "expected_behavior": false,
+          "handoff_verdict": "accepted",
+          "sandbox_id": "178962f6-b284-42da-9ebb-faade0099a76",
+          "handoff": {
+            "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_path": "rbitnet-1/proposal.diff",
+            "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+          },
+          "verify_calls": 1,
+          "false_handoff_acceptances": 0,
+          "retries": 0,
+          "workflow_status": "failed",
+          "error": {
+            "code": "environment_observation_failed",
+            "family": "environnement",
+            "message": "La vérification RapidOCR ou SQLite après relance de Notes a échoué.",
+            "details": {}
+          },
+          "invalid_checks": [],
+          "tests_passed": 4,
+          "sqlite_exit": 0,
+          "desktop": {
+            "ocr_save_button_used": true,
+            "app_restarted": true,
+            "ocr_note_selected_after_restart": false,
+            "ocr_content_visible": false,
+            "sqlite_exact_row": false
+          },
+          "steps_s": {
+            "localize": 23.126,
+            "generate_diff": 96.549,
+            "adapt_patch_receipt": 0.419,
+            "verify": 7.898,
+            "verify_desktop": 41.057
+          },
+          "total_s": 207.508,
+          "downstream_s": 48.955
+        },
+        "parent": {
+          "evaluated": true,
+          "expected_behavior": true,
+          "handoff_verdict": "accepted",
+          "sandbox_id": "f7d2cec5-f13d-4b1a-92a9-e6f2052a5829",
+          "handoff": {
+            "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "received_path": "rbitnet-1/proposal.diff",
+            "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+          },
+          "verify_calls": 1,
+          "false_handoff_acceptances": 0,
+          "retries": 0,
+          "workflow_status": "passed",
+          "error": null,
+          "invalid_checks": [],
+          "tests_passed": 4,
+          "sqlite_exit": 0,
+          "desktop": {
+            "ocr_save_button_used": true,
+            "app_restarted": true,
+            "ocr_note_selected_after_restart": true,
+            "ocr_content_visible": true,
+            "sqlite_exact_row": true
+          },
+          "steps_s": {
+            "localize": 21.923,
+            "generate_diff": 84.458,
+            "verify": 8.104,
+            "verify_desktop": 37.722
+          },
+          "total_s": 190.014,
+          "downstream_s": 45.826
+        }
+      }
+    }
+  ],
+  "evaluated_pairs": 4,
+  "invalid_pairs": 3,
+  "distinct_sandboxes": 8,
+  "invalid_summary": {
+    "parent": {
+      "false_acceptances": 3,
+      "retries": 0,
+      "median_total_s": 208.04,
+      "median_downstream_s": 51.971
+    },
+    "candidate": {
+      "false_acceptances": 0,
+      "retries": 0,
+      "median_total_s": 150.761,
+      "median_downstream_s": 0
+    }
+  },
+  "median_paired_total_delta_s": -57.279,
+  "supplemental_valid_control": {
+    "status": "completed",
+    "campaign_sha256": "0a484908672c9bd5dda4ace2e6d1048f0c74f0216b334edc7d6fd878c543a01a",
+    "case": "valid_control",
+    "seed": 742,
+    "order": [
+      "candidate"
+    ],
+    "runs": {
+      "candidate": {
+        "evaluated": true,
+        "expected_behavior": true,
+        "handoff_verdict": "accepted",
+        "sandbox_id": "df1fe049-255a-4ccf-9517-fe0e492696e3",
+        "handoff": {
+          "applied_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+          "received_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+          "received_path": "rbitnet-1/proposal.diff",
+          "staged_digest": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206"
+        },
+        "verify_calls": 1,
+        "false_handoff_acceptances": 0,
+        "retries": 0,
+        "workflow_status": "passed",
+        "error": null,
+        "invalid_checks": [],
+        "tests_passed": 4,
+        "sqlite_exit": 0,
+        "desktop": {
+          "ocr_save_button_used": true,
+          "app_restarted": true,
+          "ocr_note_selected_after_restart": true,
+          "ocr_content_visible": true,
+          "sqlite_exact_row": true
+        },
+        "steps_s": {
+          "localize": 20.306,
+          "generate_diff": 86.402,
+          "adapt_patch_receipt": 0.43,
+          "verify": 7.92,
+          "verify_desktop": 36.658
+        },
+        "total_s": 188.871,
+        "downstream_s": 44.578
+      }
+    },
+    "startup_error_before_sandbox": {
+      "code": "environment_observation_failed",
+      "family": "environnement",
+      "message": "[WinError 1920] Le système ne peut pas accéder au fichier",
+      "details": {}
+    }
+  }
+}
