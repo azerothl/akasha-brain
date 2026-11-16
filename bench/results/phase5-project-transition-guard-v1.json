@@ -1,0 +1,300 @@
+{
+  "protocol": "phase5-project-transition-guard-v1",
+  "status": "passed",
+  "sandbox_id": "8f82288f-9930-46bf-9008-f679793bcdf2",
+  "sources": {
+    "commit": "496412ed014c174ef5fd91098043f8b096890085",
+    "source_archive_sha256": "c1f02982d1c3970c5155f9b9366d02d809f7116947d937cb1103c91a252d6aae",
+    "test_sha256": "03eec017f2b871538e40b9130cf41af5a32f652744575d5005785b405842fb5e",
+    "guard_sha256": "b1d15027a8929801da33a82ca6832e1d469414620e91fc534d251d05f9e2a32b",
+    "apply_sha256": "5712283cb4917889100d63cb3a9284dda8250d03f821a383f63d7a1a232ca624",
+    "python_sha256": "6965927a96b81d1717c1d2186de7feb9b29ebf8775464020ebc2f25de6ef8ee0"
+  },
+  "cases": {
+    "missing_proposal_approval": {
+      "verdict": {
+        "code": "approval_required",
+        "reason": null,
+        "guard": null,
+        "risk_class": "R2"
+      },
+      "expected_outcome": "approval_required",
+      "native_handle_attempts": 0,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 5.721
+    },
+    "changed_proposal_after_approval": {
+      "verdict": {
+        "code": "approval_required",
+        "reason": null,
+        "guard": null,
+        "risk_class": "R2"
+      },
+      "expected_outcome": "approval_required",
+      "native_handle_attempts": 0,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.924
+    },
+    "missing_delete_approval": {
+      "verdict": {
+        "code": "approval_required",
+        "reason": null,
+        "guard": null,
+        "risk_class": "R3"
+      },
+      "expected_outcome": "approval_required",
+      "native_handle_attempts": 0,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.781
+    },
+    "wrong_delete_path": {
+      "verdict": {
+        "code": "approval_required",
+        "reason": null,
+        "guard": null,
+        "risk_class": "R3"
+      },
+      "expected_outcome": "approval_required",
+      "native_handle_attempts": 0,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.685
+    },
+    "expired_approval": {
+      "verdict": {
+        "code": "approval_expired",
+        "reason": null,
+        "guard": null,
+        "risk_class": null
+      },
+      "expected_outcome": "approval_expired",
+      "native_handle_attempts": 0,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.685
+    },
+    "changed_target": {
+      "verdict": {
+        "code": "contract_precondition_failed",
+        "reason": "project_changed",
+        "guard": null,
+        "risk_class": null
+      },
+      "expected_outcome": "contract_precondition_failed",
+      "native_handle_attempts": 0,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 5.128
+    },
+    "changed_companion": {
+      "verdict": {
+        "code": "contract_precondition_failed",
+        "reason": "project_changed",
+        "guard": null,
+        "risk_class": null
+      },
+      "expected_outcome": "contract_precondition_failed",
+      "native_handle_attempts": 0,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.98
+    },
+    "same_bytes_and_mtime_new_file": {
+      "verdict": {
+        "code": "contract_precondition_failed",
+        "reason": "project_changed",
+        "guard": "transition",
+        "risk_class": "R3"
+      },
+      "expected_outcome": "contract_precondition_failed",
+      "native_handle_attempts": 1,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.788
+    },
+    "changed_target_after_checkpoint": {
+      "verdict": {
+        "code": "contract_precondition_failed",
+        "reason": "project_changed",
+        "guard": "transition",
+        "risk_class": "R3"
+      },
+      "expected_outcome": "contract_precondition_failed",
+      "native_handle_attempts": 1,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.748
+    },
+    "changed_companion_after_checkpoint": {
+      "verdict": {
+        "code": "contract_precondition_failed",
+        "reason": "project_changed",
+        "guard": null,
+        "risk_class": null
+      },
+      "expected_outcome": "contract_precondition_failed",
+      "native_handle_attempts": 1,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.659
+    },
+    "changed_proposal_after_checkpoint": {
+      "verdict": {
+        "code": "approval_required",
+        "reason": null,
+        "guard": null,
+        "risk_class": "R3"
+      },
+      "expected_outcome": "approval_required",
+      "native_handle_attempts": 1,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.444
+    },
+    "locked_target": {
+      "verdict": {
+        "code": "contract_precondition_failed",
+        "reason": "transition_unverifiable",
+        "guard": "transition",
+        "risk_class": "R3"
+      },
+      "expected_outcome": "contract_precondition_failed",
+      "native_handle_attempts": 1,
+      "native_delete_calls": 0,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.487
+    },
+    "approved_unchanged": {
+      "verdict": {
+        "code": "applied",
+        "reason": null,
+        "guard": null,
+        "risk_class": null
+      },
+      "expected_outcome": "applied",
+      "native_handle_attempts": 1,
+      "native_delete_calls": 1,
+      "checks": {
+        "project_matches_expected": true,
+        "checkpoint_matches_expected": true,
+        "expected_native_handle_attempts": true,
+        "expected_native_delete_calls": true,
+        "audit_verified": true,
+        "proposal_test_passed": true
+      },
+      "status": "passed",
+      "wall_s": 4.343
+    }
+  },
+  "isolation": {
+    "mount_and_scratch_exit": 17679,
+    "channels_exit": 16655
+  },
+  "summary": {
+    "invalid_cases": 12,
+    "blocked_before_delete": 12,
+    "invalid_native_delete_calls": 0,
+    "approved_control_applied": true
+  },
+  "sandbox_stopped": true,
+  "wall_s": 81.521
+}

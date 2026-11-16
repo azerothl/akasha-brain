@@ -75,3 +75,16 @@ Sur ces cinq cas synthétiques, les états finaux vérifiés passent de 4/5 à 5
 .\.venv\Scripts\python.exe -m bench.run_phase5_notes_action_selection --runtime $pythonPortable `
     --output $dossierDeValidation
 ```
+
+## Garde de transition avant suppression
+
+Le banc prépare chaque proposition sur une copie de projet jetable, puis exécute `project.apply` et la garde Windows dans le bac. La préparation valide une seconde copie dans le même bac. Le banc observe l’ouverture du handle et compte les appels à la suppression native. Il relit les fichiers, le checkpoint d’application et le journal après chaque verdict.
+
+Le corpus comprend les accords absents, erronés ou expirés, les modifications de la proposition et des fichiers, le remplacement de la cible à octets et date identiques, les changements injectés après le checkpoint et un fichier verrouillé. Une suppression approuvée sur un état intact sert de témoin.
+
+Les 12 cas invalides ont été refusés avant l’appel à la suppression native. Dans chaque cas, l’état des fichiers autour du refus et la chaîne d’audit ont été vérifiés, et aucun checkpoint d’application n’est resté en attente. Le témoin approuvé a effectué une suppression native et laissé les fichiers compagnons intacts. La campagne a duré 81,5 s et le bac a été arrêté. [Relevé de la garde](../../bench/results/phase5-project-transition-guard-v1.json)
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_phase5_project_transition_guard --runtime $pythonPortable `
+    --output $dossierDeValidation
+```
