@@ -138,3 +138,22 @@ Pendant l’activation, Notes a passé les quatre tests, le vérificateur SQLite
 .\.venv\Scripts\python.exe -m bench.run_phase4_tasks_routing --runtime $pythonPortable `
     --rbitnet $moteur $gguf $tokenizer --output $dossierDeValidation
 ```
+
+## Porte de décision Tâches avec akasha-model 0.3.0
+
+La roue PyPI MIT a été téléchargée par le parcours unitaire avec empreinte approuvée. La publication PyPI lie la roue au dépôt `azerothl/akasha-model` et à la révision `d56c145e72bf871744053bb501d793a78f92fdf8`. Son SHA-256 est `c32a19ac01d26203a5a117bd67649dd442daa6695ccbc96aa983537b62cc188f`. La roue universelle est vérifiée et installée dans le répertoire temporaire du bac, avec l’entrée en lecture seule et le réseau désactivé. [Roue et attestation PyPI](https://pypi.org/project/akasha-model/#akasha_model-0.3.0-py3-none-any.whl)
+
+Le chemin `tasks_routing run --gate-request $demande` est activable explicitement. Le système hôte prépare la proposition et les signaux typés. Le Path A applique une seule évaluation `Choice`, `Score`, `Noul` pour l’appel réel. Un dossier Tâches admis porte une proposition certaine et des attestations booléennes. Les seuils exacts de 1 sur ces signaux et le niveau de risque R1 sont des règles de ce pilote. Après `ready`, le système hôte revérifie le GoalSpec, la qualification, le contrat et le registre avant d’exécuter le graphe proposé.
+
+La matrice compare les deux politiques sur douze cas identiques, avec un verdict attendu fixé par cas. Elle inclut l’ambiguïté, le budget épuisé, le périmètre de risque, l’autorisation et la confirmation. Les temps de décision sont des médianes de moyennes par cas, avec cinquante répétitions et une résolution de 0,1 µs. Les deux politiques donnent 12/12, avec zéro faux `ready`, `abstain` ou `blocked`. Les médianes mesurées dans le bac sont de 0,2 µs pour la politique déterministe et de 20,35 µs pour le Path A.
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_phase4_tasks_gate --runtime $pythonPortable `
+    --gate-request $demande --rbitnet $moteur $gguf $tokenizer --output $dossierDeValidation
+```
+
+Les deux bras ont rejoué « Terminées » avec la même consigne et le même contrat, en gardant la démarche hors évolution. Le routage déterministe termine en 98,958 s. Avec Path A, le total est de 124,933 s, dont 21,760 s pour le bac de la porte. Les deux bras passent Git, les trois filtres et SQLite dès le premier diff. L’écart de 25,975 s correspond à cette paire de rejeux.
+
+Notes code et bureau a passé les quatre tests, RapidOCR et SQLite après relance. Le parcours projet jetable a confirmé le refus sans accord et l’application après accord. Les plans Notes et les contrôles de routage et de gabarits de communication donnent les mêmes résultats avant et après la campagne. Les six bacs se sont arrêtés et la chaîne d’audit du registre a été revérifiée.
+
+Le choix par défaut est déterministe. Le Path A est disponible par option pour l’évaluation, avec un score égal sur la matrice et un temps total supérieur sur le rejeu apparié. [Relevé comparatif et non-régression](../../bench/results/phase4-tasks-gate-v1.json)

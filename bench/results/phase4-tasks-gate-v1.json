@@ -1,0 +1,423 @@
+{
+  "status": "passed",
+  "scope": "disposable",
+  "evolution": "excluded",
+  "decisions": {
+    "dependency": {
+      "name": "akasha-model",
+      "version": "0.3.0",
+      "url": "https://files.pythonhosted.org/packages/fb/c0/1ecccd7c5c8dfba21702c409f96e4d4fb5de45e46b3909a2c7621888e81c/akasha_model-0.3.0-py3-none-any.whl",
+      "filename": "akasha_model-0.3.0-py3-none-any.whl",
+      "sha256": "c32a19ac01d26203a5a117bd67649dd442daa6695ccbc96aa983537b62cc188f",
+      "license": "MIT",
+      "request_sha256": "c1d088f6810c07c07753f276f8f16967b73afa69dd906f9f636e7713da45f192"
+    },
+    "installation": "offline",
+    "path": "A",
+    "sandbox_id": "25be1196-8ffe-48a3-816b-334670f34636",
+    "sandbox_stopped": true,
+    "read_only_input": true,
+    "disabled_channels": [
+      "Networking",
+      "ClipboardRedirection",
+      "AudioInput",
+      "VideoInput",
+      "PrinterRedirection",
+      "VGpu"
+    ],
+    "channel_probe": 16655,
+    "samples_per_decision": 50,
+    "decisions": [
+      {
+        "id": "specialist_eligible",
+        "expected": "ready",
+        "signals": {
+          "tool": "specialist",
+          "authorized": true,
+          "context": true,
+          "capability": true,
+          "certain": true,
+          "risk": 0,
+          "budget": null,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "ready",
+        "akasha_model": "ready",
+        "deterministic_us": 0.2,
+        "akasha_model_us": 23.0
+      },
+      {
+        "id": "reference_selected",
+        "expected": "ready",
+        "signals": {
+          "tool": "reference",
+          "authorized": true,
+          "context": true,
+          "capability": true,
+          "certain": true,
+          "risk": 0,
+          "budget": null,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "ready",
+        "akasha_model": "ready",
+        "deterministic_us": 0.2,
+        "akasha_model_us": 24.0
+      },
+      {
+        "id": "ambiguous_route",
+        "expected": "abstain",
+        "signals": {
+          "tool": "specialist",
+          "authorized": true,
+          "context": true,
+          "capability": true,
+          "certain": false,
+          "risk": 0,
+          "budget": null,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "abstain",
+        "akasha_model": "abstain",
+        "deterministic_us": 0.2,
+        "akasha_model_us": 20.3
+      },
+      {
+        "id": "permission_denied",
+        "expected": "blocked",
+        "signals": {
+          "tool": "specialist",
+          "authorized": false,
+          "context": true,
+          "capability": true,
+          "certain": true,
+          "risk": 0,
+          "budget": null,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "blocked",
+        "akasha_model": "blocked",
+        "deterministic_us": 0.1,
+        "akasha_model_us": 23.4
+      },
+      {
+        "id": "missing_context",
+        "expected": "blocked",
+        "signals": {
+          "tool": "specialist",
+          "authorized": true,
+          "context": false,
+          "capability": true,
+          "certain": true,
+          "risk": 0,
+          "budget": null,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "blocked",
+        "akasha_model": "blocked",
+        "deterministic_us": 0.1,
+        "akasha_model_us": 18.3
+      },
+      {
+        "id": "missing_capability",
+        "expected": "blocked",
+        "signals": {
+          "tool": "reference",
+          "authorized": true,
+          "context": true,
+          "capability": false,
+          "certain": true,
+          "risk": 0,
+          "budget": null,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "blocked",
+        "akasha_model": "blocked",
+        "deterministic_us": 0.1,
+        "akasha_model_us": 19.1
+      },
+      {
+        "id": "exhausted_budget",
+        "expected": "blocked",
+        "signals": {
+          "tool": "specialist",
+          "authorized": true,
+          "context": true,
+          "capability": true,
+          "certain": true,
+          "risk": 0,
+          "budget": 0,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "blocked",
+        "akasha_model": "blocked",
+        "deterministic_us": 0.2,
+        "akasha_model_us": 19.3
+      },
+      {
+        "id": "outside_risk",
+        "expected": "blocked",
+        "signals": {
+          "tool": "specialist",
+          "authorized": true,
+          "context": true,
+          "capability": true,
+          "certain": true,
+          "risk": 1,
+          "budget": null,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "blocked",
+        "akasha_model": "blocked",
+        "deterministic_us": 0.1,
+        "akasha_model_us": 19.4
+      },
+      {
+        "id": "missing_confirmation",
+        "expected": "blocked",
+        "signals": {
+          "tool": "reference",
+          "authorized": true,
+          "context": true,
+          "capability": true,
+          "certain": true,
+          "risk": 0,
+          "budget": null,
+          "confirmation_needed": true,
+          "confirmation_given": false
+        },
+        "deterministic": "blocked",
+        "akasha_model": "blocked",
+        "deterministic_us": 0.2,
+        "akasha_model_us": 20.4
+      },
+      {
+        "id": "confirmed",
+        "expected": "ready",
+        "signals": {
+          "tool": "reference",
+          "authorized": true,
+          "context": true,
+          "capability": true,
+          "certain": true,
+          "risk": 0,
+          "budget": null,
+          "confirmation_needed": true,
+          "confirmation_given": true
+        },
+        "deterministic": "ready",
+        "akasha_model": "ready",
+        "deterministic_us": 0.2,
+        "akasha_model_us": 22.1
+      },
+      {
+        "id": "ambiguous_but_denied",
+        "expected": "blocked",
+        "signals": {
+          "tool": "specialist",
+          "authorized": false,
+          "context": true,
+          "capability": true,
+          "certain": false,
+          "risk": 0,
+          "budget": null,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "blocked",
+        "akasha_model": "blocked",
+        "deterministic_us": 0.1,
+        "akasha_model_us": 18.5
+      },
+      {
+        "id": "budget_available",
+        "expected": "ready",
+        "signals": {
+          "tool": "specialist",
+          "authorized": true,
+          "context": true,
+          "capability": true,
+          "certain": true,
+          "risk": 0,
+          "budget": 1,
+          "confirmation_needed": false,
+          "confirmation_given": false
+        },
+        "deterministic": "ready",
+        "akasha_model": "ready",
+        "deterministic_us": 0.2,
+        "akasha_model_us": 22.6
+      }
+    ],
+    "wall_s": 37.393,
+    "scores": {
+      "deterministic": {
+        "correct": 12,
+        "false_ready": 0,
+        "false_abstain": 0,
+        "false_blocked": 0,
+        "median_us": 0.2
+      },
+      "akasha_model": {
+        "correct": 12,
+        "false_ready": 0,
+        "false_abstain": 0,
+        "false_blocked": 0,
+        "median_us": 20.35
+      }
+    }
+  },
+  "tasks": {
+    "deterministic": {
+      "route": {
+        "graph": "tasks-rbitnet-sql-structured@3.0.0",
+        "reason": "qualified_coverage",
+        "state": "active"
+      },
+      "filters": {
+        "À faire": true,
+        "Terminées": true,
+        "Toutes": true
+      },
+      "sqlite_unchanged": true,
+      "sandbox_id": "f1110b96-b7c1-4606-9bb7-2e9627fa02fc",
+      "sandbox_stopped": true,
+      "accepted_attempt": 1,
+      "graph_s": 98.383,
+      "total_s": 98.958
+    },
+    "akasha_model": {
+      "route": {
+        "graph": "tasks-rbitnet-sql-structured@3.0.0",
+        "reason": "qualified_coverage",
+        "state": "active"
+      },
+      "filters": {
+        "À faire": true,
+        "Terminées": true,
+        "Toutes": true
+      },
+      "sqlite_unchanged": true,
+      "sandbox_id": "157c1ef1-a689-4c86-8f21-8fafa6c733dd",
+      "sandbox_stopped": true,
+      "accepted_attempt": 1,
+      "graph_s": 99.153,
+      "total_s": 124.933,
+      "gate": {
+        "dependency": {
+          "name": "akasha-model",
+          "version": "0.3.0",
+          "url": "https://files.pythonhosted.org/packages/fb/c0/1ecccd7c5c8dfba21702c409f96e4d4fb5de45e46b3909a2c7621888e81c/akasha_model-0.3.0-py3-none-any.whl",
+          "filename": "akasha_model-0.3.0-py3-none-any.whl",
+          "sha256": "c32a19ac01d26203a5a117bd67649dd442daa6695ccbc96aa983537b62cc188f",
+          "license": "MIT",
+          "request_sha256": "c1d088f6810c07c07753f276f8f16967b73afa69dd906f9f636e7713da45f192"
+        },
+        "installation": "offline",
+        "path": "A",
+        "sandbox_id": "c493c556-db1a-4733-b0b2-72d009b808a6",
+        "sandbox_stopped": true,
+        "read_only_input": true,
+        "disabled_channels": [
+          "Networking",
+          "ClipboardRedirection",
+          "AudioInput",
+          "VideoInput",
+          "PrinterRedirection",
+          "VGpu"
+        ],
+        "channel_probe": 16655,
+        "samples_per_decision": 1,
+        "decisions": [
+          {
+            "deterministic": "ready",
+            "akasha_model": "ready",
+            "deterministic_us": 3.0,
+            "akasha_model_us": 92.1
+          }
+        ],
+        "wall_s": 21.76,
+        "effective": "ready"
+      }
+    }
+  },
+  "task_total_delta_s": 25.975,
+  "notes": {
+    "sandbox_id": "376721b2-85fd-442c-9335-4db41165c2fb",
+    "sandbox_stopped": true,
+    "total_s": 121.346,
+    "tests": 4,
+    "sqlite_exit": 0,
+    "desktop": {
+      "ocr_save_button_used": true,
+      "app_restarted": true,
+      "ocr_note_selected_after_restart": true,
+      "ocr_content_visible": true,
+      "sqlite_exact_row": true
+    }
+  },
+  "project": {
+    "validation": {
+      "status": "passed",
+      "sandbox_id": "397072ff-b5d3-4576-bead-fcd7d6bf20e7",
+      "sandbox_stopped": true,
+      "read_only_input": true,
+      "disabled_channels": [
+        "Networking",
+        "ClipboardRedirection",
+        "AudioInput",
+        "VideoInput",
+        "PrinterRedirection",
+        "VGpu"
+      ],
+      "channel_probe": 16655,
+      "guest_exit_code": 18176
+    },
+    "without_approval": "approval_required",
+    "approved": "applied"
+  },
+  "other_family_routes": {
+    "notes_graphs": [
+      "notes-baseline",
+      "notes-rbitnet",
+      "notes-rbitnet-ocr"
+    ],
+    "notes_plans_sha256": "600767c01a1166596e5b085c734cad43b10d260eee2e00e18062255c4d8ae43e",
+    "communication_templates": {
+      "attente": null,
+      "clarification": "Pouvez-vous préciser le dossier à archiver parmi deux ?",
+      "resultat": null,
+      "echec": null,
+      "accord": null,
+      "ordre": "1. L'utilisateur vérifie les montants du devis.\n2. L'assistant transmet le devis après autorisation."
+    },
+    "excluded": {
+      "notes": "outside_tasks",
+      "project": "outside_tasks",
+      "communication": "outside_tasks"
+    }
+  },
+  "registry_events": [
+    "initialized",
+    "activate",
+    "routed",
+    "routed",
+    "routed",
+    "gate_evaluated"
+  ],
+  "distinct_sandboxes": 6,
+  "audit": {
+    "same_task_diff": true,
+    "registry_integrity": "ok",
+    "wheel_publisher_commit": "d56c145e72bf871744053bb501d793a78f92fdf8",
+    "wheel_provenance": "https://pypi.org/project/akasha-model/#akasha_model-0.3.0-py3-none-any.whl"
+  }
+}
