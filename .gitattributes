@@ -14,3 +14,5 @@
 /bench/phase4_tasks_reserved/* text eol=lf
 /bench/run_phase4_tasks_*.py text eol=lf
 /bench/results/phase4-tasks-*.json text eol=lf
+/bench/results/phase4-tasks-baseline-v1.json text eol=crlf
+/bench/results/phase4-tasks-specialist-v1.json text eol=crlf
