@@ -36,3 +36,21 @@ Les neuf variables par action couvrent le processus, la fenêtre et SQLite. Le r
 .\.venv\Scripts\python.exe -m bench.run_phase5_notes_desktop_state --predict --runtime $pythonPortable `
     --output $dossierDeValidation
 ```
+
+### Contrôle négatif avec le stockage fautif
+
+Le même prédicteur a été rejoué dans un bac neuf avec le stockage fautif figé du banc. Le pilote a vérifié le message Tk « Note sauvegardée. » et la présence du titre dans la liste de session avant d’interroger SQLite en lecture seule.
+
+| Action | Prévision SQLite | Observation SQLite | Variables conformes |
+| --- | --- | --- | ---: |
+| Enregistrement | Une ligne avec la note exacte | Zéro ligne, note absente | 7/9 |
+| Relance | Zéro ligne selon le dernier état observé | Zéro ligne, note absente | 9/9 |
+
+Après l’enregistrement, la comparaison a signalé `sqlite.row_count` et `sqlite.exact_fixture_present`. Le contrôle d’intégrité SQLite, le processus et les relevés de fenêtre étaient conformes à chaque étape. Le contrôle négatif a réussi en 37,5 s et le bac a été arrêté. [Relevé du contrôle négatif](../../bench/results/phase5-notes-desktop-transition-faulty-v1.json)
+
+Le rejeu avec le stockage de référence a obtenu 9/9 pour les deux actions dans un second bac, avec le même pilote Tk et la même sonde. Les empreintes des entrées confirment que seul le module de stockage différait.
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_phase5_notes_desktop_state --predict --faulty `
+    --runtime $pythonPortable --output $dossierDeValidation
+```

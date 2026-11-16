@@ -109,12 +109,12 @@ function Initialize-Notes {
 
 function Invoke-NotesSave {
     $null = New-Item -ItemType File -Path (Join-Path $work 'save.request')
-    $dbResult = 0
-    for ($attempt = 0; $attempt -lt 20 -and $dbResult -eq 0; $attempt++) {
+    $receipt = Join-Path $work 'save.done'
+    for ($attempt = 0; $attempt -lt 40; $attempt++) {
+        if (Test-Path -LiteralPath $receipt -PathType Leaf) { return (Read-Database) }
         Start-Sleep -Milliseconds 100
-        $dbResult = Read-Database
     }
-    return $dbResult
+    throw 'Notes did not acknowledge the save via Tk.'
 }
 
 $env:PYTHONHOME = $runtime

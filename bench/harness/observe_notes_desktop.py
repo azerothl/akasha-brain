@@ -7,6 +7,7 @@ from pathlib import Path
 
 TITLE = "Note DesktopState"
 CONTENT = "Contenu durable du banc Notes"
+SAVE_STATUS = "Note sauvegardée."
 SQLITE_EMPTY = 0x4650
 SQLITE_FIXTURE = 0x4651
 SQLITE_MISMATCH = 0x4652
@@ -28,6 +29,9 @@ def open_notes(database: Path) -> None:
         app.title_var.set(TITLE)
         app.content_text.insert("1.0", CONTENT)
         save_button.invoke()
+        if (app.status_var.get() == SAVE_STATUS and app.notes_list.size() == 1
+                and app.notes_list.get(0).endswith(f" {TITLE}")):
+            request.with_suffix(".done").touch(exist_ok=False)
 
     app.after(40, save_on_request)
     app.mainloop()

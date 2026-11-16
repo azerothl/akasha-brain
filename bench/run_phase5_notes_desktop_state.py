@@ -29,7 +29,7 @@ INPUTS = {
 PHASES = ("before_save", "after_save", "after_restart")
 
 
-def check_states(states: dict) -> dict:
+def check_states(states: dict, *, faulty: bool = False) -> dict:
     pids = [states[phase]["process"]["pid"] for phase in PHASES]
     expected_window = {
         "title": NOTES_WINDOW_TITLE,
@@ -37,15 +37,18 @@ def check_states(states: dict) -> dict:
         "foreground_owned_by_process": True,
         "uia_focus_owned_by_process": True,
     }
-    return {
+    checks = {
         "notes_process_alive_each_time": all(state["process"]["alive"] for state in states.values()),
         "window_visible_and_focused_each_time": all(state["window"] == expected_window for state in states.values()),
         "same_process_after_save": pids[0] == pids[1],
         "different_process_after_restart": pids[1] != pids[2],
-        "independent_sqlite_empty_then_exact_fixture_twice": [
-            states[phase]["sqlite"]["row_count"] for phase in PHASES
-        ] == [0, 1, 1],
     }
+    row_counts = [states[phase]["sqlite"]["row_count"] for phase in PHASES]
+    if faulty:
+        checks["independent_sqlite_remains_empty"] = row_counts == [0, 0, 0]
+    else:
+        checks["independent_sqlite_empty_then_exact_fixture_twice"] = row_counts == [0, 1, 1]
+    return checks
 
 
 def capture_states(sandbox_id: str, probe: str, report: dict) -> None:
@@ -93,13 +96,33 @@ def run_transitions(sandbox_id: str, probe: str, output: Path, report: dict) -> 
             sandbox_id, f"{probe} -Mode {action} -NotesId {pid}", started_at=transition["action_dispatched_at"],
         )
         comparison = transition["comparison"] = compare_notes_transition(prediction, after)
+        if action == "save":
+            transition["save_acknowledged_by_tk"] = True
         write_report(output, report)
         print(f"{action}: PID {pid} -> {after['process']['pid']}, "
               f"{comparison['matched']}/{len(comparison['variables'])} conformes", flush=True)
     report["capture_wall_s"] = round(perf_counter() - capture_begin, 3)
 
 
-def run(runtime: Path, output: Path, *, predict: bool = False) -> dict:
+def check_transitions(transitions: dict, *, faulty: bool) -> dict:
+    if faulty:
+        save = transitions["save"]["comparison"]
+        restart = transitions["restart"]["comparison"]
+        expected_mismatches = {"sqlite.row_count", "sqlite.exact_fixture_present"}
+        return {
+            "save_reports_only_expected_sqlite_mismatches": set(save["mismatches"]) == expected_mismatches,
+            "restart_prediction_matches_observed_empty_database": restart["status"] == "passed",
+        }
+    return {
+        "predictions_agree_with_observations": all(
+            item["comparison"]["status"] == "passed" for item in transitions.values()
+        ),
+    }
+
+
+def run(runtime: Path, output: Path, *, predict: bool = False, faulty: bool = False) -> dict:
+    if faulty and not predict:
+        raise ValueError("Le contrôle fautif exige le mode de prévision.")
     begin = perf_counter()
     profile = read_profile()
     if active_sandboxes():
@@ -108,9 +131,12 @@ def run(runtime: Path, output: Path, *, predict: bool = False) -> dict:
     stage = output / "input"
     stage.mkdir()
     shutil.copytree(runtime, stage / "python")
-    for name, source in INPUTS.items():
+    inputs = INPUTS.copy()
+    if faulty:
+        inputs["notes_store.py"] = "notes/notes_store.py"
+    for name, source in inputs.items():
         shutil.copyfile(BENCH / source, stage / name)
-    hashes = {name: file_hash(stage / name) for name in INPUTS}
+    hashes = {name: file_hash(stage / name) for name in inputs}
     tag, sandbox_id = secrets.token_hex(4), str(uuid4())
     (stage / "isolation-sentinel.txt").write_text(tag, encoding="ascii")
     guest = fr"C:\AkashaGuidedInput-{tag}"
@@ -118,8 +144,9 @@ def run(runtime: Path, output: Path, *, predict: bool = False) -> dict:
     report = {
         "protocol": "phase5-notes-desktop-transition-v1" if predict else "phase5-notes-desktop-state-v1",
         "status": "running",
-        "scope": "synthetic_notes_reference",
+        "scope": "synthetic_notes_faulty" if faulty else "synthetic_notes_reference",
         "save_action": "fixed synthetic fixture through the Notes Tk save button",
+        "save_receipt": "Tk success status and fixture title in the list, checked before the SQLite probe",
         "inputs_sha256": hashes,
         "sandbox_id": sandbox_id,
         "observations": {},
@@ -143,11 +170,9 @@ def run(runtime: Path, output: Path, *, predict: bool = False) -> dict:
             run_transitions(sandbox_id, probe, output, report)
         else:
             capture_states(sandbox_id, probe, report)
-        checks = check_states(report["observations"])
+        checks = check_states(report["observations"], faulty=faulty)
         if predict:
-            checks["predictions_agree_with_observations"] = all(
-                item["comparison"]["status"] == "passed" for item in report["transitions"].values()
-            )
+            checks.update(check_transitions(report["transitions"], faulty=faulty))
         checks["staged_sources_unchanged"] = all(file_hash(stage / name) == digest for name, digest in hashes.items())
         report["checks"] = checks
         if not all(checks.values()):
@@ -175,8 +200,11 @@ def main() -> None:
     parser.add_argument("--runtime", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--predict", action="store_true", help="Enregistre une prévision avant chaque action.")
+    parser.add_argument("--faulty", action="store_true", help="Rejoue avec le stockage Notes fautif (avec --predict).")
     args = parser.parse_args()
-    report = run(args.runtime.resolve(strict=True), args.output.resolve(), predict=args.predict)
+    if args.faulty and not args.predict:
+        parser.error("--faulty exige --predict.")
+    report = run(args.runtime.resolve(strict=True), args.output.resolve(), predict=args.predict, faulty=args.faulty)
     print(json.dumps({name: report[name] for name in ("status", "capture_wall_s", "wall_s")}), flush=True)
 
 
