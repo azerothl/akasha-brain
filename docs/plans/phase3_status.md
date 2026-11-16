@@ -66,6 +66,28 @@ Les six bacs ont appliqué le même premier diff, avec vérification Git et cont
 
 La médiane des écarts candidat moins parent est de −0,606 s pour le total. L’étape d’adaptation prend de 0,257 à 0,271 s et la conversion seule a une médiane de 0,572 ms. Pour la graine 744, 7,096 s des 7,317 s supplémentaires sont en dehors des étapes tracées. [Relevé de la campagne](../../bench/results/notes-link-adapter-frozen-v1.json)
 
-## Prochain jalon
+## Qualification de la promotion
 
-Les paliers de promotion, le contrôle de transition et le retour arrière font partie de la qualification de la phase 3.
+Le banc utilise les graphes du [jalon figé](https://github.com/azerothl/akasha-brain/commit/e868607076e42ed81d81e6d6c63df916e84989e6) et un registre SQLite jetable. Le replay compare le candidat à la référence publiée pour la graine 742. En shadow, le parent puis le candidat exécutent la même entrée, graine 743, dans deux bacs. Le palier limité autorise une seule exécution candidate du banc Notes, graine 744. Les contrôles vérifient aussi le routage vers le parent hors cohorte et après épuisement du quota.
+
+Les décisions sont signées avec une clé Ed25519 de test. La signature lie les plans, le gel, la référence publiée et les preuves de chaque palier. Le banc exerce ensuite le routage actif et le routage après retour arrière, chacun dans un bac neuf.
+
+| Exécution | Graphe | Graine | Durée |
+| --- | --- | ---: | ---: |
+| Replay | Candidat | 742 | 121,259 s |
+| Shadow | Parent | 743 | 120,738 s |
+| Shadow | Candidat | 743 | 122,496 s |
+| Limité | Candidat | 744 | 115,279 s |
+| Après promotion | Candidat | 744 | 117,210 s |
+| Après retour arrière | Parent | 744 | 118,941 s |
+
+Les six bacs ont validé le premier diff, les quatre tests et SQLite. RapidOCR a retrouvé la note après relance et SQLite a confirmé la ligne exacte. Le replay a reproduit le verdict de référence et les deux exécutions shadow ont produit le même verdict.
+
+Le registre a refusé la promotion avant les preuves et rejeté la décision altérée. La décision valide a sélectionné `notes-rbitnet-ocr-typed-patch`. Le retour arrière signé a rétabli `notes-rbitnet-ocr`, confirmé par la dernière exécution. Les deux signatures ont été revérifiées avec la clé publique après suppression de la clé de test. La chaîne d’audit et le refus d’effacer ses entrées ont été contrôlés. [Relevé et décisions signées](../../bench/results/notes-link-promotion-v1.json)
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_notes_link_promotion `
+    --lock akasha_brain/protocols/notes-link-adapter-v1.json `
+    --reference bench/results/notes-link-adapter-frozen-v1.json --runtime $pythonPortable `
+    --rbitnet $moteur $gguf $tokenizer --output $dossierEssai
+```

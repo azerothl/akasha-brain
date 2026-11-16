@@ -1,0 +1,357 @@
+{
+  "status": "passed",
+  "freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+  "proofs": {
+    "replay": {
+      "verified": true,
+      "arm": "candidate",
+      "seed": 742,
+      "graph_id": "notes-rbitnet-ocr-typed-patch",
+      "graph_version": "1.1.0",
+      "sandbox_id": "33c65b3c-f971-4702-8862-8ceab7f58157",
+      "sandbox_stopped": true,
+      "total_s": 121.259,
+      "report_sha256": "a805c1440bf0b2e2dfe9b521ed98c520b6da335d9920795cc1d164c0eb138924",
+      "outcome_sha256": "ee073f0dcd67e0fcfd7e0e072ec6072988cec7f8ebe350094b0bfeeafa27fedc",
+      "first_diff_applied": true,
+      "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+      "tests": [
+        {
+          "name": "test_saved_note_survives_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_two_notes_with_accents_multiline_survive_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_save_acknowledged_in_session",
+          "status": "passed"
+        },
+        {
+          "name": "test_select_redisplays_content",
+          "status": "passed"
+        }
+      ],
+      "sqlite": 0,
+      "desktop": {
+        "ocr_save_button_used": true,
+        "app_restarted": true,
+        "ocr_note_selected_after_restart": true,
+        "ocr_content_visible": true,
+        "sqlite_exact_row": true
+      },
+      "links": 4,
+      "active": "notes-rbitnet-ocr"
+    },
+    "shadow_parent": {
+      "verified": true,
+      "arm": "parent",
+      "seed": 743,
+      "graph_id": "notes-rbitnet-ocr",
+      "graph_version": "1.0.0",
+      "sandbox_id": "68e8f37b-9a9c-4ff7-8209-6de04e3de8f1",
+      "sandbox_stopped": true,
+      "total_s": 120.738,
+      "report_sha256": "fcbd5794de737880f30b3fc9f4a5ea8b336b8f6501dfe87fcee99076c1f825dc",
+      "outcome_sha256": "ee073f0dcd67e0fcfd7e0e072ec6072988cec7f8ebe350094b0bfeeafa27fedc",
+      "first_diff_applied": true,
+      "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+      "tests": [
+        {
+          "name": "test_saved_note_survives_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_two_notes_with_accents_multiline_survive_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_save_acknowledged_in_session",
+          "status": "passed"
+        },
+        {
+          "name": "test_select_redisplays_content",
+          "status": "passed"
+        }
+      ],
+      "sqlite": 0,
+      "desktop": {
+        "ocr_save_button_used": true,
+        "app_restarted": true,
+        "ocr_note_selected_after_restart": true,
+        "ocr_content_visible": true,
+        "sqlite_exact_row": true
+      },
+      "links": 3,
+      "active": "notes-rbitnet-ocr"
+    },
+    "shadow_candidate": {
+      "verified": true,
+      "arm": "candidate",
+      "seed": 743,
+      "graph_id": "notes-rbitnet-ocr-typed-patch",
+      "graph_version": "1.1.0",
+      "sandbox_id": "6d41720c-a242-4899-92a0-b3024e7e662a",
+      "sandbox_stopped": true,
+      "total_s": 122.496,
+      "report_sha256": "53869a5f3304e2e77e08ed69c470d27339c6f7f382adabfd3776075d7971585e",
+      "outcome_sha256": "ee073f0dcd67e0fcfd7e0e072ec6072988cec7f8ebe350094b0bfeeafa27fedc",
+      "first_diff_applied": true,
+      "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+      "tests": [
+        {
+          "name": "test_saved_note_survives_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_two_notes_with_accents_multiline_survive_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_save_acknowledged_in_session",
+          "status": "passed"
+        },
+        {
+          "name": "test_select_redisplays_content",
+          "status": "passed"
+        }
+      ],
+      "sqlite": 0,
+      "desktop": {
+        "ocr_save_button_used": true,
+        "app_restarted": true,
+        "ocr_note_selected_after_restart": true,
+        "ocr_content_visible": true,
+        "sqlite_exact_row": true
+      },
+      "links": 4,
+      "active": "notes-rbitnet-ocr"
+    },
+    "limited": {
+      "verified": true,
+      "arm": "candidate",
+      "seed": 744,
+      "graph_id": "notes-rbitnet-ocr-typed-patch",
+      "graph_version": "1.1.0",
+      "sandbox_id": "2c506191-cc7b-4c01-849c-7c842fa6bda9",
+      "sandbox_stopped": true,
+      "total_s": 115.279,
+      "report_sha256": "8fe675a70e8031f3b676eb6611cf3ad2a0b48a252464a085a423bd7bdbb0a27a",
+      "outcome_sha256": "ee073f0dcd67e0fcfd7e0e072ec6072988cec7f8ebe350094b0bfeeafa27fedc",
+      "first_diff_applied": true,
+      "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+      "tests": [
+        {
+          "name": "test_saved_note_survives_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_two_notes_with_accents_multiline_survive_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_save_acknowledged_in_session",
+          "status": "passed"
+        },
+        {
+          "name": "test_select_redisplays_content",
+          "status": "passed"
+        }
+      ],
+      "sqlite": 0,
+      "desktop": {
+        "ocr_save_button_used": true,
+        "app_restarted": true,
+        "ocr_note_selected_after_restart": true,
+        "ocr_content_visible": true,
+        "sqlite_exact_row": true
+      },
+      "links": 4,
+      "active": "notes-rbitnet-ocr"
+    },
+    "active": {
+      "verified": true,
+      "arm": "candidate",
+      "seed": 744,
+      "graph_id": "notes-rbitnet-ocr-typed-patch",
+      "graph_version": "1.1.0",
+      "sandbox_id": "1a7e9c44-df36-4794-b2b7-101bcc8de0c3",
+      "sandbox_stopped": true,
+      "total_s": 117.21,
+      "report_sha256": "b67f7b858c9d80232a9bef1156cf214579636158e0ae6696ecdca7d923ddba66",
+      "outcome_sha256": "ee073f0dcd67e0fcfd7e0e072ec6072988cec7f8ebe350094b0bfeeafa27fedc",
+      "first_diff_applied": true,
+      "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+      "tests": [
+        {
+          "name": "test_saved_note_survives_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_two_notes_with_accents_multiline_survive_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_save_acknowledged_in_session",
+          "status": "passed"
+        },
+        {
+          "name": "test_select_redisplays_content",
+          "status": "passed"
+        }
+      ],
+      "sqlite": 0,
+      "desktop": {
+        "ocr_save_button_used": true,
+        "app_restarted": true,
+        "ocr_note_selected_after_restart": true,
+        "ocr_content_visible": true,
+        "sqlite_exact_row": true
+      },
+      "links": 4,
+      "active": "notes-rbitnet-ocr-typed-patch"
+    },
+    "after_rollback": {
+      "verified": true,
+      "arm": "parent",
+      "seed": 744,
+      "graph_id": "notes-rbitnet-ocr",
+      "graph_version": "1.0.0",
+      "sandbox_id": "87d8f5e6-2cc5-42ad-bdbe-5a78dac71362",
+      "sandbox_stopped": true,
+      "total_s": 118.941,
+      "report_sha256": "6e02b1910c5b2f747bba08ba7cd3df88ccb25ed9e2d49041bd156c211f5d36c2",
+      "outcome_sha256": "ee073f0dcd67e0fcfd7e0e072ec6072988cec7f8ebe350094b0bfeeafa27fedc",
+      "first_diff_applied": true,
+      "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+      "tests": [
+        {
+          "name": "test_saved_note_survives_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_two_notes_with_accents_multiline_survive_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_save_acknowledged_in_session",
+          "status": "passed"
+        },
+        {
+          "name": "test_select_redisplays_content",
+          "status": "passed"
+        }
+      ],
+      "sqlite": 0,
+      "desktop": {
+        "ocr_save_button_used": true,
+        "app_restarted": true,
+        "ocr_note_selected_after_restart": true,
+        "ocr_content_visible": true,
+        "sqlite_exact_row": true
+      },
+      "links": 3,
+      "active": "notes-rbitnet-ocr"
+    }
+  },
+  "decisions": {
+    "promote": {
+      "document": {
+        "version": 1,
+        "action": "promote",
+        "cycle": "ad5fb868-c5d1-4e90-bb47-05f78eafbd9f",
+        "environment": "bench-notes",
+        "from": "notes-rbitnet-ocr",
+        "to": "notes-rbitnet-ocr-typed-patch",
+        "plans": {
+          "notes-rbitnet-ocr": "195226f66bd8332a06608bdb45bdafff2bdc4affaef621c3d099c8ef6c4dbdca",
+          "notes-rbitnet-ocr-typed-patch": "1b2d62f44f49c97bd25671887174d360bc5208e666e112bb0d4e029baa3b1240"
+        },
+        "freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+        "reference_sha256": "b378a454a7f0107ee5366b41e6168a8781557ddf2c1bd3c8a1dd620a8f258fea",
+        "previous_decision_sha256": null,
+        "trials": [
+          {
+            "stage": "replay",
+            "proof_sha256": "4bba8037f17199a17a1c93e46a2099c03d55d976864cf5014f825e5efe46563c"
+          },
+          {
+            "stage": "shadow_parent",
+            "proof_sha256": "98e7bdbc6df89c3f6ef591f8505ce1e9f17788803731ca899f2a28c59f0d896c"
+          },
+          {
+            "stage": "shadow_candidate",
+            "proof_sha256": "697a6dbacafdf5d108960e8a3c5e80734a00fa18a895b97bbe7689cb0fe5d3ea"
+          },
+          {
+            "stage": "limited",
+            "proof_sha256": "602bd161dea82677e22b736ba6b8e40aa4e03361921e2413d698c1b083a9cced"
+          }
+        ]
+      },
+      "signature": "-----BEGIN SSH SIGNATURE-----\r\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAg5i5OA/5bVL05+tUlE6R5HRD6nv\r\nWjV6o6Sez5EI2kffQAAAAdYWthc2hhLm5vdGVzLWxpbmsuZGVjaXNpb24udjEAAAAAAAAA\r\nBnNoYTUxMgAAAFMAAAALc3NoLWVkMjU1MTkAAABAuc/PT+PFiecf0K3wN8u/vaNqyaLSzx\r\n9iOFKVaXyLaRrD6FDAcbMLBPporlVv39rM7UGOTprnxE7aWeipv5fQCw==\r\n-----END SSH SIGNATURE-----\r\n"
+    },
+    "rollback": {
+      "document": {
+        "version": 1,
+        "action": "rollback",
+        "cycle": "ad5fb868-c5d1-4e90-bb47-05f78eafbd9f",
+        "environment": "bench-notes",
+        "from": "notes-rbitnet-ocr-typed-patch",
+        "to": "notes-rbitnet-ocr",
+        "plans": {
+          "notes-rbitnet-ocr": "195226f66bd8332a06608bdb45bdafff2bdc4affaef621c3d099c8ef6c4dbdca",
+          "notes-rbitnet-ocr-typed-patch": "1b2d62f44f49c97bd25671887174d360bc5208e666e112bb0d4e029baa3b1240"
+        },
+        "freeze_sha256": "bbd0f8f15f221b39f5cc2033055baf1c2a74d023b3c6dfd7eccb36105f43e375",
+        "reference_sha256": "b378a454a7f0107ee5366b41e6168a8781557ddf2c1bd3c8a1dd620a8f258fea",
+        "previous_decision_sha256": "00719739d0754730d64eab20a550912aec18a0cc8fece38456b2184dc52c6f05",
+        "trials": [
+          {
+            "stage": "replay",
+            "proof_sha256": "4bba8037f17199a17a1c93e46a2099c03d55d976864cf5014f825e5efe46563c"
+          },
+          {
+            "stage": "shadow_parent",
+            "proof_sha256": "98e7bdbc6df89c3f6ef591f8505ce1e9f17788803731ca899f2a28c59f0d896c"
+          },
+          {
+            "stage": "shadow_candidate",
+            "proof_sha256": "697a6dbacafdf5d108960e8a3c5e80734a00fa18a895b97bbe7689cb0fe5d3ea"
+          },
+          {
+            "stage": "limited",
+            "proof_sha256": "602bd161dea82677e22b736ba6b8e40aa4e03361921e2413d698c1b083a9cced"
+          }
+        ]
+      },
+      "signature": "-----BEGIN SSH SIGNATURE-----\r\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAg5i5OA/5bVL05+tUlE6R5HRD6nv\r\nWjV6o6Sez5EI2kffQAAAAdYWthc2hhLm5vdGVzLWxpbmsuZGVjaXNpb24udjEAAAAAAAAA\r\nBnNoYTUxMgAAAFMAAAALc3NoLWVkMjU1MTkAAABAXT8ShONwXomIBKwZq1PI4LMXX/r5lC\r\ngD7kI6LZxx++eIykL30MkltFhVAl8z/Rm/oDTzwY1RnpiHTOuqm2R/Ag==\r\n-----END SSH SIGNATURE-----\r\n"
+    }
+  },
+  "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOYuTgP+W1S9OfrVJROkeR0Q+p71o1eqOkns+RCNpH30",
+  "initial_active": "notes-rbitnet-ocr",
+  "premature_promotion_refused": true,
+  "limited_routes": {
+    "outside_cohort": "notes-rbitnet-ocr",
+    "admitted": "notes-rbitnet-ocr-typed-patch",
+    "after_quota": "notes-rbitnet-ocr"
+  },
+  "tampered_decision_refused": true,
+  "promoted_active": "notes-rbitnet-ocr-typed-patch",
+  "restored_active": "notes-rbitnet-ocr",
+  "signatures_reverified": true,
+  "events": [
+    "initialized",
+    "trial_verified",
+    "trial_verified",
+    "trial_verified",
+    "limited_admitted",
+    "trial_verified",
+    "promote",
+    "rollback"
+  ],
+  "distinct_new_sandboxes": 6,
+  "published_adapter_commit": "e868607076e42ed81d81e6d6c63df916e84989e6",
+  "audit_append_only_verified": true
+}
