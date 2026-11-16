@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "dispatch",
+      "goal_id": "55b26642-836e-432e-bc68-b7870ef68e96",
+      "intent": "Dans « À faire », garder uniquement les tâches ouvertes dont le report est absent ou finit au plus tard le jour 12. Parmi elles, inclure celles de priorité 5 ou celles sans responsable de priorité au moins 2. Trier par priorité décroissante, puis par jour d’échéance croissant avec les échéances absentes en dernier, puis par identifiant croissant. Préserver exactement « Terminées », « Toutes » et SQLite.",
+      "target": "À faire",
+      "rows": [
+        [1, "Pompe", "open", 5, "lea", 12, 20],
+        [2, "Clé", "open", 3, null, null, null],
+        [3, "Porte", "open", 1, null, null, 11],
+        [4, "Capteur", "open", 5, null, 13, 9],
+        [5, "Alarme", "closed", 5, null, null, 5],
+        [6, "Vanne", "open", 3, null, 11, 14],
+        [7, "Bornier", "open", 3, "leo", 0, 8],
+        [8, "Balise", "cancelled", 5, null, null, 5]
+      ],
+      "visible_ids": {"À faire": [1, 6, 2], "Terminées": [5], "Toutes": [1, 2, 3, 4, 5, 6, 7, 8]}
+    },
+    {
+      "id": "planning",
+      "goal_id": "29b5978e-f267-4a36-bd89-4037d61414ed",
+      "intent": "Dans « Toutes », afficher d’abord les tâches ouvertes dont l’échéance est au plus tard le jour 7, puis les autres tâches ouvertes, puis les tâches non ouvertes. Dans chaque groupe, trier par priorité décroissante, puis par échéance croissante avec les échéances absentes en dernier, puis par identifiant croissant. Garder toutes les lignes et préserver exactement « À faire », « Terminées » et SQLite.",
+      "target": "Toutes",
+      "rows": [
+        [1, "Graissage", "open", 2, null, null, 8],
+        [2, "Levage", "closed", 5, null, null, 1],
+        [3, "Étalonnage", "open", 3, null, null, 7],
+        [4, "Essai", "open", 3, null, null, 6],
+        [5, "Purge", "open", 4, null, null, null],
+        [6, "Contrôle", "cancelled", 5, null, null, null],
+        [7, "Nettoyage", "open", 3, null, null, 7],
+        [8, "Pose", "open", 2, null, null, 8]
+      ],
+      "visible_ids": {"À faire": [1, 3, 4, 5, 7, 8], "Terminées": [2], "Toutes": [4, 3, 7, 5, 1, 8, 2, 6]}
+    }
+  ]
+}

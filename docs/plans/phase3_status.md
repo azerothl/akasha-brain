@@ -149,3 +149,9 @@ Le lanceur revérifie la signature et les preuves des paliers publiés, puis cr�
 Dans les deux bacs du candidat, le premier diff s’est appliqué et l’adaptateur a refusé la remise avant le vérificateur. Le premier refus a laissé le candidat actif. Le second a déclenché le retour arrière signé. Le premier démarrage du parent a expiré avant l’application du diff. Le rejeu a relu le même registre, sélectionné le parent, appliqué le premier diff et réussi les quatre tests, le vérificateur SQLite, puis RapidOCR et SQLite après relance.
 
 Les signatures, la chaîne d’audit et l’intégrité du registre SQLite ont été contrôlées après fermeture des bacs et suppression de la clé de test. [Relevé et décision signée](../../bench/results/notes-link-monitor-v1.json)
+
+## Clôture
+
+Les critères de sortie du [plan de développement](development-plan.md#phase-3--évolution-des-liens-étendue) sont remplis sur le banc Notes. Le gel lie les graphes et l’adaptateur jusqu’aux décisions Ed25519 de promotion et de retour arrière. La comparaison réservée attribue à la liaison `generate_diff → verify` le passage de 3 à 0 remises invalides admises et l’économie médiane de 51,971 s de vérifications aval sur ces cas. Les trois paires nominales ont abouti. Le premier contrôle après relance du témoin candidat a échoué dans la campagne réservée, puis son rejeu a abouti.
+
+Le registre a rétabli automatiquement le parent au deuxième rejet consécutif, puis le parent a passé le parcours complet dans un bac neuf après un premier délai de démarrage dépassé. Le contrôle de transition du projet jetable et les 190 tests du dépôt ont aussi été vérifiés. La [phase 4](phase4_status.md) part de ce jalon.

@@ -1,0 +1,59 @@
+{
+  "freeze_sha256": "b09e0cfbfb0f34023bd64e0e6ad9f757c5dc4660437c5ec434139e03f664c526",
+  "evolution": "excluded",
+  "cases": [
+    {
+      "id": "closure",
+      "goal_id": "e3f10c02-6354-4179-ad79-a420d1329852",
+      "order": ["reference", "v3"],
+      "intent": "Dans « Terminées », afficher seulement les tâches dont state vaut closed et dont assignee n'est pas NULL, en gardant celles dont due_day est au plus tard le jour 9 ou dont priority vaut exactement 5. Une tâche de priorité 5 reste admissible si due_day est NULL. Trier par hold_until décroissant avec les NULL en premier, puis par priority croissant, puis par id croissant. Préserver « À faire », « Toutes » et SQLite.",
+      "target": "Terminées",
+      "coverage": {
+        "where": ["and", ["=", "state", "closed"], ["notnull", "assignee"],
+                  ["or", ["<=", "due_day", 9], ["=", "priority", 5]]],
+        "order": [["hold_until", "desc", "first"], ["priority", "asc"], ["id", "asc"]]
+      },
+      "rows": [
+        [1, "Serrure", "closed", 5, "zoe", 4, null],
+        [2, "Vanne", "closed", 2, "noe", null, 9],
+        [3, "Sonde", "closed", 3, null, 0, 4],
+        [4, "Socle", "closed", 4, "eva", 6, 10],
+        [5, "Éclairage", "open", 5, "tom", null, 1],
+        [6, "Vidange", "closed", 1, "ana", 6, 7],
+        [7, "Dépose", "cancelled", 5, "max", null, 1],
+        [8, "Calage", "closed", 5, "ira", null, 3],
+        [9, "Armoire", "closed", 2, "eli", null, 8],
+        [10, "Graissage", "closed", 1, "lou", 6, 6]
+      ],
+      "visible_ids": {"À faire": [5], "Terminées": [2, 9, 8, 6, 10, 1], "Toutes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+    },
+    {
+      "id": "handover",
+      "goal_id": "3213aa38-8f3d-4d50-a05c-ddc6a56aa0ff",
+      "order": ["v3", "reference"],
+      "intent": "Dans « Toutes », conserver chaque ligne. Classer d'abord les tâches clôturées (state vaut closed) de priority au moins 3, puis les tâches ouvertes (state vaut open) qui sont sans affectation (assignee NULL) ou de priority exactement 4, puis toutes les autres. Dans chacun des trois groupes, trier par due_day décroissant avec les NULL en dernier, puis par hold_until croissant avec les NULL en premier, puis par id décroissant. Préserver « À faire », « Terminées » et SQLite.",
+      "target": "Toutes",
+      "coverage": {
+        "where": null,
+        "order": [
+          [["case", ["and", ["=", "state", "closed"], [">=", "priority", 3]],
+                    ["and", ["=", "state", "open"], ["or", ["isnull", "assignee"], ["=", "priority", 4]]]], "asc"],
+          ["due_day", "desc", "last"], ["hold_until", "asc", "first"], ["id", "desc"]
+        ]
+      },
+      "rows": [
+        [1, "Ferme-porte", "closed", 3, "emma", 3, 10],
+        [2, "Orifice", "closed", 4, null, null, 10],
+        [3, "Courroie", "closed", 2, "ian", null, 50],
+        [4, "Signal", "open", 4, "leo", 1, 11],
+        [5, "Palier", "open", 1, null, 1, 11],
+        [6, "Vitre", "open", 2, "ana", 0, 11],
+        [7, "Guide", "open", 1, null, null, null],
+        [8, "Thermostat", "cancelled", 5, null, null, null],
+        [9, "Coffret", "open", 4, "tom", null, 11],
+        [10, "Détecteur", "closed", 4, "zoe", null, null]
+      ],
+      "visible_ids": {"À faire": [4, 5, 6, 7, 9], "Terminées": [1, 2, 3, 10], "Toutes": [2, 1, 10, 9, 5, 4, 7, 3, 6, 8]}
+    }
+  ]
+}

@@ -6,3 +6,11 @@
 /bench/tasks_transfer_v14/* text eol=lf
 # L’oracle du cas v14 se termine par une ligne CRLF dans la preuve gelée.
 /bench/tasks_transfer_v14/oracle.py -text !eol whitespace=cr-at-eol,-blank-at-eof
+
+# Les manifestes et relevés du spécialiste Tâches portent des empreintes d’octets.
+/akasha_brain/protocols/tasks-sql-specialist-v3.json text eol=lf
+/akasha_brain/tasks_sql_specialist*.py text eol=lf
+/bench/phase4_tasks_dev/* text eol=lf
+/bench/phase4_tasks_reserved/* text eol=lf
+/bench/run_phase4_tasks_*.py text eol=lf
+/bench/results/phase4-tasks-*.json text eol=lf

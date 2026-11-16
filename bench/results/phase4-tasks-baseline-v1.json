@@ -1,0 +1,315 @@
+{
+  "status": "passed",
+  "graph": "tasks-rbitnet-sql@1.3.0",
+  "backend": "cpu",
+  "protocol_sha256": "6c81be79ae41f6cd0a54bccca2b0f485dbb3dcb6b55a0f00c3a51e62f05d9047",
+  "fixtures_sha256": {
+    "schema.sql": "cae61f92ae2574d96844892ac0f0e0f873e6746e0b640fdd906ae1f40c54314f",
+    "repair.py": "33673f3561748f146323f7dc9f485e8f13776065f94a6a9ef03099773d8e25b8",
+    "oracle.py": "990a04bee78283ac279c3a44c8df43e94fcbaf731e3e6c68a3790abd711fac74",
+    "cases.json": "381ea1d5abb0981b161164b2214b74369a7fa227eac1ca29bd1e1a56d783fa8e"
+  },
+  "runs": {
+    "dispatch": {
+      "target": "À faire",
+      "executions": [
+        {
+          "evaluated": true,
+          "status": "failed",
+          "sandbox_id": "09b4a92e-7edd-4501-87ed-9bf442e4dade",
+          "sandbox_stopped": true,
+          "error": null,
+          "evolution": "excluded",
+          "accepted_attempt": null,
+          "total_s": 289.245,
+          "initial": {
+            "filters": {
+              "À faire": false,
+              "Terminées": true,
+              "Toutes": true
+            },
+            "filter_deltas": {
+              "À faire": {
+                "missing": 0,
+                "unexpected": 3,
+                "wrong_order": false
+              },
+              "Terminées": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              },
+              "Toutes": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              }
+            },
+            "sqlite_unchanged": true,
+            "guest_exit_code": 1744830512
+          },
+          "witness": {
+            "filters": {
+              "À faire": true,
+              "Terminées": true,
+              "Toutes": true
+            },
+            "filter_deltas": {
+              "À faire": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              },
+              "Terminées": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              },
+              "Toutes": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              }
+            },
+            "sqlite_unchanged": true,
+            "guest_exit_code": 1744830464
+          },
+          "attempts": {
+            "1": {
+              "diff_applied": true,
+              "inferences": [
+                {
+                  "filter": "À faire",
+                  "wall_s": 102.215,
+                  "finish_reason": "stop"
+                }
+              ],
+              "targets": [
+                "À faire"
+              ],
+              "git_verified": true,
+              "verification": {
+                "filters": {
+                  "À faire": false,
+                  "Terminées": true,
+                  "Toutes": true
+                },
+                "filter_deltas": {
+                  "À faire": {
+                    "missing": 2,
+                    "unexpected": 3,
+                    "wrong_order": false
+                  },
+                  "Terminées": {
+                    "missing": 0,
+                    "unexpected": 0,
+                    "wrong_order": false
+                  },
+                  "Toutes": {
+                    "missing": 0,
+                    "unexpected": 0,
+                    "wrong_order": false
+                  }
+                },
+                "sqlite_unchanged": true,
+                "guest_exit_code": 1744830514
+              }
+            },
+            "2": {
+              "diff_applied": true,
+              "inferences": [
+                {
+                  "filter": "À faire",
+                  "wall_s": 115.406,
+                  "finish_reason": "stop"
+                }
+              ],
+              "targets": [
+                "À faire"
+              ],
+              "git_verified": true,
+              "verification": {
+                "filters": {
+                  "À faire": false,
+                  "Terminées": true,
+                  "Toutes": true
+                },
+                "filter_deltas": {
+                  "À faire": {
+                    "missing": 0,
+                    "unexpected": 2,
+                    "wrong_order": false
+                  },
+                  "Terminées": {
+                    "missing": 0,
+                    "unexpected": 0,
+                    "wrong_order": false
+                  },
+                  "Toutes": {
+                    "missing": 0,
+                    "unexpected": 0,
+                    "wrong_order": false
+                  }
+                },
+                "sqlite_unchanged": true,
+                "guest_exit_code": 1744830496
+              }
+            }
+          }
+        }
+      ]
+    },
+    "planning": {
+      "target": "Toutes",
+      "executions": [
+        {
+          "evaluated": true,
+          "status": "failed",
+          "sandbox_id": "52d098c2-8df4-4b82-9cb6-80992d311fd0",
+          "sandbox_stopped": true,
+          "error": null,
+          "evolution": "excluded",
+          "accepted_attempt": null,
+          "total_s": 299.979,
+          "initial": {
+            "filters": {
+              "À faire": true,
+              "Terminées": true,
+              "Toutes": false
+            },
+            "filter_deltas": {
+              "À faire": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              },
+              "Terminées": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              },
+              "Toutes": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": true
+              }
+            },
+            "sqlite_unchanged": true,
+            "guest_exit_code": 1811939328
+          },
+          "witness": {
+            "filters": {
+              "À faire": true,
+              "Terminées": true,
+              "Toutes": true
+            },
+            "filter_deltas": {
+              "À faire": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              },
+              "Terminées": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              },
+              "Toutes": {
+                "missing": 0,
+                "unexpected": 0,
+                "wrong_order": false
+              }
+            },
+            "sqlite_unchanged": true,
+            "guest_exit_code": 1744830464
+          },
+          "attempts": {
+            "1": {
+              "diff_applied": true,
+              "inferences": [
+                {
+                  "filter": "Toutes",
+                  "wall_s": 98.439,
+                  "finish_reason": "stop"
+                }
+              ],
+              "targets": [
+                "Toutes"
+              ],
+              "git_verified": true,
+              "verification": {
+                "filters": {
+                  "À faire": true,
+                  "Terminées": true,
+                  "Toutes": false
+                },
+                "filter_deltas": {
+                  "À faire": {
+                    "missing": 0,
+                    "unexpected": 0,
+                    "wrong_order": false
+                  },
+                  "Terminées": {
+                    "missing": 0,
+                    "unexpected": 0,
+                    "wrong_order": false
+                  },
+                  "Toutes": {
+                    "missing": 0,
+                    "unexpected": 0,
+                    "wrong_order": true
+                  }
+                },
+                "sqlite_unchanged": true,
+                "guest_exit_code": 1811939328
+              }
+            },
+            "2": {
+              "diff_applied": true,
+              "inferences": [
+                {
+                  "filter": "Toutes",
+                  "wall_s": 128.81,
+                  "finish_reason": "stop"
+                }
+              ],
+              "targets": [
+                "Toutes"
+              ],
+              "git_verified": true,
+              "verification": {
+                "filters": {
+                  "À faire": true,
+                  "Terminées": true,
+                  "Toutes": false
+                },
+                "filter_deltas": {
+                  "À faire": {
+                    "missing": 0,
+                    "unexpected": 0,
+                    "wrong_order": false
+                  },
+                  "Terminées": {
+                    "missing": 0,
+                    "unexpected": 0,
+                    "wrong_order": false
+                  },
+                  "Toutes": {
+                    "missing": 2,
+                    "unexpected": 0,
+                    "wrong_order": false
+                  }
+                },
+                "sqlite_unchanged": true,
+                "guest_exit_code": 1745354752
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "evaluated_cases": 2,
+  "accepted_first_attempt": 0,
+  "accepted_after_repair": 0
+}

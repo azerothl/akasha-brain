@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "cases": {
+    "dispatch": {
+      "intent_sha256": "5d01318a94f5d228ef2641c6a93153b9a44be8e2eba7219e84e467d7a7d2febe",
+      "target": "À faire",
+      "plan": {
+        "where": [
+          "and",
+          ["=", "state", "open"],
+          ["or", ["isnull", "hold_until"], ["<=", "hold_until", 12]],
+          ["or", ["=", "priority", 5], ["and", ["isnull", "assignee"], [">=", "priority", 2]]]
+        ],
+        "order": [["priority", "desc"], ["due_day", "asc", "last"], ["id", "asc"]]
+      }
+    },
+    "planning": {
+      "intent_sha256": "36d9ee4f8c2ede08c996c25c8578e4567050739af5e03bcd01ddbad8e45b9966",
+      "target": "Toutes",
+      "plan": {
+        "where": null,
+        "order": [
+          [["case", ["and", ["=", "state", "open"], ["<=", "due_day", 7]], ["=", "state", "open"]], "asc"],
+          ["priority", "desc"], ["due_day", "asc", "last"], ["id", "asc"]
+        ]
+      }
+    }
+  }
+}
