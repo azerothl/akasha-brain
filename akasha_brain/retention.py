@@ -40,16 +40,24 @@ def copy_deadline(created_at: str, stored_expires_at: str, *, policy=None) -> da
 
 def main() -> None:
     from .experience import prune_experiences
+    from .memory_budget import enforce
+    from .memory_store import MemoryStore
     from .project_evolution import expire_copies
 
     parser = argparse.ArgumentParser(description="Purger les expériences et copies d’évolution arrivées à échéance.")
     parser.add_argument("--db", type=Path, required=True, help="Registre local")
     parser.add_argument("--project", type=Path, action="append", default=[], help="Dossier du projet à traiter")
     args = parser.parse_args()
-    print(json.dumps({
+    result = {
         "expired_experiences": prune_experiences(args.db),
         "projects": [{"project": str(project), "erasures": expire_copies(project, args.db)} for project in args.project],
-    }, ensure_ascii=False, indent=2))
+    }
+    memory = MemoryStore(args.db)
+    if memory.configured():
+        result["memory"] = memory.expire()
+        if budget := enforce(memory):
+            result["memory"]["disk"] = budget
+    print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

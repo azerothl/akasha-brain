@@ -12,6 +12,7 @@ from akasha_brain import project
 from akasha_brain import daily_backup
 from akasha_brain import project_backup as backup_module
 from akasha_brain.evolution_consent import grant, revoke
+from akasha_brain.memory_store import MemoryRefusal, MemoryStore
 from akasha_brain.planning import PlanningError
 from akasha_brain.project_audit import LOG_NAME, verify as verify_audit
 from akasha_brain.project_backup import backup, grant_backup, restore, revoke_backup
@@ -19,6 +20,7 @@ from akasha_brain.project_backup_vault import decode, encode, vault_path
 from akasha_brain.project_common import ProjectError, project_scope
 from akasha_brain.project_data import ProjectData
 from akasha_brain.project_evolution import collect, content_path, erase, expire_copies, request_erasure
+from akasha_brain.project_memory import ProjectMemory
 
 
 @pytest.fixture
@@ -102,6 +104,32 @@ def test_revocation_during_validation_blocks_reuse_result(prepared_project, tmp_
         project.reuse(root, registry, sample["sample_id"], "source_code", output, tmp_path)
     assert error.value.error.details["reason"] == "consent_revoked"
     assert not list(output.iterdir())
+
+
+def test_project_memory_follows_consent_and_canonical_erasure(prepared_project, tmp_path):
+    root, proposal, registry, approval = prepared_project
+    MemoryStore(registry).initialize()
+    memory = ProjectMemory(root, registry)
+    consent = grant(registry, project_scope(root), ["source_code"])["consent_id"]
+    sample = collect(root, proposal, registry, "source_code", consent, approval)
+    assert sample["memory"] == {"status": "referenced", "id": sample["sample_id"]}
+    output = tmp_path / "reuse-memory"
+    result = project.reuse(root, registry, sample["sample_id"], "source_code", output, tmp_path)
+    assert result == json.loads((output / "report.json").read_bytes())
+    trace = result["memory"]["trace"]
+    assert memory.recall(trace)["verified_guest"]
+    revoke(registry, consent)
+    with pytest.raises(MemoryRefusal) as revoked:
+        memory.recall(trace)
+    assert revoked.value.code == "consent_revoked"
+    request_erasure(root, registry, sample["sample_id"])
+    with pytest.raises(MemoryRefusal) as redacted:
+        memory.recall(trace)
+    assert redacted.value.code == "redacted_by_deletion"
+    assert erase(root, registry, sample["sample_id"])["status"] == "erased"
+    with memory.access() as (_, db):
+        assert db.execute("SELECT COUNT(*) FROM memory_items").fetchone()[0] == 0
+    assert (root / "app.py").read_bytes() == b"value = 1\n"
 
 
 def test_erasure_blocks_siblings_before_deleting_copies_and_reports(prepared_project, tmp_path):

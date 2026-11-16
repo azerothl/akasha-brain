@@ -33,7 +33,9 @@ from .project_approval import (
 from .project_backup import backup, grant_backup, restore, revoke_backup
 from .project_common import ProjectError, digest, identity, reject
 from .project_dependencies import create_request, download, stage_dependencies, stage_installer
-from .project_evolution import ARTIFACTS, check_sample, collect, erase, finish_replay, load_sample, register_replay
+from .project_evolution import (
+    ARTIFACTS, capture_project_memory, check_sample, collect, erase, finish_replay, load_sample, register_replay,
+)
 
 SECRET_PATHS = {".env", ".netrc", ".npmrc", ".pypirc", ".ssh", ".aws", "id_rsa", "id_ed25519",
                 "credentials.json", "secrets.json"}
@@ -321,6 +323,8 @@ def reuse(project: Path, registry: Path, sample_id: str, category: str, output: 
         raise
     result = {"status": "reused", "sample_id": sample_id, "category": category,
               "validation": validation, "wall_s": round(perf_counter() - began, 3)}
+    if captured := capture_project_memory(project, registry, sample, validation=validation):
+        result["memory"] = captured
     finish_replay(project, registry, sample, run_id, result)
     return result
 

@@ -127,7 +127,24 @@ def collect(project: Path, proposal: Path, registry: Path, category: str, consen
             db.execute("INSERT INTO samples VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                        (sample_id, scope.project, category, consent_id, timestamp(created), expires_at,
                         json.dumps(replay, ensure_ascii=False), payload))
-    return {"status": "collected", "sample_id": sample_id, "category": category, "expires_at": expires_at}
+    result = {"status": "collected", "sample_id": sample_id, "category": category, "expires_at": expires_at}
+    sample = ProjectSample(sample_id, scope, replay, b"", timestamp(created), expires_at)
+    if captured := capture_project_memory(project, registry, sample):
+        result["memory"] = captured
+    return result
+
+
+def capture_project_memory(project: Path, registry: Path, sample: ProjectSample, *, validation=None) -> dict | None:
+    from .memory_store import MemoryRefusal
+    from .project_memory import ProjectMemory
+
+    try:
+        memory = ProjectMemory(project, registry)
+        if memory.configured() or memory.control.exists():
+            return memory.capture(sample, validation=validation)
+    except (OSError, ProjectError, MemoryRefusal, sqlite3.Error) as error:
+        return {"status": "pending", "code": getattr(error, "code", "storage_unverified")}
+    return None
 
 
 def load_sample(project: Path, registry: Path, sample_id: str, category: str) -> ProjectSample:
@@ -282,10 +299,19 @@ def erase(project: Path, registry: Path, sample_id: str) -> dict:
 
 
 def finish_erasure(project: Path, registry: Path, sample_id: str) -> dict:
+    from .memory_store import MemoryRefusal
+    from .project_memory import ProjectMemory
+
     request = request_erasure(project, registry, sample_id)
     if request["status"] == "erased":
         return request
     request_id = request["request_id"]
+    try:
+        memory = ProjectMemory(project, registry)
+        if memory.configured() or memory.control.exists():
+            memory.erase_requested(request_id)
+    except (OSError, ProjectError, MemoryRefusal, sqlite3.Error):
+        return {"request_id": request_id, "status": "pending", "reason": "memory_erasure_pending"}
     with transaction(registry) as grants:
         grants.execute("BEGIN IMMEDIATE")
         scope = project_scope(project)

@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 from copy import deepcopy
 from datetime import datetime, timezone
+from hashlib import sha256
 import json
 from pathlib import Path
 import secrets
@@ -20,6 +21,8 @@ from bench.run_guided_repair import (
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
 from .experience import record_experience
+from .memory import NotesMemory
+from .memory_store import MemoryRefusal
 from .notes_desktop import desktop_patch_matches, load_desktop_protocol, prepare_desktop, verify_desktop
 from .notes_repair import RbitnetPaths, generate_patch, load_repair_prompt, retry_prompt, stage_git
 from .notes_sandbox import (
@@ -66,16 +69,30 @@ def decode_validation(code: int) -> dict:
     }
 
 
+def stage_reused_diff(stage: Path, name: str, diff: bytes, protocol: dict) -> dict:
+    prepared = stage / name
+    prepared.mkdir()
+    (prepared / "proposal.diff").write_bytes(diff)
+    (prepared / "notes-store.sha256").write_text(protocol["patched_store_sha256"], encoding="ascii")
+    return {"diff_file": f"{name}/proposal.diff", "diff_sha256": protocol["diff_sha256"],
+            "diff_applied": False, "source": "workflow_library"}
+
+
 def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: RbitnetPaths | None = None,
               *, first_diff_seed: int | None = None, rapidocr: bool = False,
-              experience_db: Path | None = None, origin: str = "task", progress=None) -> dict:
-    plan = compile_goal(goal, catalog, rbitnet=repair is not None, rapidocr=rapidocr)
+              experience_db: Path | None = None, origin: str = "task", progress=None,
+              reused_diff: bytes | None = None, check_reuse=None) -> dict:
+    reused = reused_diff is not None
+    if reused and (repair is not None or check_reuse is None):
+        raise ValueError("Le rejeu exige un contrôle de la bibliothèque et un seul fournisseur de diff.")
+    has_diff = repair is not None or reused
+    plan = compile_goal(goal, catalog, rbitnet=has_diff, rapidocr=rapidocr)
     if plan["environment_id"] != ENVIRONMENT:
         raise PlanningError(AkashaError(
             ErrorCode.CONTRACT_PRECONDITION_FAILED, "Cet exécuteur est réservé au banc Notes.",
         ))
     # Le script bureau figé cible la copie préparée par le premier diff.
-    if rapidocr and first_diff_seed is None:
+    if (rapidocr or reused) and first_diff_seed is None:
         first_diff_seed = 742
     seeds = (first_diff_seed,) if first_diff_seed is not None else SEEDS[0]
     output.mkdir(parents=True)
@@ -100,7 +117,7 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
         stage.mkdir()
         fixtures = prepare(stage, runtime)
         sources = {"control": BENCH / "notes" / "notes_store.py"}
-        if repair is None:
+        if not has_diff:
             sources["baseline"] = BENCH / "reference" / "notes_reference_store.py"
         source_hashes = {name: file_hash(path) for name, path in sources.items()}
         staged_hashes = {}
@@ -116,6 +133,15 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                                 "git": stage_git(stage), "seeds": seeds, "temperature": TEMPERATURE,
                                 "max_tokens": MAX_TOKENS, "prompt_version": repair_prompt["version"],
                                 "prompt_sha256": repair_prompt["sha256"]}
+        if reused:
+            check_reuse()
+            protocol = load_desktop_protocol({})
+            if (sha256(reused_diff).hexdigest() != protocol["diff_sha256"] or
+                    staged_hashes["control"] != protocol["inputs_sha256"]["control/notes_store.py"]):
+                raise MemoryRefusal("preconditions_failed", "Le diff ou la source diffère du protocole évalué.")
+            report["repair"] = {"backend": "workflow_library", "git": stage_git(stage), "seeds": seeds}
+            if report["repair"]["git"] != protocol["git"]:
+                raise MemoryRefusal("preconditions_failed", "La version de Git diffère du protocole évalué.")
         if rapidocr:
             desktop_protocol = load_desktop_protocol(report)
             prepare_desktop(stage, profile, report, desktop_protocol, report["repair"]["git"])
@@ -124,6 +150,8 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                 shutil.copyfile(BENCH / "harness" / script, stage / script)
         (stage / "isolation-sentinel.txt").write_text(tag, encoding="ascii")
         (stage / "notes-test-cases.json").write_text(json.dumps(TESTS), encoding="ascii")
+        if reused:
+            check_reuse(stage)
 
         sandbox_id = str(uuid4())
         report["sandbox_id"] = sandbox_id
@@ -157,7 +185,7 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
         @contextmanager
         def trace_step(step, attempt=1):
             row = {**step, "started_at": datetime.now(timezone.utc).isoformat(), "status": "failed"}
-            if repair:
+            if has_diff:
                 row["attempt"] = attempt
             report["trace"].append(row)
             began = perf_counter()
@@ -165,6 +193,8 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                 if not set(step["depends_on"]).issubset(completed):
                     raise RuntimeError("Les dépendances du graphe ne sont pas vérifiées.")
                 require_step_permission(step, goal, active_sandboxes() == [sandbox_id])
+                if reused:
+                    check_reuse()
                 row["authorization"] = "allowed"
                 row["status"] = "running"
                 publish()
@@ -192,14 +222,16 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                     row["status"] = "passed"
             return row
 
-        if repair:
-            source = (stage / "control" / "notes_store.py").read_text(encoding="utf-8")
-            prompt = repair_prompt["text"] + method_text(source)
+        if has_diff:
+            if repair:
+                source = (stage / "control" / "notes_store.py").read_text(encoding="utf-8")
+                prompt = repair_prompt["text"] + method_text(source)
             for attempt, seed in enumerate(seeds, 1):
                 name = f"rbitnet-{attempt}"
                 work = output / name
                 with trace_step(prepare_step, attempt) as row:
-                    proposal = generate_patch(repair, work, stage, source, prompt, seed)
+                    proposal = (stage_reused_diff(stage, name, reused_diff, protocol) if reused else
+                                generate_patch(repair, work, stage, source, prompt, seed))
                     row["result"] = proposal
                     if "diff_file" in proposal:
                         if rapidocr:
@@ -252,7 +284,12 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
         report["isolation"].update(host_sources_unchanged=originals_intact, host_staging_unchanged=staging_intact)
         if not originals_intact or not staging_intact:
             raise RuntimeError("L'intégrité du banc hôte n'est pas vérifiée.")
+        if reused:
+            check_reuse()
         report["status"] = "passed"
+    except MemoryRefusal as exc:
+        report["status"] = "failed"
+        report["error"] = AkashaError(ErrorCode.PERMISSION_DENIED, str(exc), {"reason": exc.code}).as_dict()
     except PlanningError as exc:
         report["status"] = "failed"
         report["error"] = exc.error.as_dict()
@@ -278,15 +315,21 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
                 report["status"] = "failed"
                 report["cleanup_error"] = str(exc)
         report["wall_s"] = round(perf_counter() - wall, 3)
+        journal = experience_db if experience_db is not None else output / "experiences.db"
         try:
-            report["experience_record_id"] = record_experience(
-                experience_db if experience_db is not None else output / "experiences.db", report, origin,
-            )
+            report["experience_record_id"] = record_experience(journal, report, origin)
         except (OSError, sqlite3.Error, PlanningError) as exc:
             report["status"] = "failed"
             report["error"] = AkashaError(
                 ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Écriture du journal ExperienceRecord impossible.",
                 {"reason": str(exc)},
             ).as_dict()
+        else:
+            memory = NotesMemory(journal)
+            try:
+                if memory.configured():
+                    report["memory_capture"] = memory.capture([report["experience_record_id"]])
+            except (OSError, sqlite3.Error, MemoryRefusal) as exc:
+                report["memory_capture"] = {"status": "pending", "code": getattr(exc, "code", "storage_unverified")}
         publish()
     return report

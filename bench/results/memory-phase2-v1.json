@@ -1,0 +1,465 @@
+{
+  "version": 1,
+  "validation_date": "2026-11-16",
+  "suite": {
+    "command": "python -X utf8 -B -m pytest -p no:cacheprovider tests contracts -q",
+    "passed": 175
+  },
+  "notes_capture": {
+    "memory_capture": {
+      "captured": 1,
+      "excluded": 0,
+      "expired": 0
+    },
+    "steps": [
+      "localize",
+      "prepare_reference",
+      "verify"
+    ],
+    "wall_s": 51.543,
+    "checks": {
+      "passed": 4,
+      "pytest_exit": 0,
+      "sqlite_verifier_exit": 0
+    },
+    "sandbox_stopped": true,
+    "authorization": {
+      "missing_confinement": "permission_denied",
+      "out_of_scope": "permission_denied"
+    }
+  },
+  "retrieval_ab": {
+    "counts": {
+      "similarity": {
+        "correct": 3,
+        "unsafe_selections": 10
+      },
+      "filtered_similarity": {
+        "correct": 13,
+        "unsafe_selections": 0
+      },
+      "gated": {
+        "correct": 13,
+        "unsafe_selections": 0
+      }
+    },
+    "cases": [
+      {
+        "case": "notes_ocr_nominal",
+        "expected": "notes-rbitnet-ocr",
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": "notes-rbitnet-ocr",
+        "gated": "notes-rbitnet-ocr",
+        "refusals": {
+          "notes-rbitnet": [
+            "desktop_scope"
+          ],
+          "notes-rbitnet-ocr": []
+        }
+      },
+      {
+        "case": "notes_code_nominal",
+        "expected": "notes-rbitnet",
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": "notes-rbitnet",
+        "gated": "notes-rbitnet",
+        "refusals": {
+          "notes-rbitnet": [],
+          "notes-rbitnet-ocr": [
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "notes_ocr_termes_code",
+        "expected": "notes-rbitnet-ocr",
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": "notes-rbitnet-ocr",
+        "gated": "notes-rbitnet-ocr",
+        "refusals": {
+          "notes-rbitnet": [
+            "desktop_scope"
+          ],
+          "notes-rbitnet-ocr": []
+        }
+      },
+      {
+        "case": "notes_code_termes_ocr",
+        "expected": "notes-rbitnet",
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": "notes-rbitnet",
+        "gated": "notes-rbitnet",
+        "refusals": {
+          "notes-rbitnet": [],
+          "notes-rbitnet-ocr": [
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "ecriture_hors_perimetre",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet": [
+            "permission_denied",
+            "desktop_scope"
+          ],
+          "notes-rbitnet-ocr": [
+            "permission_denied"
+          ]
+        }
+      },
+      {
+        "case": "approbation_en_attente",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet": [
+            "approval_required",
+            "desktop_scope"
+          ],
+          "notes-rbitnet-ocr": [
+            "approval_required"
+          ]
+        }
+      },
+      {
+        "case": "cible_ambigue",
+        "expected": null,
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet": [
+            "needs_clarification"
+          ],
+          "notes-rbitnet-ocr": [
+            "needs_clarification",
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "transfert_reserve",
+        "expected": null,
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet": [
+            "graph_changed"
+          ],
+          "notes-rbitnet-ocr": [
+            "contract_precondition_failed",
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "ocr_absent",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet": [
+            "desktop_scope"
+          ],
+          "notes-rbitnet-ocr": [
+            "ocr_unavailable"
+          ]
+        }
+      },
+      {
+        "case": "code_sans_ocr",
+        "expected": "notes-rbitnet",
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": "notes-rbitnet",
+        "gated": "notes-rbitnet",
+        "refusals": {
+          "notes-rbitnet": [],
+          "notes-rbitnet-ocr": [
+            "desktop_scope",
+            "ocr_unavailable"
+          ]
+        }
+      },
+      {
+        "case": "bac_indisponible",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet": [
+            "desktop_scope",
+            "sandbox_unavailable"
+          ],
+          "notes-rbitnet-ocr": [
+            "sandbox_unavailable"
+          ]
+        }
+      },
+      {
+        "case": "version_capacite_absente",
+        "expected": null,
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet": [
+            "capability_unavailable"
+          ],
+          "notes-rbitnet-ocr": [
+            "capability_unavailable",
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "verificateur_modifie",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet": [
+            "desktop_scope",
+            "inputs_changed"
+          ],
+          "notes-rbitnet-ocr": [
+            "inputs_changed"
+          ]
+        }
+      }
+    ]
+  },
+  "notes_reuse": {
+    "status": "passed",
+    "library": {
+      "notes-rbitnet": 2,
+      "notes-rbitnet-ocr": 3
+    },
+    "median_wall_s": {
+      "generation": 135.849,
+      "reuse": 72.976
+    },
+    "saved_s": 62.873,
+    "replayed_identically": true,
+    "erasure": {
+      "status": "verified",
+      "removed": 7,
+      "traces_refused": 2
+    },
+    "rollback": {
+      "version": "1.0.0",
+      "parent": null,
+      "default_graph": "notes-rbitnet",
+      "memory_enabled": false,
+      "graphs": [
+        "notes-rbitnet"
+      ]
+    },
+    "trials": [
+      {
+        "pair": 1,
+        "arm": "generation",
+        "status": "passed",
+        "wall_s": 153.338,
+        "sandbox_wall_s": 153.33
+      },
+      {
+        "pair": 1,
+        "arm": "reuse",
+        "status": "passed",
+        "wall_s": 74.956,
+        "sandbox_wall_s": 73.894
+      },
+      {
+        "pair": 2,
+        "arm": "reuse",
+        "status": "passed",
+        "wall_s": 70.995,
+        "sandbox_wall_s": 69.771
+      },
+      {
+        "pair": 2,
+        "arm": "generation",
+        "status": "passed",
+        "wall_s": 118.36,
+        "sandbox_wall_s": 118.353
+      }
+    ],
+    "common_outcome": {
+      "status": "passed",
+      "steps": [
+        {
+          "id": "localize",
+          "status": "passed",
+          "authorization": "allowed"
+        },
+        {
+          "id": "generate_diff",
+          "status": "passed",
+          "authorization": "allowed"
+        },
+        {
+          "id": "verify",
+          "status": "passed",
+          "authorization": "allowed"
+        },
+        {
+          "id": "verify_desktop",
+          "status": "passed",
+          "authorization": "allowed"
+        }
+      ],
+      "diff_applied": true,
+      "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+      "git_apply_check": true,
+      "guest_sha256_verified": true,
+      "tests": [
+        {
+          "name": "test_saved_note_survives_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_two_notes_with_accents_multiline_survive_restart",
+          "status": "passed"
+        },
+        {
+          "name": "test_save_acknowledged_in_session",
+          "status": "passed"
+        },
+        {
+          "name": "test_select_redisplays_content",
+          "status": "passed"
+        }
+      ],
+      "sqlite": 0,
+      "desktop": {
+        "ocr_save_button_used": true,
+        "app_restarted": true,
+        "ocr_note_selected_after_restart": true,
+        "ocr_content_visible": true,
+        "sqlite_exact_row": true
+      },
+      "isolation": {
+        "declared_disabled_channels": [
+          "Networking",
+          "ClipboardRedirection",
+          "AudioInput",
+          "VideoInput",
+          "PrinterRedirection",
+          "VGpu"
+        ],
+        "guest_read_input": true,
+        "guest_write_to_input_denied": true,
+        "guest_create_in_input_denied": true,
+        "guest_scratch_write": true,
+        "guest_no_default_route": true,
+        "guest_no_camera": true,
+        "guest_no_audio_capture": true,
+        "guest_no_redirected_printer": true,
+        "host_sources_unchanged": true,
+        "host_staging_unchanged": true
+      },
+      "authorizations": {
+        "missing_confinement": "permission_denied",
+        "out_of_scope": "permission_denied"
+      },
+      "sandbox_stopped": true
+    },
+    "timing_limits": {
+      "pair_1_generation_overlapped_test_suite": true
+    }
+  },
+  "skill_lifecycle": {
+    "status": "passed",
+    "lifecycle": [
+      "candidate",
+      "active",
+      "deprecated",
+      "active",
+      "deprecated",
+      "retired"
+    ],
+    "contribution": {
+      "attempts": 1,
+      "successes": 1
+    },
+    "duplicate_active_refused": true,
+    "replay_after_retirement": true,
+    "traces_blocked_after_erasure": 2,
+    "erasure": {
+      "status": "verified",
+      "removed": 7
+    },
+    "rollback": {
+      "version": "1.0.0",
+      "parent": null,
+      "default_graph": "notes-rbitnet",
+      "memory_enabled": false,
+      "graphs": [
+        "notes-rbitnet"
+      ]
+    }
+  },
+  "memory_backups": {
+    "status": "passed",
+    "encrypted_generations": 2,
+    "objects_per_generation": 18,
+    "erased_objects": 8,
+    "archive_only_trace_erased": true,
+    "keys_removed": 16,
+    "blocked_at_request": true,
+    "temporary_vault_loss_recovered": true,
+    "missing_or_old_ledger_refused": true,
+    "restores": [
+      {
+        "status": "restored",
+        "added": 10,
+        "erased_omitted": 8
+      },
+      {
+        "status": "restored",
+        "added": 10,
+        "erased_omitted": 8
+      }
+    ],
+    "archive_only_expiry_verified": true,
+    "expired_generations_rotated": true,
+    "audit": {
+      "status": "passed",
+      "entries_verified": 11
+    }
+  },
+  "project_memory": {
+    "status": "passed",
+    "sandbox": "passed",
+    "consent_scope": "verified",
+    "revocation": "verified",
+    "memory_backup_real_objects": 0,
+    "memory_trace_redacted": true,
+    "original_unchanged": true,
+    "backup": {
+      "status": "backed_up",
+      "copies": 1,
+      "reports": 1,
+      "cipher": "AES-256-GCM",
+      "key_protection": "DPAPI CurrentUser"
+    },
+    "restoration": {
+      "status": "restored",
+      "copies_restored": 0,
+      "reports_restored": 0,
+      "skipped_erased": 1,
+      "skipped_inactive": 0
+    }
+  }
+}
