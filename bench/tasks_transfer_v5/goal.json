@@ -1,0 +1,13 @@
+{
+  "goal_id": "7f048b68-d249-4411-9add-283280ce248b",
+  "user_intent": "Corriger le filtre À faire. Une tâche est terminée si elle a au moins une étape obligatoire et si toutes ses étapes obligatoires sont cochées. À faire affiche toutes les autres tâches, y compris celles sans étape obligatoire. Les étapes facultatives ne comptent pas. Toutes conserve l'ordre par identifiant. Préserver l'état des tâches et des étapes.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

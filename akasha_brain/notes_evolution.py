@@ -23,6 +23,7 @@ from .planning import PlanningError, compile_goal
 PARENT = "notes-rbitnet"
 CANDIDATE = "notes-rbitnet-ocr"
 STAGES = ("replay", "shadow", "limited")
+SYNTHETIC_REFERENCE = "synthetic_reference"
 GOAL_FILE = Path(__file__).resolve().parents[1] / "contracts" / "examples" / "goal_notes_regression.json"
 
 
@@ -35,8 +36,9 @@ class EvolutionBudget:
 
 
 @contextmanager
-def lease(path: Path):
-    with transaction(path.with_suffix(".lease.db")) as db:
+def lease(path: Path, *, cycle: bool = False):
+    suffix = ".evolution.lease.db" if cycle else ".lease.db"
+    with transaction(path.with_suffix(suffix)) as db:
         db.execute("PRAGMA busy_timeout = 0")
         try:
             db.execute("BEGIN IMMEDIATE")
@@ -50,6 +52,8 @@ def lease(path: Path):
 
 
 def audit(db, cycle_id: str, event: str, details: dict) -> None:
+    if not db.in_transaction:
+        db.execute("BEGIN IMMEDIATE")
     last = db.execute("SELECT digest FROM evolution_events ORDER BY seq DESC LIMIT 1").fetchone()
     previous = last[0] if last else None
     entry = {"created_at": datetime.now(timezone.utc).isoformat(), "cycle_id": cycle_id,
@@ -76,6 +80,10 @@ def initialize(path: Path, catalog: dict) -> dict:
         db.execute("""CREATE TABLE IF NOT EXISTS evolution_events (
             seq INTEGER PRIMARY KEY, payload TEXT NOT NULL, digest TEXT NOT NULL
         )""")
+        db.execute("""CREATE TRIGGER IF NOT EXISTS no_edit_evolution_events BEFORE UPDATE ON evolution_events
+            BEGIN SELECT RAISE(ABORT, 'append-only'); END""")
+        db.execute("""CREATE TRIGGER IF NOT EXISTS no_delete_evolution_events BEFORE DELETE ON evolution_events
+            BEGIN SELECT RAISE(ABORT, 'append-only'); END""")
         db.execute("""CREATE TABLE IF NOT EXISTS evolution_control (
             singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
             paused INTEGER NOT NULL CHECK (paused IN (0, 1))
@@ -125,10 +133,16 @@ def set_evolution_paused(path: Path, paused: bool) -> None:
 
 
 @contextmanager
-def evolution_checkpoint(path: Path, cycle_id: str, before: str, deadline: float):
+def evolution_checkpoint(path: Path, cycle_id: str, before: str, deadline: float, interactive=None):
     """Sérialise le départ d'un essai ou la promotion avec la commande de pause."""
+    def announce_priority():
+        with transaction(path) as db:
+            audit(db, cycle_id, "interactive_priority", {"before": before})
+
     waiting = False
     while monotonic() < deadline:
+        if interactive is not None:
+            interactive(announce_priority)
         with transaction(path) as db:
             db.execute("BEGIN IMMEDIATE")
             if monotonic() >= deadline:
@@ -188,8 +202,15 @@ def evidence(report: dict, *, desktop: bool) -> dict:
     }
 
 
-def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, run_trial,
-           *, reuse: tuple[ReuseScope, ...] = ()) -> dict:
+def waiting_for_resources(report: dict) -> str | None:
+    code = (report.get("error") or {}).get("code")
+    if code in (ErrorCode.RESOURCE_BUDGET_EXCEEDED.value, ErrorCode.RESIDENCY_UNAVAILABLE.value):
+        return code
+    return None
+
+
+def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict | None, run_trial,
+           *, reuse: tuple[ReuseScope, ...] = (), interactive=None) -> dict:
     started = monotonic()
     deadline = started + budget.wall_s
     trials = []
@@ -209,10 +230,34 @@ def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, 
     if budget.max_trials < len(STAGES) or budget.wall_s <= 0:
         return finish("waiting", "resource_budget_exceeded")
 
+    if reference is None:
+        with evolution_checkpoint(path, cycle_id, SYNTHETIC_REFERENCE, deadline, interactive) as db:
+            if db is not None:
+                parent_active = active_workflow(db) == PARENT
+                if parent_active:
+                    audit(db, cycle_id, "synthetic_reference_started", {})
+        if db is None:
+            return finish("waiting", "resource_budget_exceeded")
+        if not parent_active:
+            return finish("waiting", "no_compatible_candidate")
+        with execution_limits(deadline, budget.cpu_threads, budget.model_ram_mb):
+            reference = run_trial(SYNTHETIC_REFERENCE)
+        proof = evidence(reference, desktop=False)
+        with transaction(path) as db:
+            audit(db, cycle_id, "synthetic_reference_finished", {
+                key: proof[key] for key in ("verified", "experience", "wall_s")
+            })
+        if monotonic() >= deadline:
+            return finish("waiting", "resource_budget_exceeded")
+        if reason := waiting_for_resources(reference):
+            return finish("waiting", reason)
+        if not proof["verified"]:
+            return finish("retained", "insufficient_evidence")
+
     sandbox_ids = {reference.get("sandbox_id")}
     expected = evidence(reference, desktop=False)
     for stage in STAGES:
-        with evolution_checkpoint(path, cycle_id, stage, deadline) as db:
+        with evolution_checkpoint(path, cycle_id, stage, deadline, interactive) as db:
             if db is not None:
                 denied = check_reuse(db, reuse)
                 parent_active = active_workflow(db) == PARENT
@@ -238,12 +283,14 @@ def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, 
         trials.append(trial)
         with transaction(path) as db:
             audit(db, cycle_id, "trial_finished", {key: value for key, value in trial.items() if key != "diff"})
-        if monotonic() >= deadline or report.get("error", {}).get("code") == ErrorCode.RESOURCE_BUDGET_EXCEEDED.value:
+        if monotonic() >= deadline:
             return finish("waiting", "resource_budget_exceeded")
+        if reason := waiting_for_resources(report):
+            return finish("waiting", reason)
         if not expected["verified"] or not proof["verified"] or not proof["fresh_sandbox"] or proof["diff"] != expected["diff"]:
             return finish("retained", "insufficient_evidence")
 
-    with evolution_checkpoint(path, cycle_id, "promotion", deadline) as db:
+    with evolution_checkpoint(path, cycle_id, "promotion", deadline, interactive) as db:
         if db is not None:
             denied = check_reuse(db, reuse)
             if denied is None and active_workflow(db) == PARENT:
@@ -258,8 +305,43 @@ def evolve(path: Path, cycle_id: str, budget: EvolutionBudget, reference: dict, 
     return finish("retained", denied.details["reason"] if denied else "promotion_precondition_changed")
 
 
+def run_cycle(goal, catalog, runtime, output, repair, path, budget, cycle_id, reference, *, interactive=None):
+    def trial(stage):
+        with lease(path):
+            return run_notes(goal, catalog, runtime, output / stage, repair, first_diff_seed=742,
+                             rapidocr=stage != SYNTHETIC_REFERENCE, experience_db=path, origin=stage)
+
+    try:
+        with lease(path, cycle=True):
+            return evolve(path, cycle_id, budget, reference, trial, interactive=interactive)
+    except PlanningError as exc:
+        if exc.error.code != ErrorCode.RESOURCE_BUDGET_EXCEEDED:
+            raise
+        result = {"cycle_id": cycle_id, "status": "waiting", "reason": "resource_budget_exceeded"}
+        with transaction(path) as db:
+            audit(db, cycle_id, "waiting", {"reason": result["reason"]})
+        return result
+
+
+def run_project_cycle(catalog: dict, runtime: Path, directory: Path, repair: RbitnetPaths,
+                      path: Path, budget: EvolutionBudget, outcome: str, *, interactive=None) -> dict:
+    if outcome not in ("passed", "failed"):
+        raise ValueError("Le cycle requiert un verdict terminal du parcours projet.")
+    goal = initialize(path, catalog)
+    cycle_id = str(uuid4())
+    output = directory / cycle_id
+    output.mkdir(parents=True)
+    with transaction(path) as db:
+        audit(db, cycle_id, "triggered", {"trigger": "project_task", "outcome": outcome, "source": "synthetic",
+                                          "budget": asdict(budget), "concurrency": 1})
+    result = run_cycle(goal, catalog, runtime, output, repair, path, budget, cycle_id, None, interactive=interactive)
+    write_report(output, result)
+    return result
+
+
 def run_managed(goal: dict, catalog: dict, runtime: Path, output: Path, repair: RbitnetPaths,
-                path: Path, budget: EvolutionBudget, *, progress=None) -> dict:
+                path: Path, budget: EvolutionBudget, *, progress=None, schedule_evolution=None,
+                interactive=None) -> dict:
     with lease(path):
         synthetic_goal = initialize(path, catalog)
         if goal != synthetic_goal:
@@ -268,20 +350,26 @@ def run_managed(goal: dict, catalog: dict, runtime: Path, output: Path, repair: 
             ))
         with transaction(path) as db:
             active = active_workflow(db)
-        task = run_notes(goal, catalog, runtime, output, repair, first_diff_seed=742,
-                         rapidocr=active == CANDIDATE, experience_db=path,
-                         **({"progress": progress} if progress is not None else {}))
-        if active == PARENT and task.get("experience_record_id"):
-            cycle_id = str(uuid4())
-            with transaction(path) as db:
-                audit(db, cycle_id, "triggered", {"experience": task["experience_record_id"],
-                                                  "budget": asdict(budget), "concurrency": 1})
-
-            def trial(stage):
-                return run_notes(synthetic_goal, catalog, runtime, output / "evolution" / stage, repair,
-                                 first_diff_seed=742, rapidocr=True, experience_db=path, origin=stage)
-
-            with ThreadPoolExecutor(max_workers=1) as executor:
-                task["evolution"] = executor.submit(evolve, path, cycle_id, budget, task, trial).result()
-            write_report(output, task)
+        with execution_limits(None, budget.cpu_threads, budget.model_ram_mb):
+            task = run_notes(goal, catalog, runtime, output, repair, first_diff_seed=742,
+                             rapidocr=active == CANDIDATE, experience_db=path,
+                             **({"progress": progress} if progress is not None else {}))
+    if active != PARENT or not task.get("experience_record_id"):
         return task
+    cycle_id = str(uuid4())
+    with transaction(path) as db:
+        audit(db, cycle_id, "triggered", {"experience": task["experience_record_id"],
+                                          "budget": asdict(budget), "concurrency": 1})
+
+    def maintain():
+        cycle = run_cycle(synthetic_goal, catalog, runtime, output / "evolution", repair, path, budget, cycle_id,
+                          task, interactive=interactive)
+        result = {**task, "evolution": cycle}
+        write_report(output, result)
+        return result
+
+    if schedule_evolution is not None:
+        schedule_evolution(maintain)
+        return task
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        return executor.submit(maintain).result()

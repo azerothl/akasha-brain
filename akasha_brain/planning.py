@@ -1,4 +1,4 @@
-"""Compiler l'objectif structuré de la baseline Notes."""
+"""Compiler les objectifs structurés des bancs locaux."""
 
 from __future__ import annotations
 
@@ -11,6 +11,9 @@ from contracts.akasha_contracts.validate import validate
 CAPABILITIES = Path(__file__).with_name("capabilities.json")
 ENVIRONMENT = "bench-notes"
 TARGET = "bench://notes"
+TASKS_ENVIRONMENT = "bench-tasks"
+TASKS_TARGET = "bench://tasks"
+TASKS_MAX_ATTEMPTS = 2
 TEST_PREDICATE = {
     "predicate": "test_suite_passes",
     "on": "CodeState",
@@ -29,6 +32,11 @@ RBITNET_GRAPH = (
 RBITNET_OCR_GRAPH = (
     *RBITNET_GRAPH,
     ("verify_desktop", "test", "notes.verify_desktop", "1.0.0", ("verify",)),
+)
+TASKS_RBITNET_GRAPH = (
+    ("localize", "observe", "tasks.locate", "1.0.0", ()),
+    ("generate_diff", "edit", "tasks.repair_rbitnet", "1.0.0", ("localize",)),
+    ("verify", "test", "tasks.verify", "1.0.0", ("generate_diff",)),
 )
 
 
@@ -76,7 +84,10 @@ def compile_goal(goal: dict, catalog: dict[tuple[str, str], dict], *,
     if problems:
         raise PlanningError(problems[0])
     constraints = goal.get("constraints", {})
-    if goal.get("inputs") != [TARGET] or constraints.get("environment_id") != ENVIRONMENT:
+    environment = constraints.get("environment_id")
+    target = goal.get("inputs")
+    tasks = target == [TASKS_TARGET] and environment == TASKS_ENVIRONMENT
+    if not tasks and (target != [TARGET] or environment != ENVIRONMENT):
         raise PlanningError(AkashaError(
             ErrorCode.CAPABILITY_UNAVAILABLE, "Aucun parcours évalué pour cette cible.",
         ))
@@ -88,11 +99,17 @@ def compile_goal(goal: dict, catalog: dict[tuple[str, str], dict], *,
         raise PlanningError(AkashaError(
             ErrorCode.APPROVAL_REQUIRED, "L'objectif comporte une approbation à obtenir.",
         ))
+    if tasks and (not rbitnet or rapidocr):
+        raise PlanningError(AkashaError(
+            ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le banc Tâches exige Rbitnet CPU et son vérificateur bureau.",
+        ))
     if rapidocr and not rbitnet:
         raise PlanningError(AkashaError(
             ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le graphe RapidOCR v2 exige la réparation Rbitnet CPU.",
         ))
-    if rapidocr:
+    if tasks:
+        graph_id, graph = "tasks-rbitnet", TASKS_RBITNET_GRAPH
+    elif rapidocr:
         graph_id, graph = "notes-rbitnet-ocr", RBITNET_OCR_GRAPH
     elif rbitnet:
         graph_id, graph = "notes-rbitnet", RBITNET_GRAPH
@@ -117,9 +134,9 @@ def compile_goal(goal: dict, catalog: dict[tuple[str, str], dict], *,
     for step_id, action, capability_id, version, dependencies in graph:
         entry = catalog.get((capability_id, version))
         evaluation = entry.get("evaluation", {}) if entry else {}
-        if evaluation.get("environment_id") != ENVIRONMENT or not evaluation.get("evidence"):
+        if not entry or (not tasks and (evaluation.get("environment_id") != environment or not evaluation.get("evidence"))):
             raise PlanningError(AkashaError(
-                ErrorCode.CAPABILITY_UNAVAILABLE, "Capacité évaluée indisponible pour le banc Notes.",
+                ErrorCode.CAPABILITY_UNAVAILABLE, "Capacité indisponible pour le banc.",
                 {"capability_id": capability_id, "version": version},
             ))
         manifest = entry["manifest"]
@@ -134,18 +151,33 @@ def compile_goal(goal: dict, catalog: dict[tuple[str, str], dict], *,
             ))
         steps.append({
             "id": step_id, "action": action, "capability_id": capability_id,
-            "version": version, "depends_on": list(dependencies), "evidence": evaluation["evidence"],
+            "version": version, "depends_on": list(dependencies), "evidence": evaluation.get("evidence"),
         })
-    expected_validation = {"tests_passed": 4, "verifier": "sqlite_persistence"}
+    expected_validation = (
+        {"tests_passed": 3, "verifier": "desktop_filters_and_sqlite"} if tasks
+        else {"tests_passed": 4, "verifier": "sqlite_persistence"}
+    )
     if rapidocr:
         expected_validation["desktop"] = {"protocol": "notes-desktop-ocr-v2",
                                           "ocr_after_restart": True, "sqlite_after_restart": True}
-    return {
+    plan = {
         "goal_id": goal["goal_id"],
         "graph_id": graph_id,
-        "graph_version": "1.0.0",
-        "environment_id": ENVIRONMENT,
+        "graph_version": "1.6.0" if tasks else "1.0.0",
+        "environment_id": environment,
         "sandbox_tier": "windows-sandbox",
         "steps": steps,
         "expected_validation": expected_validation,
     }
+    if tasks:
+        plan["repair_context"] = {"sqlite_schema": "schema.sql", "target_filters": "latest_verdict_failures"}
+        plan["repair_retry"] = {
+            "max_attempts": TASKS_MAX_ATTEMPTS,
+            "on": "verification_failed",
+            "after": "verify",
+            "resume_at": "generate_diff",
+            "feedback": "filter_deltas",
+            "require_distinct_proposal": True,
+            "protected_filters": "initial_passes",
+        }
+    return plan

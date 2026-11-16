@@ -1,0 +1,13 @@
+{
+  "goal_id": "162a3060-1d8f-43fa-90ff-b49cf72fd07a",
+  "user_intent": "Corriger « À faire » (pending) pour le jour de référence AS_OF. Une tâche y figure si elle est ouverte, si son report est absent ou prend fin au plus tard ce jour-là, et si tous ses prérequis directs sont terminés. Une tâche est terminée si sa date de clôture est renseignée. Conserver les filtres « Terminées » et « Toutes », le tri par identifiant et le contenu de SQLite.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

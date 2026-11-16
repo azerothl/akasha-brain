@@ -25,7 +25,7 @@ from .notes_repair import RbitnetPaths, generate_patch, load_repair_prompt, retr
 from .notes_sandbox import (
     CHANNELS, POWERSHELL, active_sandboxes, guest_exit, read_profile, require_step_permission, wait_for_guest,
 )
-from .planning import PlanningError, compile_goal
+from .planning import ENVIRONMENT, PlanningError, compile_goal
 
 TESTS = (
     "test_saved_note_survives_restart",
@@ -70,12 +70,17 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
               *, first_diff_seed: int | None = None, rapidocr: bool = False,
               experience_db: Path | None = None, origin: str = "task", progress=None) -> dict:
     plan = compile_goal(goal, catalog, rbitnet=repair is not None, rapidocr=rapidocr)
+    if plan["environment_id"] != ENVIRONMENT:
+        raise PlanningError(AkashaError(
+            ErrorCode.CONTRACT_PRECONDITION_FAILED, "Cet exécuteur est réservé au banc Notes.",
+        ))
     # Le script bureau figé cible la copie préparée par le premier diff.
     if rapidocr and first_diff_seed is None:
         first_diff_seed = 742
     seeds = (first_diff_seed,) if first_diff_seed is not None else SEEDS[0]
     output.mkdir(parents=True)
-    report = {"graph": plan, "status": "running", "trace": []}
+    report = {"graph": plan, "status": "running", "trace": [],
+              "started_at": datetime.now(timezone.utc).isoformat()}
     sandbox_id = None
     wall = perf_counter()
 
@@ -107,7 +112,7 @@ def run_notes(goal: dict, catalog: dict, runtime: Path, output: Path, repair: Rb
             staged_hashes[name] = file_hash(staged_source)
         if repair:
             repair_prompt = load_repair_prompt()
-            report["repair"] = {"backend": "cpu", "model": repair.model.name, "hashes": repair.verify(),
+            report["repair"] = {"backend": repair.backend, "model": repair.model.name, "hashes": repair.verify(),
                                 "git": stage_git(stage), "seeds": seeds, "temperature": TEMPERATURE,
                                 "max_tokens": MAX_TOKENS, "prompt_version": repair_prompt["version"],
                                 "prompt_sha256": repair_prompt["sha256"]}

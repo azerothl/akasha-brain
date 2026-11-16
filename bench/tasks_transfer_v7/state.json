@@ -1,0 +1,21 @@
+{
+  "statuses": [
+    ["cancelled", "Annulée", 1],
+    ["done", "Terminée", 1],
+    ["new", "Nouvelle", 0],
+    ["review", "En relecture", 0],
+    ["waiting", "En attente", 0]
+  ],
+  "items": [
+    [101, "Préparer la séance", "new"],
+    [108, "Relire le devis", "review"],
+    [114, "Confirmer le créneau", "done"],
+    [126, "Recevoir le contrat", "waiting"],
+    [130, "Relire le devis", "cancelled"]
+  ],
+  "expected_ids": {
+    "À faire": [101, 108, 126],
+    "Terminées": [114, 130],
+    "Toutes": [101, 108, 114, 126, 130]
+  }
+}

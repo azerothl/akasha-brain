@@ -35,6 +35,7 @@ class ErrorCode(str, Enum):
     # Environnement (§9.7, §12)
     ENVIRONMENT_OBSERVATION_FAILED = "environment_observation_failed"
     # Délai (§8.4, §14)
+    APPROVAL_EXPIRED = "approval_expired"
     TIMEOUT_EXCEEDED = "timeout_exceeded"
     # Incertitude (§5.1, §5.4)
     NEEDS_CLARIFICATION = "needs_clarification"
@@ -61,6 +62,7 @@ FAMILY: dict[ErrorCode, str] = {
     ErrorCode.GRANT_BUDGET_EXHAUSTED: "permission",
     ErrorCode.RESOURCE_BUDGET_EXCEEDED: "ressource",
     ErrorCode.ENVIRONMENT_OBSERVATION_FAILED: "environnement",
+    ErrorCode.APPROVAL_EXPIRED: "délai",
     ErrorCode.TIMEOUT_EXCEEDED: "délai",
     ErrorCode.NEEDS_CLARIFICATION: "incertitude",
     ErrorCode.PREDICATE_EVALUATOR_UNAVAILABLE: "incertitude",

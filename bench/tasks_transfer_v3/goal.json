@@ -1,0 +1,13 @@
+{
+  "goal_id": "17fe2d80-76a7-4e69-b60f-c803f3da0efb",
+  "user_intent": "Corriger le tableau : À faire doit afficher seulement les tâches ouvertes, Terminées seulement les tâches clôturées, et Toutes les deux catégories. Sélectionner un filtre doit préserver les états et l'ordre par identifiant.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

@@ -1,0 +1,16 @@
+{
+  "goal_id": "332e716f-d550-4bdf-a7ea-39bdd8e71cab",
+  "user_intent": "Corriger le filtre À faire qui affiche aussi les tâches terminées. Vérifier les trois filtres et préserver les états.",
+  "inputs": ["bench://tasks"],
+  "constraints": {
+    "allowed_actions": ["observe", "edit", "test"],
+    "environment_id": "bench-tasks"
+  },
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

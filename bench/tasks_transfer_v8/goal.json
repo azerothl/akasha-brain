@@ -1,0 +1,13 @@
+{
+  "goal_id": "930a190f-725b-4d2e-8815-da5df16828e2",
+  "user_intent": "Corriger le filtre « Terminées » (closed) : chaque tâche ayant au moins un reçu de clôture accepté doit apparaître une seule fois, même avec plusieurs reçus acceptés. Conserver le tri par identifiant, les filtres « À faire » et « Toutes », et le contenu de la base SQLite.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

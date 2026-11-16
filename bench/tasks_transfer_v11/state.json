@@ -1,0 +1,18 @@
+{
+  "tickets": [
+    [101, "Contrôler le stock", "open", null, null],
+    [102, "Facture du lot B", "done", null, " VALIDÉ "],
+    [103, "Relance Fournisseur", "done", null, null],
+    [104, "Contrôle de l’adresse", "done", null, "   "],
+    [105, "Ancien incident", "done", "2026-09-12", "OK"],
+    [106, "Remboursement", "cancelled", null, "OK"],
+    [107, "Facture du lot B", "done", null, "0"],
+    [108, "Demande archivée", "open", "2026-10-21", null],
+    [109, "Émettre le bordereau", "open", null, ""]
+  ],
+  "visible_ids": {
+    "À faire": [101, 109],
+    "Terminées": [102, 107],
+    "Toutes": [101, 102, 103, 104, 105, 106, 107, 108, 109]
+  }
+}

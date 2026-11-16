@@ -1,0 +1,13 @@
+{
+  "goal_id": "f473fbaa-eda6-4248-8ea1-944c77b871cd",
+  "user_intent": "Dans « Toutes » (all), trier les tâches par responsable avec une clé obtenue en supprimant les espaces aux extrémités (strip) et en ignorant la casse Unicode (casefold). Comparer ces clés dans l’ordre lexicographique et départager les clés identiques par identifiant croissant. Les responsables absents ou vides après strip doivent être à la fin, par identifiant croissant. Conserver le tri par identifiant et la sélection de « À faire » et « Terminées », ainsi que le contenu de SQLite.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

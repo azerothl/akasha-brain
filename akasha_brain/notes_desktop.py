@@ -14,6 +14,7 @@ from uuid import UUID, uuid4
 from bench.run_guided_repair import BENCH, file_hash, write_report, wsb
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
+from .model_resources import reserve_model
 from .notes_repair import stage_git
 from .notes_sandbox import POWERSHELL, active_sandboxes, guest_exit, read_profile, require_step_permission, wait_for_guest
 from .planning import PlanningError, compile_goal
@@ -109,7 +110,9 @@ def guest_diagnostic(sandbox_id: str, guest_input: str, tag: str) -> str:
 
 
 def verify_desktop(sandbox_id: str, guest_input: str, tag: str, report: dict) -> None:
-    code = guest_exit(sandbox_id, f"{POWERSHELL} -Sta -File {guest_input}\\run_notes_ocr.ps1 -Tag {tag}")
+    with reserve_model("onnxruntime", 4096, inside_sandbox=True) as residency:
+        code = guest_exit(sandbox_id, f"{POWERSHELL} -Sta -File {guest_input}\\run_notes_ocr.ps1 -Tag {tag}")
+    report["residency"] = residency
     report["guest_exit_code"] = code
     if code != 0x471F:
         report["guest_diagnostic"] = guest_diagnostic(sandbox_id, guest_input, tag)

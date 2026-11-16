@@ -1,0 +1,13 @@
+{
+  "goal_id": "afea8182-1c67-42db-a79a-ca74c3955221",
+  "user_intent": "Corriger le comportement des filtres du tableau de tâches en préservant les états.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

@@ -1,0 +1,19 @@
+{
+  "items": [
+    [4, "Cartographier les accès", null, null],
+    [7, "Préparer les badges", null, "2026-11-16"],
+    [9, "Publier les créneaux", null, "2026-11-15"],
+    [12, "Programmer la visite", null, "2026-11-14"],
+    [15, "Réserver la salle", null, "2026-11-13"],
+    [21, "Confirmer les salles", "2026-11-12", "2026-11-18"],
+    [24, "Ouvrir les inscriptions", null, null],
+    [31, "Définir le parcours", "2026-11-14", null],
+    [38, "Recevoir les autorisations", "2026-11-09", null]
+  ],
+  "prerequisites": [[12, 4], [12, 31], [15, 38], [24, 7]],
+  "visible_ids": {
+    "À faire": [4, 9, 15],
+    "Terminées": [21, 31, 38],
+    "Toutes": [4, 7, 9, 12, 15, 21, 24, 31, 38]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "goal_id": "6727c8b7-41db-4aba-84a4-162a6fca63ba",
+  "user_intent": "Dans le filtre « Toutes » du tableau des ordres de travail, trier par priority_score décroissant avec les valeurs NULL en dernier. À priorité égale, y compris NULL, trier par order_id croissant. Le zéro est une priorité valide. Conserver exactement la sélection et l’ordre de « À faire » et « Terminées », ainsi que le contenu SQLite.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [{"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

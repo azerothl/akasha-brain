@@ -133,5 +133,63 @@
       "environment_id": "bench-notes",
       "evidence": "docs/plans/phase1_status.md#trois-rejeux-en-bacs-neufs"
     }
+  },
+  {
+    "manifest": {
+      "capability_id": "tasks.locate",
+      "version": "1.0.0",
+      "kind": "tool",
+      "description": "Reproduire les échecs des filtres dans le bac Tâches.",
+      "permissions": {
+        "reads": ["bench://tasks"],
+        "writes": ["bench://tasks/scratch"],
+        "execute": ["tasks-filter-localization"],
+        "network": []
+      },
+      "risk_class": "R1",
+      "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+      "side_effects": "local-temporary"
+    }
+  },
+  {
+    "manifest": {
+      "capability_id": "tasks.repair_rbitnet",
+      "version": "1.0.0",
+      "kind": "model",
+      "description": "Proposer une correction Python bornée via Rbitnet CPU puis appliquer le diff dans le bac.",
+      "permissions": {
+        "reads": ["bench://tasks"],
+        "writes": ["bench://tasks/scratch"],
+        "execute": ["tasks-apply-diff"],
+        "network": []
+      },
+      "risk_class": "R1",
+      "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+      "side_effects": "local-temporary",
+      "resource_profile": {
+        "engine_id": "rbitnet",
+        "model_format": "GGUF",
+        "model_architecture": "qwen3",
+        "quantization": "Q4_K_M",
+        "devices": ["cpu"]
+      }
+    }
+  },
+  {
+    "manifest": {
+      "capability_id": "tasks.verify",
+      "version": "1.0.0",
+      "kind": "verifier",
+      "description": "Vérifier les trois filtres visibles et l'intégrité de l'état SQLite.",
+      "permissions": {
+        "reads": ["bench://tasks/scratch"],
+        "writes": ["bench://tasks/scratch"],
+        "execute": ["tasks-filter-validation"],
+        "network": []
+      },
+      "risk_class": "R1",
+      "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+      "side_effects": "local-temporary"
+    }
   }
 ]

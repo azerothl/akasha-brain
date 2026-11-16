@@ -5,11 +5,12 @@ from pathlib import Path
 
 from contracts.akasha_contracts.errors import ErrorCode
 
-from .evolution_consent import ReuseScope, check_reuse, grant, instant, read_consents, revoke
+from .evolution_consent import ReuseScope, check_reuse, grant, instant, read_consents, revoke, timestamp
 from .experience import transaction
 from .project_backup_vault import table_exists
 from .project_common import project_scope, reject
 from .project_evolution import ARTIFACTS, content_path, erase, registry_path
+from .retention import copy_deadline, load_policy
 
 
 class ProjectData:
@@ -44,6 +45,7 @@ class ProjectData:
         if not self.registry.is_file():
             return state
         now = datetime.now(timezone.utc)
+        policy = load_policy()
         with transaction(self.registry) as grants:
             grants.execute("PRAGMA busy_timeout = 150")
             grants.execute("BEGIN")
@@ -73,19 +75,20 @@ class ProjectData:
                 with transaction(contents) as db:
                     db.execute("PRAGMA busy_timeout = 150")
                     if table_exists(db, "samples"):
-                        for sample, category, consent, expires_at, source in db.execute("""
-                            SELECT sample_id, category, consent_id, expires_at, json_extract(manifest, '$.source_id')
+                        for sample, category, consent, created_at, expires_at, source in db.execute("""
+                            SELECT sample_id, category, consent_id, created_at, expires_at, json_extract(manifest, '$.source_id')
                             FROM samples
                             WHERE project = ? ORDER BY created_at DESC
                         """, (self.scope,)):
+                            expiration = copy_deadline(created_at, expires_at, policy=policy)
                             denied = check_reuse(grants, (ReuseScope(self.scope, category, consent, "project", False),),
                                                  now=now)
                             if sample in blocked_copies or source in blocked_sources:
                                 status = "content_erasure_requested"
-                            elif now >= instant(expires_at):
+                            elif now >= expiration:
                                 status = "content_expired"
                             else:
                                 status = denied.details["reason"] if denied else "available"
                             state["copies"].append({"sample_id": sample, "category": category,
-                                                    "expires_at": expires_at, "status": status})
+                                                    "expires_at": timestamp(expiration), "status": status})
         return state

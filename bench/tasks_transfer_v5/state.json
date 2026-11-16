@@ -1,0 +1,21 @@
+{
+  "tasks": [
+    [2, "Ouvrir le chantier"],
+    [6, "Contrôler la livraison"],
+    [8, "Publier le relevé"],
+    [17, "Trier les pièces"],
+    [23, "Mettre à jour le dossier"],
+    [35, "Archiver le bordereau"]
+  ],
+  "steps": [
+    [1, 6, 1, 1],
+    [2, 6, 1, null],
+    [3, 6, 0, 1],
+    [4, 8, 1, 1],
+    [5, 8, 0, 0],
+    [6, 17, 0, 1],
+    [7, 23, 1, 0],
+    [8, 35, 1, 1],
+    [9, 35, 1, 1]
+  ]
+}

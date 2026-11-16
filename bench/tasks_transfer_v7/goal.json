@@ -1,0 +1,13 @@
+{
+  "goal_id": "296bc486-4b90-4540-b272-3d4ad0e89004",
+  "user_intent": "Dans le tableau de suivi, « À faire » doit afficher toutes les tâches dont le statut est non terminal d’après le référentiel SQLite. « Terminées » affiche celles dont le statut est terminal et « Toutes » affiche toutes les tâches. Conserver l’ordre croissant des identifiants dans les trois filtres et préserver la base.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

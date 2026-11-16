@@ -1,0 +1,14 @@
+{
+  "goal_id": "a51d5894-8299-40dc-8130-95677af497a2",
+  "user_intent": "Au 19 mars 2026 inclus, le filtre « À faire » doit afficher les interventions en attente (phase queued), sans suspension (is_suspended = 0), dont la date de mise à disposition est absente (release_on NULL) ou antérieure ou égale au 2026-03-19. Les dates sont stockées au format ISO YYYY-MM-DD. Trier par intervention_id croissant. Conserver les filtres « Terminées » et « Toutes » ainsi que SQLite.",
+  "inputs": ["bench://tasks"],
+  "constraints": {
+    "allowed_actions": ["observe", "edit", "test"],
+    "environment_id": "bench-tasks"
+  },
+  "success_conditions": [{"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

@@ -3,7 +3,7 @@ from zipfile import ZipFile
 
 import pytest
 
-from akasha_brain import project_dependencies as dependencies
+from akasha_brain import project_approval, project_dependencies as dependencies
 from akasha_brain.project_common import ProjectError, digest
 from contracts.akasha_contracts.errors import ErrorCode
 
@@ -47,10 +47,35 @@ def test_refuses_download_before_contacting_source(dependency_request, tmp_path)
     assert hits == []
 
 
+def test_expired_download_uses_a_new_request_and_approval(dependency_request, tmp_path, monkeypatch):
+    project, directory, approval, options, _, hits = dependency_request
+    review = dependencies.preview_dependency(project, directory)
+    monkeypatch.setattr(project_approval, "utc_now", lambda: review.approval_expires_at)
+    assert review.state() == "expired"
+    with pytest.raises(ProjectError) as error:
+        review.download(True)
+    assert error.value.error.code == ErrorCode.APPROVAL_EXPIRED
+    assert hits == [] and not (directory / "download.claim").exists()
+
+    new_directory = tmp_path / "renewed"
+    request = dependencies.create_request(project, new_directory, **options)
+    with pytest.raises(ProjectError) as error:
+        dependencies.download(project, new_directory, approval)
+    assert error.value.error.code == ErrorCode.APPROVAL_REQUIRED and hits == []
+    assert dependencies.download(project, new_directory, request["approval_sha256"])["status"] == "downloaded"
+    assert hits == [options["url"]]
+
+
 def test_download_is_single_use_and_only_verified_cache_is_staged(dependency_request, tmp_path):
     project, directory, approval, options, filename, hits = dependency_request
-    result = dependencies.download(project, directory, approval)
+    review = dependencies.preview_dependency(project, directory)
+    assert review.approval_sha256 == approval and review.state() == "pending"
+    with pytest.raises(ProjectError) as refused:
+        review.download(False)
+    assert refused.value.error.code == ErrorCode.APPROVAL_REQUIRED and hits == []
+    result = review.download(True)
     assert result["status"] == "downloaded"
+    assert review.state() == "cached"
     with pytest.raises(ProjectError) as error:
         dependencies.download(project, directory, approval)
     assert error.value.error.details["reason"] == "download_already_requested"
@@ -58,7 +83,7 @@ def test_download_is_single_use_and_only_verified_cache_is_staged(dependency_req
 
     stage = tmp_path / "stage"
     stage.mkdir()
-    staged, = dependencies.stage_dependencies(project, [directory], stage)
+    staged, = dependencies.stage_dependencies(project, [review], stage)
     assert staged["request_sha256"] == approval
     assert digest((stage / "wheels" / filename).read_bytes()) == options["sha256"]
 
@@ -68,6 +93,21 @@ def test_download_is_single_use_and_only_verified_cache_is_staged(dependency_req
     with pytest.raises(ProjectError) as error:
         dependencies.stage_dependencies(project, [directory], fresh_stage)
     assert error.value.error.details["reason"] == "dependency_hash_mismatch"
+
+
+def test_review_rejects_changed_request_before_network_or_staging(dependency_request, tmp_path):
+    project, directory, _, _, _, hits = dependency_request
+    review = dependencies.preview_dependency(project, directory)
+    request = directory / "request.json"
+    request.write_bytes(request.read_bytes() + b"\n")
+    with pytest.raises(ProjectError) as denied:
+        review.download(True)
+    assert denied.value.error.code == ErrorCode.APPROVAL_REQUIRED and hits == []
+    stage = tmp_path / "stage"
+    stage.mkdir()
+    with pytest.raises(ProjectError) as mismatch:
+        dependencies.stage_dependencies(project, [review], stage)
+    assert mismatch.value.error.details["reason"] == "dependency_request_changed"
 
 
 def test_rejects_license_mismatch_without_publishing_cache(dependency_request, tmp_path):

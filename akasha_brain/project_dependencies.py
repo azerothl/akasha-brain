@@ -1,22 +1,26 @@
 """Demandes unitaires, téléchargement approuvé et cache de wheels vérifiées."""
 
+from dataclasses import dataclass
+from datetime import datetime
 from email import policy
 from email.parser import BytesParser
 from importlib.metadata import PackageNotFoundError, distribution
 import json
+import os
 from pathlib import Path
 import re
 import shutil
 from urllib.error import URLError
 from urllib.parse import unquote, urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, build_opener
-from uuid import uuid4
 from zipfile import BadZipFile, ZipFile
 
 from bench.run_guided_repair import file_hash
 from contracts.akasha_contracts.authz import authorize
 from contracts.akasha_contracts.errors import ErrorCode
 
+from .project_approval import approval_deadline, expired, new_request, require_fresh
+from .project_audit import record as audit_decision
 from .project_common import ProjectError, digest, identity, reject
 
 
@@ -49,23 +53,59 @@ def create_request(project: Path, output: Path, *, name: str, version: str, url:
     project = project.resolve(strict=True)
     output = dependency_directory(project, output)
     dependency = dependency_fields(name, version, url, sha256, license)
-    request = {"request_id": str(uuid4()), "project": identity(project), "directory": str(output),
-               "dependency": dependency}
+    approval = new_request()
+    request = {"request_id": approval["id"], "project": identity(project), "directory": str(output),
+               "dependency": dependency, "approval": approval}
     encoded = (json.dumps(request, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
     output.mkdir(parents=True)
     (output / "request.json").write_bytes(encoded)
     return {"status": "awaiting_download_approval", "request": str(output),
-            "approval_sha256": digest(encoded), "dependency": dependency}
+            "approval_sha256": digest(encoded), "dependency": dependency,
+            "approval_expires_at": request["approval"]["expires_at"]}
 
 
-def read_request(project: Path, directory: Path) -> tuple[dict, str]:
-    encoded = (directory / "request.json").read_bytes()
+def read_request(project: Path, directory: Path) -> tuple[dict, str, datetime]:
+    path = directory / "request.json"
+    encoded = path.read_bytes()
     request = json.loads(encoded)
     entry = request["dependency"]
     dependency = dependency_fields(entry["name"], entry["version"], entry["url"], entry["sha256"], entry["license"])
     if identity(project) != request["project"] or str(directory) != request["directory"] or dependency != entry:
         reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "La demande ne correspond pas au projet ou à l'artefact.")
-    return dependency, digest(encoded)
+    return dependency, digest(encoded), approval_deadline(request, path)
+
+
+def matching_receipt(request: Path, dependency: dict, request_hash: str) -> bool:
+    receipt = request / "cache" / "receipt.json"
+    return receipt.is_file() and json.loads(receipt.read_bytes()) == {
+        "status": "downloaded", "request_sha256": request_hash, "dependency": dependency,
+    }
+
+
+@dataclass(frozen=True)
+class DependencyReview:
+    project: Path
+    request: Path
+    dependency: dict
+    approval_sha256: str
+    approval_expires_at: datetime
+
+    def download(self, approved: bool) -> dict:
+        return download(self.project, self.request, self.approval_sha256 if approved else None)
+
+    def state(self) -> str:
+        if matching_receipt(self.request, self.dependency, self.approval_sha256):
+            return "cached"
+        if (self.request / "download.claim").exists():
+            return "used"
+        return "expired" if expired(self.approval_expires_at) else "pending"
+
+
+def preview_dependency(project: Path, directory: Path) -> DependencyReview:
+    project = project.resolve(strict=True)
+    directory = dependency_directory(project, directory)
+    dependency, request_hash, expires_at = read_request(project, directory)
+    return DependencyReview(project, directory, dependency, request_hash, expires_at)
 
 
 def normalized_name(name: str) -> str:
@@ -100,15 +140,29 @@ class NoRedirect(HTTPRedirectHandler):
 def download(project: Path, request: Path, approval: str | None) -> dict:
     project = project.resolve(strict=True)
     request = dependency_directory(project, request)
-    dependency, request_hash = read_request(project, request)
+    try:
+        return download_approved(project, request, approval)
+    except ProjectError as error:
+        decision = "paused" if error.error.code == ErrorCode.APPROVAL_EXPIRED else "refused"
+        audit_decision(request, action="dependency_download", risk="R3", actor="runtime", decision=decision,
+                       reason=error.error.code.value)
+        raise
+
+
+def download_approved(project: Path, request: Path, approval: str | None) -> dict:
+    dependency, request_hash, expires_at = read_request(project, request)
     denied = authorize({"risk_class": "R3", "human_approval": approval == request_hash})
     if denied:
         raise ProjectError(denied)
 
     cache = request / "cache"
+    claim_path = request / "download.claim"
+    require_fresh(expires_at)
     try:
-        with (request / "download.claim").open("x", encoding="ascii") as claim:
+        with claim_path.open("x", encoding="ascii") as claim:
             claim.write(request_hash + "\n")
+            claim.flush()
+            os.fsync(claim.fileno())
     except FileExistsError:
         reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Demande déjà utilisée. Une nouvelle demande est requise pour télécharger.",
                reason="download_already_requested")
@@ -116,6 +170,14 @@ def download(project: Path, request: Path, approval: str | None) -> dict:
     partial = cache / "download.partial"
     try:
         opener = build_opener(ProxyHandler({}), NoRedirect())
+        try:
+            require_fresh(expires_at)
+            audit_decision(request, action="dependency_download", risk="R3", actor="human", decision="approved")
+            require_fresh(expires_at)
+        except ProjectError:
+            cache.rmdir()
+            claim_path.unlink()
+            raise
         with opener.open(dependency["url"], timeout=30) as response, partial.open("xb") as output:
             if response.status != 200:
                 reject(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "La source n'a pas fourni une réponse complète.")
@@ -136,13 +198,16 @@ def stage_dependencies(project: Path, requests, stage: Path) -> list[dict]:
     names = set()
     if requests:
         (stage / "wheels").mkdir()
-    for directory in requests:
+    for item in requests:
+        review = item if isinstance(item, DependencyReview) else None
+        directory = review.request if review is not None else item
         request = dependency_directory(project, directory)
-        dependency, request_hash = read_request(project, request)
+        dependency, request_hash, _ = read_request(project, request)
+        if review is not None and request_hash != review.approval_sha256:
+            reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "La demande de téléchargement a changé.",
+                   reason="dependency_request_changed")
         cache = request / "cache"
-        receipt = {"status": "downloaded", "request_sha256": request_hash, "dependency": dependency}
-        receipt_path = cache / "receipt.json"
-        if not receipt_path.is_file() or json.loads(receipt_path.read_bytes()) != receipt:
+        if not matching_receipt(request, dependency, request_hash):
             reject(ErrorCode.APPROVAL_REQUIRED, "Chaque wheel doit provenir d'une demande téléchargée et vérifiée.")
         name = normalized_name(dependency["name"])
         destination = stage / "wheels" / dependency["filename"]

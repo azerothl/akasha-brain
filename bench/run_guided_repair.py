@@ -30,6 +30,7 @@ ATTEMPT_BUDGET = 60
 CYCLE_BUDGET = 120
 MAX_TOKENS = 176
 TEMPERATURE = 0.0
+HTTP_TIMEOUT_S = 135
 CHECKPOINTS = {
     "engine": "80cd4e7f7c39b1facb4073915253965c60f85fd936d08c242221acb2cae1f49c",
     "model": "120307ba529eb2439d6c430d94104dabd578497bc7bfe7e322b5d9933b449bd4",
@@ -79,6 +80,11 @@ def bounded_timeout(timeout: float) -> float:
     if remaining <= 0:
         raise TimeoutError("Budget de temps du banc Notes épuisé.")
     return min(timeout, remaining)
+
+
+def model_ram_limit(args) -> int | None:
+    limits = _model_limits.get()
+    return limits[1] if limits else getattr(args, "model_ram_mib", None)
 
 
 def file_hash(path: Path) -> str:
@@ -222,7 +228,8 @@ def apply_diff(work: Path, diff: str) -> None:
             raise ValueError(result.stderr.decode("utf-8", errors="replace").strip())
 
 
-def infer(args, work: Path, prompt: str, seed: int) -> tuple[dict, float, float]:
+def infer(args, work: Path, prompt: str, seed: int, *, max_tokens: int = MAX_TOKENS,
+          http_timeout_s: int = HTTP_TIMEOUT_S) -> tuple[dict, float, float]:
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
@@ -242,7 +249,14 @@ def infer(args, work: Path, prompt: str, seed: int) -> tuple[dict, float, float]
                RBITNET_MODEL=str(args.model), RBITNET_TOKENIZER=str(args.tokenizer),
                RBITNET_CONFIG=str(config), RBITNET_CHAT_FORMAT="chatml",
                RBITNET_REQUIRE_MODEL_MATCH="1", HF_HUB_OFFLINE="1", RUST_LOG="info")
-    if limits := _model_limits.get():
+    cuda_library = getattr(args, "cuda_library", None)
+    if cuda_library is not None:
+        env.update(RBITNET_BACKEND="cuda", RBITNET_CUDA_QUANT_LIB=str(cuda_library),
+                   RBITNET_MAX_VRAM_MB=str(args.vram_mib), CUDA_VISIBLE_DEVICES="0")
+    limits = _model_limits.get()
+    if limits is None and (memory := model_ram_limit(args)) is not None:
+        limits = (8, memory)
+    if limits:
         threads, memory = limits
         env.update(RAYON_NUM_THREADS=str(threads), RBITNET_I2S_THREADS=str(threads),
                    RBITNET_I2S_BATCH_THREADS=str(threads), RBITNET_MAX_LOAD_BYTES=str(memory * 1024 * 1024))
@@ -265,24 +279,27 @@ def infer(args, work: Path, prompt: str, seed: int) -> tuple[dict, float, float]
                 except (OSError, error.URLError):
                     time.sleep(0.2)
             else:
-                if limits and "exceeds RBITNET_MAX_LOAD_BYTES" in (work / "rbitnet.log").read_text(
-                    encoding="utf-8", errors="replace",
-                ):
-                    raise ModelAdmissionBudgetExceeded("Le chargement Rbitnet dépasse le budget RAM.")
+                log_text = (work / "rbitnet.log").read_text(encoding="utf-8", errors="replace")
+                if any(f"exceeds {key}" in log_text for key in ("RBITNET_MAX_LOAD_BYTES", "RBITNET_MAX_VRAM_MB")):
+                    raise ModelAdmissionBudgetExceeded("Le chargement Rbitnet dépasse le budget de mémoire.")
                 raise RuntimeError("Rbitnet indisponible. Voir rbitnet.log.")
             startup_s = time.perf_counter() - startup
             model_id = json.loads(call("/v1/models"))["data"][0]["id"]
             begin = time.perf_counter()
             result = json.loads(call("/v1/chat/completions", {
                 "model": model_id, "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": MAX_TOKENS, "temperature": TEMPERATURE, "seed": seed,
+                "max_tokens": max_tokens, "temperature": TEMPERATURE, "seed": seed,
                 "stop": ["<|im_end|>"], "stream": False,
-            }, timeout=135))
+            }, timeout=http_timeout_s))
             return result, startup_s, time.perf_counter() - begin
         finally:
             if process.poll() is None:
                 process.terminate()
-                process.wait(timeout=10)
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait(timeout=10)
 
 
 def feedback_prompt(result: dict, work: Path, source: str) -> str:

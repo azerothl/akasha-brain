@@ -1,0 +1,18 @@
+{
+  "tasks": [
+    [7, "Relire le formulaire"],
+    [12, "Reprendre le dossier"],
+    [29, "Classer les annexes"],
+    [42, "Vérifier le devis"],
+    [51, "Transmettre le compte rendu"]
+  ],
+  "events": [
+    [5, 12, "closed"],
+    [8, 29, "closed"],
+    [13, 12, "open"],
+    [15, 42, "open"],
+    [21, 51, "closed"],
+    [23, 51, "open"],
+    [34, 51, "closed"]
+  ]
+}

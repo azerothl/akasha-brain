@@ -1,4 +1,5 @@
 from threading import Event
+from hashlib import sha256
 
 import pytest
 
@@ -27,6 +28,20 @@ def test_desktop_reads_counts_from_localization_and_verification_traces():
     assert desktop_tasks.test_counts({}) is None
 
 
+def test_desktop_reads_only_the_verified_diff_of_the_selected_attempt(tmp_path):
+    path = tmp_path / "result/rbitnet-1/proposal.diff"
+    path.parent.mkdir(parents=True)
+    content = b"--- a/notes_store.py\n+++ b/notes_store.py\n"
+    path.write_bytes(content)
+    result = {"diff_file": "rbitnet-1/proposal.diff", "diff_sha256": sha256(content).hexdigest(),
+              "guest_sha256_verified": True}
+    row = {"id": "generate_diff", "attempt": 1, "result": result}
+    assert desktop_tasks.checked_task_diff(tmp_path, row) == content.decode("utf-8")
+    assert desktop_tasks.checked_task_diff(tmp_path, {**row, "attempt": 2}) is None
+    path.write_bytes(b"altered")
+    assert desktop_tasks.checked_task_diff(tmp_path, row) is None
+
+
 def test_desktop_launch_exposes_stage_transitions_and_persists_history(tmp_path, monkeypatch):
     runtime = tmp_path / "python"
     runtime.mkdir()
@@ -51,7 +66,7 @@ def test_desktop_launch_exposes_stage_transitions_and_persists_history(tmp_path,
         assert desktop_tasks.latest_steps(update)["localize"]["status"] == "running"
     finally:
         release.set()
-    runner.worker.join(5)
+    runner.execution.result(timeout=5)
     assert not runner.busy
     _, finished = runner.updates.get_nowait()
     assert finished["status"] == "passed"
@@ -72,7 +87,8 @@ def test_managed_desktop_run_keeps_the_exact_synthetic_goal_and_its_own_history(
     assert overview["paused"]
     calls = []
 
-    def managed(goal, catalog, runtime, output, repair, registry, budget, *, progress):
+    def managed(goal, catalog, runtime, output, repair, registry, budget, *, progress,
+                schedule_evolution, interactive):
         calls.append((goal, registry))
         report = {"status": "running", "trace": []}
         progress(report)
@@ -80,9 +96,9 @@ def test_managed_desktop_run_keeps_the_exact_synthetic_goal_and_its_own_history(
 
     monkeypatch.setattr(desktop_tasks, "run_managed", managed)
     first, record = runner.start()
-    runner.worker.join(5)
+    runner.execution.result(timeout=5)
     second, _ = runner.start()
-    runner.worker.join(5)
+    runner.execution.result(timeout=5)
 
     assert first != second and record["graph"]["goal_id"] == runner.goal["goal_id"]
     assert calls == [(runner.goal, path), (runner.goal, path)]

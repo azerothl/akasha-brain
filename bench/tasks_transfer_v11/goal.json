@@ -1,0 +1,16 @@
+{
+  "goal_id": "5c02d770-ad1c-44c8-9417-2550ea7a1051",
+  "user_intent": "Dans le filtre « Terminées » du tableau des tickets, afficher seulement les tickets au statut done encore actifs (archived_at est NULL) qui portent un code de clôture renseigné. Un code NULL, vide ou uniquement composé d’espaces ASCII est absent. Trier par ticket_id croissant. Conserver exactement « À faire » et « Toutes » ainsi que la base SQLite.",
+  "inputs": ["bench://tasks"],
+  "constraints": {
+    "allowed_actions": ["observe", "edit", "test"],
+    "environment_id": "bench-tasks"
+  },
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

@@ -1,7 +1,8 @@
 """Sauvegarde Windows chiffrée et restauration filtrée du stockage d'évolution."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from uuid import UUID, uuid4
@@ -16,6 +17,7 @@ from .project_backup_vault import (
 )
 from .project_common import ProjectError, digest, project_scope, reject
 from .project_evolution import ARTIFACTS, content_path, ensure_samples, erasure_marker, registry_path, replay_report
+from .retention import copy_deadline, deadline, load_policy
 
 FORMAT = "akasha-project-backup/1"
 SAMPLE_COLUMNS = ("sample_id", "project", "category", "consent_id", "created_at", "expires_at", "manifest")
@@ -101,6 +103,8 @@ def publish(output: Path, package: dict) -> None:
         with NamedTemporaryFile(dir=output.parent, prefix=".akasha-backup-", delete=False) as file:
             temporary = Path(file.name)
             file.write(pack(package))
+            file.flush()
+            os.fsync(file.fileno())
         temporary.rename(output)
         temporary = None
     finally:
@@ -123,7 +127,7 @@ def collect_reports(db, project: Path, sample_id: str) -> dict[str, str]:
     return reports
 
 
-def backup(project: Path, registry: Path, output: Path, consent_id: str | None) -> dict:
+def backup(project: Path, registry: Path, output: Path, consent_id: str | None, *, daily: bool = False) -> dict:
     project = project.resolve(strict=True)
     registry = registry_path(project, registry)
     scope = project_scope(project)
@@ -131,7 +135,10 @@ def backup(project: Path, registry: Path, output: Path, consent_id: str | None) 
     if output.is_relative_to(project) or output.exists():
         reject(ErrorCode.PERMISSION_DENIED, "Choisir un nouveau fichier de sauvegarde hors du projet.")
     now = datetime.now(timezone.utc)
-    expires_at = now + timedelta(days=7)
+    if daily and output.name != f"{now.date().isoformat()}.backup":
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le jour UTC de la sauvegarde a changé.")
+    policy = load_policy()
+    expires_at = deadline(now, "backup", policy=policy)
     backup_id = str(uuid4())
     items = []
     objects = {}
@@ -155,7 +162,8 @@ def backup(project: Path, registry: Path, output: Path, consent_id: str | None) 
             for row in db.execute(f"SELECT {', '.join(SAMPLE_COLUMNS)} FROM samples WHERE project = ? ORDER BY sample_id", (scope,)):
                 sample = dict(zip(SAMPLE_COLUMNS, row))
                 category = sample["category"]
-                if category not in consent["categories"] or now >= instant(sample["expires_at"]):
+                expiration = copy_deadline(sample["created_at"], sample["expires_at"], policy=policy)
+                if category not in consent["categories"] or now >= expiration:
                     continue
                 sample_id = sample["sample_id"]
                 manifest = json.loads(sample["manifest"])
@@ -164,8 +172,8 @@ def backup(project: Path, registry: Path, output: Path, consent_id: str | None) 
                 if erasure_marker(grants, scope, sample_id=sample_id, source_id=source_id) or check_reuse(grants, (scope_entry,)):
                     continue
                 metadata = {"sample_id": sample_id, "source_id": source_id, "category": category,
-                            "consent_id": sample["consent_id"],
-                            "expires_at": timestamp(min(expires_at, instant(sample["expires_at"])))}
+                            "consent_id": sample["consent_id"], "created_at": sample["created_at"],
+                            "expires_at": timestamp(min(expires_at, expiration))}
                 payload = db.execute("SELECT payload FROM samples WHERE sample_id = ?", (sample_id,)).fetchone()[0]
                 if digest(payload) != manifest[ARTIFACTS[category][1]]:
                     reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Empreinte de copie invalide.")
@@ -176,7 +184,8 @@ def backup(project: Path, registry: Path, output: Path, consent_id: str | None) 
                 reports_count += len(reports)
             if not items:
                 reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Aucune copie dans le périmètre autorisé.")
-            index = {"vault_id": vault_id, "generation": head["generation"], "expires_at": timestamp(expires_at),
+            index = {"vault_id": vault_id, "generation": head["generation"], "created_at": timestamp(now),
+                     "expires_at": timestamp(expires_at),
                      "backup_consent_id": consent_id, "items": items}
             envelope = {"format": FORMAT, "backup_id": backup_id, "objects": objects,
                         "index": encrypt(vault, scope, backup_id, "index", None, index)}
@@ -184,22 +193,50 @@ def backup(project: Path, registry: Path, output: Path, consent_id: str | None) 
             backup_consent(grants, scope, consent_id, publication)
             if any(publication >= instant(item["expires_at"]) for item in items):
                 reject(ErrorCode.PERMISSION_DENIED, "Une copie a expiré pendant la sauvegarde.", reason="content_expired")
+            if daily:
+                register_daily_archive(vault, scope, now, expires_at, backup_id, output, envelope)
+                # Les clés et l'inventaire deviennent durables avant le fichier final.
+                vault.commit()
+                grants.commit()
+                grants.execute("BEGIN IMMEDIATE")
+                verify_head(grants, vault, scope, vault_id)
+                publication = datetime.now(timezone.utc)
+                backup_consent(grants, scope, consent_id, publication)
+                for item in items:
+                    use = ReuseScope(scope, item["category"], item["consent_id"], "project", False)
+                    if (erasure_marker(grants, scope, sample_id=item["sample_id"], source_id=item["source_id"])
+                            or check_reuse(grants, (use,), now=publication) or publication >= instant(item["expires_at"])):
+                        reject(ErrorCode.PERMISSION_DENIED, "Une copie est devenue indisponible avant la publication.",
+                               reason="content_unavailable")
             publish(output, envelope)
     return {"status": "backed_up", "backup_id": backup_id, "copies": len(items), "reports": reports_count,
             "expires_at": timestamp(expires_at), "cipher": "AES-256-GCM", "key_protection": "DPAPI CurrentUser"}
 
 
-def restore_item(value: dict, item: dict, scope: str) -> tuple[dict, bytes, dict[str, bytes]]:
+def register_daily_archive(vault, scope, created, expires, backup_id, output, envelope):
+    vault.execute("""CREATE TABLE IF NOT EXISTS daily_archives (
+        project TEXT NOT NULL, day TEXT NOT NULL, seal TEXT NOT NULL, PRIMARY KEY (project, day)
+    )""")
+    day = created.date().isoformat()
+    metadata = {"project": scope, "day": day, "created_at": timestamp(created), "expires_at": timestamp(expires),
+                "backup_id": backup_id, "path": str(output), "sha256": digest(pack(envelope))}
+    seal = crypto("seal", data=encode(pack(metadata)))["data"]
+    vault.execute("INSERT INTO daily_archives VALUES (?, ?, ?)", (scope, day, seal))
+
+
+def restore_item(value: dict, item: dict, scope: str, *, policy=None) -> tuple[dict, bytes, dict[str, bytes]]:
     sample = value["sample"]
     manifest = json.loads(sample["manifest"])
     if (set(sample) != set(SAMPLE_COLUMNS) or sample["project"] != scope
             or any(sample[key] != item[key] for key in ("sample_id", "category", "consent_id"))
+            or (item.get("created_at") is not None and sample["created_at"] != item["created_at"])
             or manifest.get("source_id") != item["source_id"]):
         reject(ErrorCode.PERMISSION_DENIED, "Filiation de la copie incohérente.", reason="lineage_invalid")
     payload = decode(value["payload"])
     if digest(payload) != manifest[ARTIFACTS[sample["category"]][1]]:
         reject(ErrorCode.PERMISSION_DENIED, "Empreinte de copie invalide.", reason="lineage_invalid")
-    sample["expires_at"] = timestamp(min(instant(sample["expires_at"]), instant(item["expires_at"])))
+    sample["expires_at"] = timestamp(min(copy_deadline(sample["created_at"], sample["expires_at"], policy=policy),
+                                         instant(item["expires_at"])))
     reports = {str(UUID(run_id)): decode(data) for run_id, data in value["reports"].items()}
     if any(json.loads(data).get("sample_id") != sample["sample_id"] for data in reports.values()):
         reject(ErrorCode.PERMISSION_DENIED, "Rapport dérivé sans filiation valide.", reason="lineage_invalid")
@@ -212,6 +249,7 @@ def restore(project: Path, registry: Path, archive: Path) -> dict:
         reject(ErrorCode.PERMISSION_DENIED, "Le registre d'effacement courant est requis.", reason="ledger_unverified")
     registry = registry_path(project, registry)
     scope = project_scope(project)
+    policy = load_policy()
     vault_file = vault_path(project, registry)
     with transaction(registry) as grants:
         grants.execute("BEGIN IMMEDIATE")
@@ -228,7 +266,10 @@ def restore(project: Path, registry: Path, archive: Path) -> dict:
             if index["vault_id"] != vault_id or index["generation"] > head["generation"]:
                 reject(ErrorCode.PERMISSION_DENIED, "Le registre est antérieur ou incompatible.", reason="ledger_unverified")
             now = datetime.now(timezone.utc)
-            if now >= instant(index["expires_at"]):
+            expiration = instant(index["expires_at"])
+            if "created_at" in index:
+                expiration = deadline(instant(index["created_at"]), "backup", parent_deadlines=(expiration,), policy=policy)
+            if now >= expiration:
                 reject(ErrorCode.PERMISSION_DENIED, "Sauvegarde expirée.", reason="backup_expired")
             consent = backup_consent(grants, scope, index["backup_consent_id"], now)
             item_ids = [item["sample_id"] for item in index["items"]]
@@ -244,16 +285,23 @@ def restore(project: Path, registry: Path, archive: Path) -> dict:
                     skipped_erased += 1
                     continue
                 use = ReuseScope(scope, item["category"], item["consent_id"], "project", False)
-                if (item["category"] not in consent["categories"] or now >= instant(item["expires_at"])
+                item_expiration = instant(item["expires_at"])
+                if "created_at" in item:
+                    item_expiration = copy_deadline(item["created_at"], item["expires_at"], policy=policy)
+                if (item["category"] not in consent["categories"] or now >= item_expiration
                         or check_reuse(grants, (use,))):
                     skipped_inactive += 1
                     continue
                 value = decrypt(vault, scope, backup_id, sample_id, envelope["objects"][sample_id])
-                staged.append(restore_item(value, item, scope))
+                restored = restore_item(value, item, scope, policy=policy)
+                if now >= instant(restored[0]["expires_at"]):
+                    skipped_inactive += 1
+                    continue
+                staged.append(restored)
             verify_head(grants, vault, scope, vault_id)
             publication = datetime.now(timezone.utc)
             backup_consent(grants, scope, index["backup_consent_id"], publication)
-            if publication >= instant(index["expires_at"]) or any(publication >= instant(sample["expires_at"])
+            if publication >= expiration or any(publication >= instant(sample["expires_at"])
                                                                  for sample, _, _ in staged):
                 reject(ErrorCode.PERMISSION_DENIED, "Une échéance a été atteinte pendant la restauration.", reason="content_expired")
 

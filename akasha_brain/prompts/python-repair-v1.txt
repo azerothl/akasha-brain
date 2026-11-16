@@ -1,0 +1,2 @@
+/no_think
+Repair the supplied Python module for the stated task. Return one fenced Python code block with the complete replacement for one existing undecorated function or method. Keep the original name and signature, including its annotations. The block must contain only the replacement definition. Module-level definitions and other functions stay available as shown. Fix the failed behavior and preserve the passing checks and persistent data.

@@ -1,0 +1,18 @@
+{
+  "tickets": [
+    [11, "Réparer le lecteur", "queued", null, 0],
+    [12, "Inspecter le câblage", "queued", "2026-03-19", 0],
+    [13, "Contrôler le capteur", "queued", "2026-03-20", 0],
+    [14, "Relever le compteur", "queued", "2026-03-18", 0],
+    [15, "Réarmer le circuit", "queued", "2026-03-18", 1],
+    [16, "Réparer le lecteur", "queued", null, 1],
+    [17, "Purger la conduite", "in_progress", "2026-03-19", 0],
+    [18, "Contrôler le filtre", "finished", null, 0],
+    [19, "Examiner l’étanchéité", "finished", "2026-03-22", 1]
+  ],
+  "visible_ids": {
+    "À faire": [11, 12, 14],
+    "Terminées": [18, 19],
+    "Toutes": [11, 12, 13, 14, 15, 16, 17, 18, 19]
+  }
+}

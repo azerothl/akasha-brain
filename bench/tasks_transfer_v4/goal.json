@@ -1,0 +1,13 @@
+{
+  "goal_id": "0fdae8f8-01e5-4639-9547-e2bce2337748",
+  "user_intent": "Corriger le tableau de tâches. À faire doit inclure les tâches sans événement et les tâches dont le dernier événement est une ouverture ou une réouverture. Terminées doit afficher les tâches dont le dernier événement est une clôture. Toutes affiche toutes les tâches. Préserver l’ordre par identifiant et l’historique.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

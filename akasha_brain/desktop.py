@@ -9,10 +9,16 @@ import sqlite3
 import tkinter as tk
 from tkinter import filedialog, font, ttk
 
+from .desktop_conversation import ConversationWindow
 from .desktop_data import DataWindow
+from .desktop_project import ProjectWindow
 from .desktop_review import ReviewWindow
-from .desktop_tasks import NotesTasks, STATUSES, STEP_TITLES, latest_steps, layers, saved_tasks, test_counts
-from .notes_evolution import STAGES, rollback, set_evolution_paused
+from .desktop_tasks import (
+    DEFAULT_EVOLUTION_BUDGET, NotesTasks, STATUSES, STEP_TITLES, checked_task_diff, latest_steps, layers,
+    saved_tasks, test_counts,
+)
+from .model_resources import DEFAULT_VRAM_MIB
+from .notes_evolution import STAGES, EvolutionBudget, rollback, set_evolution_paused
 from .notes_repair import RbitnetPaths
 from .planning import PlanningError
 
@@ -159,7 +165,8 @@ class GraphView(tk.Canvas):
 
 
 class Desktop:
-    def __init__(self, root, tasks, *, data_registry=None, data_project=None, proposal=None):
+    def __init__(self, root, tasks, *, data_registry=None, data_project=None, proposal=None, dependency_requests=(),
+                 communication=None):
         self.root = root
         self.tasks = tasks
         self.data_registry = (data_registry or tasks.directory.parent / "project-evolution.db").resolve()
@@ -167,6 +174,10 @@ class Desktop:
         self.data_window = None
         self.proposal = proposal
         self.review_window = None
+        self.project_window = None
+        self.dependency_requests = dependency_requests
+        self.communication = communication
+        self.conversation = None
         self.records = dict(saved_tasks(tasks.directory))
         self.current = None
         self.message = None
@@ -233,7 +244,9 @@ class Desktop:
         self.launch_button.pack(side="right")
         ttk.Button(task_header, text="Python portable…", command=self.choose_runtime).pack(side="right", padx=10)
         ttk.Button(task_header, text="Données", command=self.open_data).pack(side="right")
-        ttk.Button(task_header, text="Aperçu du diff", command=self.open_review).pack(side="right", padx=(0, 10))
+        ttk.Button(task_header, text="Proposition du projet", command=self.open_review).pack(side="right", padx=(0, 10))
+        ttk.Button(task_header, text="Préparer un projet", command=self.open_project).pack(side="right", padx=(0, 10))
+        ttk.Button(task_header, text="Conversation", command=self.open_conversation).pack(side="right", padx=(0, 10))
         if self.tasks.evolution_db:
             self.build_evolution(header)
 
@@ -289,11 +302,40 @@ class Desktop:
             self.data_window = DataWindow(self.root, self.data_registry, self.data_project)
         self.data_window.show()
 
+    def open_conversation(self):
+        if self.conversation is None:
+            self.conversation = ConversationWindow(self.root, self.launch, self.open_project, self.open_review,
+                                                   self.latest_notes_report, self.tasks.scheduler.submit, self.communication)
+        self.conversation.show()
+
+    def latest_notes_report(self):
+        finished = (record for record in self.records.values() if record["status"] in ("passed", "failed"))
+        return max(finished, key=lambda record: record["created_at"], default=None)
+
     def open_review(self):
         if self.review_window is None:
-            selected = self.data_window.data if self.data_window is not None else None
-            project = selected.project if selected is not None else self.data_project
-            self.review_window = ReviewWindow(self.root, project, self.proposal)
+            self.review_window = ReviewWindow(self.root, self.selected_project(), self.proposal)
+        self.review_window.show()
+
+    def selected_project(self):
+        selected = self.data_window.data if self.data_window is not None else None
+        return selected.project if selected is not None else self.data_project
+
+    def open_project(self):
+        if self.project_window is None:
+            self.project_window = ProjectWindow(
+                self.root, self.selected_project(), self.tasks.directory / "proposals", lambda: self.tasks.runtime,
+                self.tasks.submit_project, self.review_prepared, self.dependency_requests,
+            )
+        self.project_window.show()
+
+    def review_prepared(self, project, proposal):
+        self.data_project, self.proposal = project, proposal
+        if self.review_window is not None:
+            self.review_window.project, self.review_window.proposal = project, proposal
+            self.review_window.load()
+        else:
+            self.review_window = ReviewWindow(self.root, project, proposal)
         self.review_window.show()
 
     def build_evolution(self, header):
@@ -345,14 +387,20 @@ class Desktop:
             widget.configure(text=f"{plan['graph_id']} · v{plan['graph_version']}" if plan else "Aucune")
         latest = state["latest"]
         event = latest.get("event")
+        reason = latest.get("details", {}).get("reason")
         if state["paused"]:
-            label = "Pause demandée" if self.tasks.busy and event != "pause_reached" else "Évolution en pause"
-        elif event in ("trial_started", "trial_finished") and self.tasks.busy:
+            pending = self.tasks.scheduler.working_in_background and event in ("pause_requested", "trial_started")
+            label = "Pause demandée" if pending else "Évolution en pause"
+        elif event in ("trial_started", "trial_finished"):
             stage = STAGES.index(latest["details"]["stage"]) + 1
             label = f"Essai candidat {stage}/{len(STAGES)}" if event == "trial_started" else f"{stage}/{len(STAGES)} essais terminés"
         else:
             label = {"activated": "Candidate activée", "rolled_back": "Version précédente rétablie",
-                     "waiting": "Cycle arrêté par le budget", "retained": "Version active conservée",
+                     "waiting": "Aucun candidat compatible" if reason == "no_compatible_candidate"
+                     else "Cycle arrêté par le budget", "retained": "Version active conservée",
+                     "synthetic_reference_started": "Vérification de la référence synthétique",
+                     "interactive_priority": "Tâche interactive prioritaire",
+                     "triggered": "Évolution planifiée",
                      "resume_requested": "Évolution autorisée"}.get(event, "Évolution prête")
         self.evolution_message.configure(text=label, fg=MUTED)
         enabled = (state["can_rollback"] and not self.tasks.busy, state["paused"],
@@ -408,12 +456,13 @@ class Desktop:
         except (OSError, RuntimeError, sqlite3.Error, PlanningError) as error:
             self.message = str(error)
             self.update_status()
-            return
+            return None
         self.message = None
         self.records[self.current] = record
         self.step = record["graph"]["steps"][0]["id"]
         self.refresh_history()
         self.render(recenter=True)
+        return self.current
 
     def render(self, *, recenter=False):
         record = self.record()
@@ -442,6 +491,15 @@ class Desktop:
         self.detail.insert(tk.END, "\nDépendances\n", "caption")
         self.detail.insert(tk.END, "\n".join(map(step_title, step["depends_on"])) or "Aucune")
         result = row.get("result", {})
+        if residency := result.get("residency"):
+            self.detail.insert(tk.END, "\n\nRessources\n", "caption")
+            for key, label in (("ram_reserved_mib", "RAM réservée"), ("vram_reserved_mib", "VRAM réservée"),
+                               ("host_ram_free_mib", "RAM hôte disponible à l’admission"),
+                               ("device_vram_free_mib", "VRAM disponible à l’admission")):
+                if type(residency.get(key)) is int:
+                    self.detail.insert(tk.END, f"{label}  {residency[key]} Mio\n")
+            if residency.get("lease_s") is not None:
+                self.detail.insert(tk.END, f"Bail  {residency['lease_s']:.2f} s\n")
         if counts := test_counts(result):
             self.detail.insert(tk.END, "\n\nVérifications\n", "caption")
             self.detail.insert(tk.END, f"Tests  {counts[0]}/{counts[1]}\n")
@@ -449,6 +507,9 @@ class Desktop:
             self.detail.insert(tk.END, f"SQLite  {STATUSES.get(result['sqlite_verdict'], result['sqlite_verdict'])}\n")
         if result.get("diff_applied"):
             self.detail.insert(tk.END, "\nDiff appliqué dans le bac\n")
+            if self.current is not None and (diff := checked_task_diff(self.current, row)) is not None:
+                self.detail.insert(tk.END, "\nDiff vérifié\n", "caption")
+                self.detail.insert(tk.END, diff)
         if result.get("reference_sha256_verified_in_guest"):
             self.detail.insert(tk.END, "\nEmpreinte vérifiée dans le bac\n")
         if "desktop" in result:
@@ -475,7 +536,9 @@ class Desktop:
             return
         status = record["status"]
         label = STATUSES[status]
-        if status == "running" and not record.get("trace"):
+        if status == "waiting":
+            label = "En attente du bac"
+        elif status == "running" and not record.get("trace"):
             label = "Préparation de Windows Sandbox"
         self.task_status.configure(text=f"{label} · {passed}/{total} étapes", fg=STATE_COLOR[status])
         duration = record.get("wall_s")
@@ -492,6 +555,8 @@ class Desktop:
             except Empty:
                 break
             self.records[folder] = record
+            if self.conversation is not None:
+                self.conversation.task_update(folder, record)
             changed = True
         if changed:
             self.refresh_history()
@@ -506,22 +571,44 @@ def main():
     root = Path(os.environ.get("LOCALAPPDATA") or Path.home())
     parser.add_argument("--runs", type=Path, default=root / "AkashaBrain" / "runs")
     parser.add_argument("--rbitnet", nargs=3, type=Path, metavar=("BINAIRE", "GGUF", "TOKENIZER"))
+    parser.add_argument("--cuda-library", type=Path, help="Bibliothèque CUDA Rbitnet qualifiée pour Notes")
+    parser.add_argument("--model-vram-mib", type=int, default=DEFAULT_VRAM_MIB, help="Plafond VRAM du modèle CUDA")
+    parser.add_argument("--communication", nargs=3, type=Path, metavar=("BINAIRE", "GGUF", "TOKENIZER"),
+                        help="Qwen3.5-2B CPU pour les synthèses locales de la conversation")
     parser.add_argument("--rapidocr", action="store_true")
     parser.add_argument("--evolution-db", type=Path, help="Registre d’évolution du banc synthétique Notes")
+    defaults = DEFAULT_EVOLUTION_BUDGET
+    parser.add_argument("--evolution-wall-s", type=int, default=defaults.wall_s, help="Durée du cycle candidat")
+    parser.add_argument("--evolution-max-trials", type=int, default=defaults.max_trials, help="Nombre d’essais candidats")
+    parser.add_argument("--evolution-cpu-threads", type=int, default=defaults.cpu_threads, help="Taille des pools CPU Rbitnet")
+    parser.add_argument("--evolution-model-ram-mb", type=int, default=defaults.model_ram_mb, help="Mémoire Rbitnet en Mio")
     parser.add_argument("--data-db", type=Path, help="Registre des données du parcours projet")
     parser.add_argument("--project", "--data-project", dest="data_project", type=Path,
                         help="Dossier initial des écrans projet")
     parser.add_argument("--proposal", type=Path, help="Dossier initial de la proposition à examiner")
+    parser.add_argument("--dependency-request", action="append", type=Path, default=[],
+                        help="Dossier d’une demande de téléchargement à examiner")
     args = parser.parse_args()
     if args.rapidocr and not args.rbitnet:
         parser.error("--rapidocr exige --rbitnet")
+    if args.cuda_library and (not args.rbitnet or args.model_vram_mib <= 0):
+        parser.error("--cuda-library exige --rbitnet et un budget VRAM positif")
     if args.evolution_db and (not args.rbitnet or args.rapidocr):
         parser.error("--evolution-db exige --rbitnet et sélectionne le graphe actif")
-    repair = RbitnetPaths(*(path.resolve() for path in args.rbitnet)) if args.rbitnet else None
+    if min(args.evolution_cpu_threads, args.evolution_model_ram_mb) <= 0:
+        parser.error("Les limites de threads et de RAM de Rbitnet doivent être positives")
+    repair = (RbitnetPaths(*(path.resolve() for path in args.rbitnet),
+                          cuda_library=args.cuda_library.resolve() if args.cuda_library else None,
+                          vram_mib=args.model_vram_mib) if args.rbitnet else None)
+    communication = RbitnetPaths(*(path.resolve() for path in args.communication)) if args.communication else None
+    budget = EvolutionBudget(args.evolution_wall_s, args.evolution_max_trials,
+                             args.evolution_cpu_threads, args.evolution_model_ram_mb)
     app = NotesTasks(args.runs.resolve(), args.python_runtime, repair, args.rapidocr,
-                     evolution_db=args.evolution_db.resolve() if args.evolution_db else None)
+                     evolution_db=args.evolution_db.resolve() if args.evolution_db else None,
+                     evolution_budget=budget)
     root = tk.Tk()
-    Desktop(root, app, data_registry=args.data_db, data_project=args.data_project, proposal=args.proposal)
+    Desktop(root, app, data_registry=args.data_db, data_project=args.data_project, proposal=args.proposal,
+            dependency_requests=args.dependency_request, communication=communication)
     root.mainloop()
 
 

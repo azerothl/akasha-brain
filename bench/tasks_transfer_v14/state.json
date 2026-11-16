@@ -1,0 +1,18 @@
+{
+  "tickets": [
+    [31, "Vérifier le scellé", "normal", null],
+    [32, "Régler le capteur", "normal", "2026-03-04"],
+    [33, "Préparer le gabarit", "deferred", null],
+    [34, "Remplacer la poignée", "cancelled", null],
+    [35, "Vérifier le scellé", "deferred", "2026-03-04"],
+    [36, "Étiqueter la caisse", "normal", null],
+    [37, "Étalonner la balance", "deferred", null],
+    [38, "Contrôler l’axe", "normal", "2026-03-07"],
+    [39, "Reprendre le serrage", "cancelled", null]
+  ],
+  "visible_ids": {
+    "À faire": [31, 33, 36, 37],
+    "Terminées": [32, 35, 38],
+    "Toutes": [31, 32, 33, 34, 35, 36, 37, 38, 39]
+  }
+}

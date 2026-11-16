@@ -1,0 +1,18 @@
+{
+  "tickets": [
+    [21, "Contrôler la porte", "open", 0],
+    [22, "Vérifier l’étanchéité", "done", null],
+    [23, "Relever la pression", "open", 10],
+    [24, "Archiver le relevé", "done", -1],
+    [25, "Préparer l’envoi", "open", null],
+    [26, "Relever la pression", "done", 10],
+    [27, "Mesurer le débit", "open", 3],
+    [28, "Valider la commande", "on_hold", 0],
+    [29, "Essayer la nouvelle vanne", "on_hold", -10]
+  ],
+  "visible_ids": {
+    "À faire": [21, 23, 25, 27],
+    "Terminées": [22, 24, 26],
+    "Toutes": [23, 26, 27, 21, 28, 24, 29, 22, 25]
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "plan": {
+    "graph_id": "tasks-rbitnet",
+    "graph_version": "1.6.0",
+    "environment_id": "bench-tasks",
+    "sandbox_tier": "windows-sandbox",
+    "steps": [
+      {
+        "id": "localize",
+        "action": "observe",
+        "capability_id": "tasks.locate",
+        "version": "1.0.0",
+        "depends_on": [],
+        "evidence": null
+      },
+      {
+        "id": "generate_diff",
+        "action": "edit",
+        "capability_id": "tasks.repair_rbitnet",
+        "version": "1.0.0",
+        "depends_on": [
+          "localize"
+        ],
+        "evidence": null
+      },
+      {
+        "id": "verify",
+        "action": "test",
+        "capability_id": "tasks.verify",
+        "version": "1.0.0",
+        "depends_on": [
+          "generate_diff"
+        ],
+        "evidence": null
+      }
+    ],
+    "expected_validation": {
+      "tests_passed": 3,
+      "verifier": "desktop_filters_and_sqlite"
+    },
+    "repair_context": {
+      "sqlite_schema": "schema.sql",
+      "target_filters": "latest_verdict_failures"
+    },
+    "repair_retry": {
+      "max_attempts": 2,
+      "on": "verification_failed",
+      "after": "verify",
+      "resume_at": "generate_diff",
+      "feedback": "filter_deltas",
+      "require_distinct_proposal": true,
+      "protected_filters": "initial_passes"
+    }
+  },
+  "inputs": {
+    "akasha_brain/__main__.py": "99058e6b68328336c1560bb5f2f488ef3eb30278de3351e6fc43e8c5f78a6f82",
+    "akasha_brain/capabilities.json": "34316595c46d5b975e0cf9b95e15ad12a764465c41134c1e4006ba22e45ed55b",
+    "akasha_brain/notes_repair.py": "d9d30e709bb20d313f635ea9e0ccdd1d98e004829b094aad45837c11e42751a0",
+    "akasha_brain/notes_sandbox.py": "22c6a932ab722cbde627625900c724f7aad3ce59d2c29fa455a4092b2ca5b23d",
+    "akasha_brain/planning.py": "48f45ee7d1931e35f6dfb15f2b0cbf9c91d18be1b56c85b2a3ba700726381450",
+    "akasha_brain/prompts/python-repair-v1.txt": "3365a253223d9970d5ae95d8553db4147c949352652116c3fe6c5ac232503a29",
+    "akasha_brain/tasks_transfer.py": "c9e450d05a6ee7023d8d7a137986dc9156bd77afef11dbb7747f5a0f8569e3bd",
+    "bench/harness/akasha-bench.wsb": "3ce64b6a621173c9d1be53fb0f6a1d732634ba2648aebfdd7ca5da3d1494ee4a",
+    "bench/harness/probe_guest_channels.ps1": "0e3b749c11b3bce3ef7da7ec62d71ee2c2cbd51cb6e06c88c9e88c5ce0c63f14",
+    "bench/harness/probe_notes_isolation.ps1": "43ca6674cf7af18fc8ed9d0d6b4f6796c500f155f26382459a92a26ecd85d8cd",
+    "bench/harness/run_tasks_validation.ps1": "8c8f6cdaee6df9245a6faa217fc1b7fb5765e2406c53a97f52e37999c4f9881b",
+    "bench/harness/tasks_oracle_deltas.py": "034cc953e971951ad7264728d7f3c75282ca203797a5638292bbabfba5bf481b",
+    "bench/run_guided_repair.py": "63450831729f05e3a084539d5d7031228ac538457669fd4243849542493cd0b3",
+    "contracts/akasha_contracts/__init__.py": "63430131a5308929125eec413169d0317d975fa3f3546e16f6504bf6e3eb6020",
+    "contracts/akasha_contracts/authz.py": "160d0cf90c5358f912799bdd8245c2fda2a295b0d8f50aae0b9c4c1f3731f179",
+    "contracts/akasha_contracts/errors.py": "99b7c323d15031e877eeb4b8bf464a5af9f5965938e6dec4bbf9042a666ffb88",
+    "contracts/akasha_contracts/grants.py": "69ff735a78427fda06c428778b664a5abb8a6cd878b52629fca3782ccc51a58c",
+    "contracts/akasha_contracts/predicates.py": "79b9f9f5a16272b85311f7b25ece24fc561dc5c26bbe2d04115700399c142c6d",
+    "contracts/akasha_contracts/validate.py": "3962204b94d8b23fdc791c093009175cefdb14f860df26462ef3e62967385bb8",
+    "contracts/examples/goal_tasks_repair.json": "c529e84a395c0957bf9b23727548691096aef34757d490a67080c2ee2248ba37",
+    "contracts/schemas/ArtifactEnvelope/v1.0.0.json": "553c1d6d94dfcd2ea94f6a1d2f17c3e9cd6f892ae5895be5750c62a3df227a1e",
+    "contracts/schemas/BackupConsent/v1.0.0.json": "16264a93e67364f6591cff8dbd1556586935f38abb9a088131d34b75c15a4c72",
+    "contracts/schemas/CapabilityManifest/v1.0.0.json": "c23720bb34c426950acf77ef8e247b065eb5dd0f277c3ff136a5560e66d0ccaa",
+    "contracts/schemas/EvolutionConsent/v1.0.0.json": "62800ccd954376de3238d4103a0c249c5db675312c830a116fe09fb5f8a5e969",
+    "contracts/schemas/ExperienceRecord/v1.0.0.json": "ad17f1a0709dd61359829f98272fb6432bf4ac753acfb24c69ec8f1d72904897",
+    "contracts/schemas/GoalSpec/v1.0.0.json": "e97dfeddb38fe5ca227909f6e8522ec77b8fa661931cde2527bf8b8cbae83dd3",
+    "contracts/schemas/RemoteInferenceGrant/v1.0.0.json": "8e5b9627134b343dd76155b5c289f63e862bbf7659ca41b9edad49dfb328007f",
+    "contracts/schemas/RetentionCopy/v1.0.0.json": "07d31115decea3a129dc7cd97d20a56be9ca320507c552796043accaeec27893",
+    "contracts/schemas/RetentionPolicy/v1.0.0.json": "e0950639c8b4b22411c8c8d48fd57edd54c6aa5baae8d43d461d1499669d4ea6",
+    "contracts/schemas/SuccessPredicate/v1.0.0.json": "b7c5f102cb2a42af801dd38d04004ce3472debd0a6ac20d826ca22c144f4ea13"
+  },
+  "rbitnet": {
+    "hashes": {
+      "engine": "80cd4e7f7c39b1facb4073915253965c60f85fd936d08c242221acb2cae1f49c",
+      "model": "120307ba529eb2439d6c430d94104dabd578497bc7bfe7e322b5d9933b449bd4",
+      "tokenizer": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+    },
+    "backend": "cpu",
+    "seed": 742,
+    "max_tokens": 384,
+    "cpu_threads": 8,
+    "model_ram_mib": 8192,
+    "http_timeout_s_by_attempt": [
+      135,
+      300
+    ]
+  }
+}

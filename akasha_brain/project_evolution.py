@@ -1,7 +1,7 @@
 """Copie effaçable et relecture contrôlée de propositions projet validées."""
 
-from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from dataclasses import dataclass, replace
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sqlite3
@@ -11,10 +11,12 @@ from uuid import UUID, uuid4
 from bench.run_guided_repair import BENCH
 from contracts.akasha_contracts.errors import ErrorCode
 
-from .evolution_consent import ReuseScope, check_reuse, instant, timestamp
+from .evolution_consent import ReuseScope, check_reuse, timestamp
 from .experience import transaction
+from .project_audit import record as audit_decision
 from .project_backup_vault import sync_erasures, table_exists
 from .project_common import ProjectError, digest, identity, project_scope, reject
+from .retention import copy_deadline, deadline, load_policy
 
 ARTIFACTS = {"source_code": ("replacement.txt", "replacement_sha256"), "diffs": ("proposal.diff", "diff_sha256")}
 
@@ -25,6 +27,7 @@ class ProjectSample:
     scope: ReuseScope
     manifest: dict
     payload: bytes
+    created_at: str
     expires_at: str
 
 
@@ -74,7 +77,7 @@ def require_not_erased(db, project: str, *, sample_id: str | None = None, source
 def require_sample(db, sample: ProjectSample) -> None:
     require_not_erased(db, sample.scope.project, sample_id=sample.sample_id, source_id=sample.manifest.get("source_id"))
     require_consent(db, sample.scope)
-    if datetime.now(timezone.utc) >= instant(sample.expires_at):
+    if datetime.now(timezone.utc) >= copy_deadline(sample.created_at, sample.expires_at):
         reject(ErrorCode.PERMISSION_DENIED, "La copie a expiré.", reason="content_expired")
 
 
@@ -118,7 +121,7 @@ def collect(project: Path, proposal: Path, registry: Path, category: str, consen
         if digest(payload) != manifest[checksum]:
             reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "L'artefact diffère de la proposition examinée.")
         created = datetime.now(timezone.utc)
-        expires_at = timestamp(created + timedelta(days=30))
+        expires_at = timestamp(deadline(created, "real_contents"))
         with transaction(content_path(project, registry)) as db:
             ensure_samples(db)
             db.execute("INSERT INTO samples VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -137,21 +140,23 @@ def load_sample(project: Path, registry: Path, sample_id: str, category: str) ->
         if not contents.is_file():
             reject(ErrorCode.PERMISSION_DENIED, "Copie d'évolution introuvable.", reason="content_missing")
         with transaction(contents) as db:
-            row = db.execute("SELECT project, category, consent_id, expires_at, manifest FROM samples WHERE sample_id = ?",
+            row = db.execute("SELECT project, category, consent_id, created_at, expires_at, manifest FROM samples WHERE sample_id = ?",
                              (sample_id,)).fetchone()
             if row is None:
                 reject(ErrorCode.PERMISSION_DENIED, "Copie d'évolution introuvable.", reason="content_missing")
-            stored_project, stored_category, consent_id, expires_at, encoded = row
+            stored_project, stored_category, consent_id, created_at, expires_at, encoded = row
             if stored_project != scope_id or stored_category != category:
                 reject(ErrorCode.PERMISSION_DENIED, "Projet ou catégorie hors périmètre de la copie.",
                        reason="consent_scope_mismatch")
             scope = ReuseScope(stored_project, stored_category, consent_id, "project", False)
             manifest = json.loads(encoded)
-            require_sample(grants, ProjectSample(sample_id, scope, manifest, b"", expires_at))
+            expires_at = timestamp(copy_deadline(created_at, expires_at))
+            sample = ProjectSample(sample_id, scope, manifest, b"", created_at, expires_at)
+            require_sample(grants, sample)
             payload = db.execute("SELECT payload FROM samples WHERE sample_id = ?", (sample_id,)).fetchone()[0]
             if digest(payload) != manifest[ARTIFACTS[category][1]]:
                 reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "La copie ne correspond plus à l'artefact validé.")
-    return ProjectSample(sample_id, scope, manifest, payload, expires_at)
+    return replace(sample, payload=payload)
 
 
 def register_replay(project: Path, registry: Path, sample: ProjectSample, output: Path) -> str:
@@ -267,6 +272,16 @@ def remove_replay_report(project: Path, location: dict, checksum: str | None) ->
 def erase(project: Path, registry: Path, sample_id: str) -> dict:
     project = project.resolve(strict=True)
     registry = registry_path(project, registry)
+    result = finish_erasure(project, registry, sample_id)
+    decision = result["status"]
+    if decision == "erased" and "copies_erased" not in result:
+        decision = "confirmed"
+    audit_decision(registry, action="evolution_erase", risk="R3", actor="runtime",
+                   decision=decision, reason=result.get("reason"))
+    return result
+
+
+def finish_erasure(project: Path, registry: Path, sample_id: str) -> dict:
     request = request_erasure(project, registry, sample_id)
     if request["status"] == "erased":
         return request
@@ -326,3 +341,25 @@ def erase(project: Path, registry: Path, sample_id: str) -> dict:
             return pending("key_unavailable")
         grants.execute("UPDATE project_erasures SET state = 'erased', reason = NULL WHERE request_id = ?", (request_id,))
     return {"request_id": request_id, "status": "erased", "copies_erased": len(ids), "reports_removed": reports_removed}
+
+
+def expire_copies(project: Path, registry: Path, *, now: datetime | None = None) -> list[dict]:
+    """Réutilise la barrière d'effacement et son traitement des rapports et clés."""
+    project = project.resolve(strict=True)
+    registry = registry_path(project, registry, require_existing=False)
+    contents = content_path(project, registry)
+    if not registry.is_file() or not contents.is_file():
+        return []
+    moment = now or datetime.now(timezone.utc)
+    policy = load_policy()
+    with transaction(contents) as db:
+        if not table_exists(db, "samples"):
+            return []
+        scope = project_scope(project)
+        samples = db.execute("SELECT sample_id, created_at, expires_at FROM samples WHERE project = ?", (scope,))
+        expired = [sample for sample, created, expires in samples if moment >= copy_deadline(created, expires, policy=policy)]
+    requests = {}
+    for sample in expired:
+        result = erase(project, registry, sample)
+        requests.setdefault(result["request_id"], result)
+    return list(requests.values())

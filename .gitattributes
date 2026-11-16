@@ -1,0 +1,8 @@
+# Le gel SQL vérifie les octets de ces modules et de ses preuves de transfert.
+/akasha_brain/tasks_sql_transfer.py text eol=lf
+/akasha_brain/rbitnet_session.py text eol=lf
+/akasha_brain/model_resources.py text eol=lf
+/akasha_brain/protocols/tasks-rbitnet-sql-v4.json text eol=crlf
+/bench/tasks_transfer_v14/* text eol=lf
+# L’oracle du cas v14 se termine par une ligne CRLF dans la preuve gelée.
+/bench/tasks_transfer_v14/oracle.py -text !eol whitespace=cr-at-eol,-blank-at-eof

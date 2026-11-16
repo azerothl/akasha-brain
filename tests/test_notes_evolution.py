@@ -1,15 +1,15 @@
 import json
 from pathlib import Path
-from threading import get_ident
+from threading import Event, get_ident
 from uuid import uuid4
 
 import pytest
 
-from akasha_brain import notes_evolution
+from akasha_brain import desktop_tasks, notes_evolution
 from akasha_brain.evolution_consent import ReuseScope, grant, revoke
 from akasha_brain.experience import record_experience, transaction
 from akasha_brain.notes_evolution import (
-    CANDIDATE, GOAL_FILE, PARENT, STAGES, EvolutionBudget, evolve, evolution_overview, evolution_status,
+    CANDIDATE, GOAL_FILE, PARENT, STAGES, SYNTHETIC_REFERENCE, EvolutionBudget, evolve, evolution_overview, evolution_status,
     initialize, lease, rollback, run_managed, set_evolution_paused,
 )
 from akasha_brain.planning import PlanningError, compile_goal, load_catalog
@@ -220,3 +220,88 @@ def test_revocation_blocks_reuse_at_safe_points(tmp_path, monkeypatch, revoke_at
     state = evolution_status(path)
     assert state["active"] == PARENT
     assert all(item["entry"]["event"] != "activated" for item in state["events"])
+
+
+def test_desktop_runs_queued_tasks_between_trials_in_fifo_order(tmp_path, monkeypatch):
+    runtime = tmp_path / "python"
+    runtime.mkdir()
+    (runtime / "python.exe").touch()
+    path = tmp_path / "journal.db"
+    runner = desktop_tasks.NotesTasks(tmp_path / "runs", runtime, object(), False, evolution_db=path)
+    ready, release = Event(), Event()
+    calls = []
+
+    def run_notes(goal, catalog, runtime, output, repair, *, first_diff_seed, rapidocr, experience_db,
+                  origin="task", progress=None):
+        calls.append(origin)
+        if origin == "replay":
+            ready.set()
+            assert release.wait(5)
+        output.mkdir(parents=True)
+        plan = compile_goal(goal, catalog, rbitnet=True, rapidocr=rapidocr)
+        report = report_for(plan)
+        report["experience_record_id"] = record_experience(experience_db, report, origin)
+        return report
+
+    monkeypatch.setattr(notes_evolution, "run_notes", run_notes)
+    original, _ = runner.start()
+    try:
+        assert ready.wait(5) and not runner.busy
+        project = runner.scheduler.submit(lambda: calls.append("project"))
+        interactive, record = runner.start()
+        assert record["status"] == "waiting" and runner.busy
+        assert calls == ["task", "replay"]
+    finally:
+        release.set()
+    project.result(timeout=5)
+    runner.execution.result(timeout=5)
+    runner.scheduler.submit(lambda: None, background=True).result(timeout=5)
+    assert calls == ["task", "replay", "project", "task", "shadow", "limited"]
+    assert (original / "result" / "report.json").is_file()
+    assert [folder for folder, _ in desktop_tasks.saved_tasks(runner.directory)] == [interactive, original]
+    events = [row["entry"] for row in evolution_status(path)["events"]]
+    priority = [event for event in events if event["event"] == "interactive_priority"]
+    assert [event["details"] for event in priority] == [{"before": "shadow"}]
+    assert evolution_status(path)["active"] == CANDIDATE
+
+
+@pytest.mark.parametrize("outcome", ["passed", "failed"])
+def test_completed_project_starts_only_the_synthetic_cycle(tmp_path, monkeypatch, outcome):
+    runtime = tmp_path / "python"
+    runtime.mkdir()
+    (runtime / "python.exe").touch()
+    registry = tmp_path / "notes.db"
+    runner = desktop_tasks.NotesTasks(tmp_path / "runs", runtime, object(), False, evolution_db=registry)
+    calls = []
+    private_data = "PROJECT_DATA_NOT_ELIGIBLE_FOR_REUSE"
+
+    def project_task():
+        calls.append("project-" + outcome)
+        if outcome == "failed":
+            raise RuntimeError(private_data)
+        return {"status": "awaiting_approval", "proposal": private_data}
+
+    def run_notes(goal, catalog, runtime, output, repair, *, first_diff_seed, rapidocr, experience_db, origin):
+        assert goal == runner.goal and experience_db == registry
+        assert output.is_relative_to(runner.directory / "evolution")
+        assert rapidocr is (origin != SYNTHETIC_REFERENCE)
+        calls.append(origin)
+        output.mkdir(parents=True)
+        report = report_for(compile_goal(goal, catalog, rbitnet=True, rapidocr=rapidocr))
+        report["experience_record_id"] = record_experience(experience_db, report, origin)
+        return report
+
+    monkeypatch.setattr(notes_evolution, "run_notes", run_notes)
+    project = runner.submit_project(project_task)
+    if outcome == "failed":
+        with pytest.raises(RuntimeError, match=private_data):
+            project.result(timeout=5)
+    else:
+        assert project.result(timeout=5)["proposal"] == private_data
+    runner.scheduler.submit(lambda: None, background=True).result(timeout=5)
+    assert calls == ["project-" + outcome, SYNTHETIC_REFERENCE, *STAGES]
+    state = evolution_status(registry)
+    assert state["active"] == CANDIDATE
+    triggers = [row["entry"]["details"] for row in state["events"] if row["entry"]["event"] == "triggered"]
+    assert len(triggers) == 1 and triggers[0]["outcome"] == outcome and triggers[0]["source"] == "synthetic"
+    assert private_data not in json.dumps(state)

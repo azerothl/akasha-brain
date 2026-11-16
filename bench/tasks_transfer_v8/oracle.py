@@ -1,0 +1,62 @@
+"""Vérifier les listes affichées et l'intégrité des tâches et des reçus."""
+
+from contextlib import closing
+from hashlib import sha256
+import json
+from pathlib import Path
+import sqlite3
+import sys
+
+from board import Board
+
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT.parent))
+from tasks_oracle_deltas import FILTERS, encode_oracle
+
+
+def snapshot(path: Path) -> tuple[list, list, str]:
+    with closing(sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)) as db:
+        tasks = [list(row) for row in db.execute("SELECT * FROM task_log ORDER BY task_id")]
+        receipts = [list(row) for row in db.execute("SELECT * FROM close_receipt ORDER BY receipt_id")]
+    return tasks, receipts, sha256(path.read_bytes()).hexdigest()
+
+
+def main(phase: str, selection: Path, work: Path) -> int:
+    seed = json.loads((ROOT / "state.json").read_text(encoding="utf-8"))
+    database = work / "tasks.db"
+    with closing(sqlite3.connect(database)) as db, db:
+        db.executescript((ROOT / "schema.sql").read_text(encoding="utf-8"))
+        db.execute("PRAGMA foreign_keys = ON")
+        db.executemany("INSERT INTO task_log VALUES (?, ?)", seed["tasks"])
+        db.executemany("INSERT INTO close_receipt VALUES (?, ?, ?)", seed["receipts"])
+    initial = snapshot(database)
+    if initial[:2] != (seed["tasks"], seed["receipts"]):
+        raise RuntimeError("État initial inattendu.")
+
+    titles = dict(initial[0])
+    expected = {
+        label: [f"{task_id} | {titles[task_id]}" for task_id in seed["visible_ids"][label]]
+        for label in FILTERS
+    }
+    observed = {}
+    unchanged = True
+    board = Board(ROOT / "reference.py" if phase == "reference" else selection, database)
+    try:
+        board.update()
+        for label in FILTERS:
+            button = board.filters[label]
+            button.invoke()
+            board.update()
+            if not button.instate(["selected"]) or not board.entries.winfo_viewable():
+                raise RuntimeError("Impossible d'attester le filtre visible.")
+            if any(board.entries.bbox(row) is None for row in range(board.entries.size())):
+                raise RuntimeError("Une ligne n'est pas visible dans la liste.")
+            observed[label] = list(board.entries.get(0, "end"))
+            unchanged &= snapshot(database) == initial
+    finally:
+        board.destroy()
+    return encode_oracle(expected, observed, unchanged)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1], Path(sys.argv[2]), Path(sys.argv[3])))

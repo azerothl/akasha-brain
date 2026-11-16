@@ -1,0 +1,13 @@
+{
+  "goal_id": "4dece537-650c-46d5-a149-77be2fd25210",
+  "user_intent": "Corriger l'ordre du filtre À faire : les tâches datées doivent apparaître par échéance croissante, les tâches sans échéance à la fin et les égalités par identifiant croissant. Le filtre Terminées affiche les tâches terminées par identifiant. Toutes affiche toutes les tâches par identifiant. Conserver les trois sélections et préserver les données.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [
+    {"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}
+  ],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

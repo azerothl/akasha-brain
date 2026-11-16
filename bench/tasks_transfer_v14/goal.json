@@ -1,0 +1,11 @@
+{
+  "goal_id": "5e9b6861-dba5-4d21-8369-53a89a18e275",
+  "user_intent": "Dans le filtre « À faire » de l’atelier, afficher uniquement les interventions en file normale ou reportée qui n’ont pas encore de date de confirmation. Une intervention confirmée ou annulée doit disparaître de « À faire ». Trier par ticket_id croissant. Conserver la sélection et l’ordre de « Terminées » et « Toutes », et laisser SQLite intact.",
+  "inputs": ["bench://tasks"],
+  "constraints": {"allowed_actions": ["observe", "edit", "test"], "environment_id": "bench-tasks"},
+  "success_conditions": [{"predicate": "test_suite_passes", "on": "CodeState", "args": {"command": "pytest -q"}}],
+  "risk_class": "R1",
+  "resource_budget": {},
+  "uncertainties": [],
+  "approval_requirements": []
+}

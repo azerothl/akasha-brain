@@ -1,0 +1,18 @@
+{
+  "cards": [
+    [3, "Préparer l’affiche", 0, "  éQUIPE Nord  "],
+    [8, "Relever les tarifs", 1, "beta"],
+    [12, "Lister les stocks", 0, null],
+    [14, "Mettre à jour les plans", 1, "Équipe Nord"],
+    [16, "Réserver la salle", 0, "ALPHA"],
+    [19, "Envoyer le reçu", 1, " \t "],
+    [23, "Vérifier l’inventaire", 0, "Beta"],
+    [26, "Préparer les badges", 1, "Zoo"],
+    [30, "Lister les stocks", 0, "aLpHa"]
+  ],
+  "visible_ids": {
+    "À faire": [3, 12, 16, 23, 30],
+    "Terminées": [8, 14, 19, 26],
+    "Toutes": [16, 30, 8, 23, 26, 3, 14, 12, 19]
+  }
+}

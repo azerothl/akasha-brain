@@ -3,10 +3,12 @@
 import argparse
 from contextlib import contextmanager
 from dataclasses import dataclass
+from datetime import datetime
 from difflib import unified_diff
 import json
 import os
 from pathlib import Path, PurePosixPath, PureWindowsPath
+import re
 import secrets
 import shutil
 import sqlite3
@@ -23,10 +25,29 @@ from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 from .notes_repair import stage_git
 from .notes_sandbox import CHANNELS, POWERSHELL, active_sandboxes, guest_exit, read_profile, wait_for_guest
 from .planning import PlanningError
+from .project_audit import record as audit_decision, verify as verify_audit
+from .project_approval import (
+    action_key, application_state, approval_deadline, discard_unstarted_application, mark_application,
+    new_request, require_fresh,
+)
 from .project_backup import backup, grant_backup, restore, revoke_backup
 from .project_common import ProjectError, digest, identity, reject
 from .project_dependencies import create_request, download, stage_dependencies, stage_installer
 from .project_evolution import ARTIFACTS, check_sample, collect, erase, finish_replay, load_sample, register_replay
+
+SECRET_PATHS = {".env", ".netrc", ".npmrc", ".pypirc", ".ssh", ".aws", "id_rsa", "id_ed25519",
+                "credentials.json", "secrets.json"}
+PRIVATE_KEY = re.compile(rb"-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----")
+CODE_FILE_LIMIT = 256 * 1024
+CODE_LINE_LIMIT = 200
+CODE_COLUMN_LIMIT = 500
+
+
+def check_secret_path(components) -> None:
+    if any(part in SECRET_PATHS or part.startswith(".env.") or part.endswith((".key", ".pfx", ".p12"))
+           for part in (component.casefold() for component in components)):
+        reject(ErrorCode.PERMISSION_DENIED, "Les fichiers d'identifiants et de clés sont exclus du parcours projet.",
+               reason="secret_input")
 
 
 def project_file(project: Path, name: str, *, absent: bool = False) -> Path:
@@ -36,6 +57,7 @@ def project_file(project: Path, name: str, *, absent: bool = False) -> Path:
             or any(part.casefold() in {"..", ".git"} or part.endswith((" ", "."))
                    or PureWindowsPath(part).is_reserved() for part in relative.parts)):
         reject(ErrorCode.PERMISSION_DENIED, "Chemin de projet interdit.", path=name)
+    check_secret_path(relative.parts)
     path = project
     for index, part in enumerate(relative.parts):
         path /= part
@@ -58,7 +80,51 @@ def project_file(project: Path, name: str, *, absent: bool = False) -> Path:
 
 
 def snapshot(project: Path, names) -> dict:
-    return {name: project_file(project, name).read_bytes() for name in names}
+    return {name: project_input(project_file(project, name)) for name in names}
+
+
+def project_input(path: Path, *, byte_limit: int | None = None) -> bytes:
+    check_secret_path(path.parts)
+    with path.open("rb") as stream:
+        content = stream.read() if byte_limit is None else stream.read(byte_limit + 1)
+    if byte_limit is not None and len(content) > byte_limit:
+        reject(ErrorCode.RESOURCE_BUDGET_EXCEEDED, "Le fichier dépasse la fenêtre de lecture du code.",
+               maximum_bytes=byte_limit)
+    if PRIVATE_KEY.search(content):
+        reject(ErrorCode.PERMISSION_DENIED, "Une clé privée a été détectée dans un fichier sélectionné.",
+               reason="secret_input")
+    return content
+
+
+def inspect_code(project: Path, files: list[str], *, contains: str | None = None, first_line: int = 1,
+                 limit: int = 80) -> dict:
+    if (not 1 <= len(files) <= 32 or not 1 <= limit <= CODE_LINE_LIMIT or first_line < 1
+            or (contains is None and len(files) != 1)
+            or (contains is not None and (not contains.strip() or len(contains) > CODE_COLUMN_LIMIT))):
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Fenêtre ou périmètre de lecture invalide.")
+    project = project.resolve(strict=True)
+    paths = {name: project_file(project, name) for name in files}
+    rows = []
+    query = re.compile(re.escape(contains), re.IGNORECASE) if contains is not None else None
+    for name, path in paths.items():
+        try:
+            lines = project_input(path, byte_limit=CODE_FILE_LIMIT).decode("utf-8-sig").splitlines()
+        except UnicodeDecodeError:
+            reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "La vue du code exige un fichier texte UTF-8.")
+        for number, line in enumerate(lines[first_line - 1:], start=first_line):
+            position = 0
+            if query is not None:
+                match = query.search(line)
+                if match is None:
+                    continue
+                position = match.start()
+            if len(rows) == limit:
+                return {"status": "inspected", "lines": rows, "more": True}
+            start = max(0, position - CODE_COLUMN_LIMIT // 4)
+            excerpt = line[start:start + CODE_COLUMN_LIMIT]
+            rows.append({"file": name, "line": number, "text": excerpt,
+                         "excerpt": start > 0 or len(excerpt) < len(line)})
+    return {"status": "inspected", "lines": rows, "more": False}
 
 
 def fingerprints(files: dict) -> dict:
@@ -166,7 +232,7 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
         manifest["destination"] = move_to
     patch = None
     if replacement is not None:
-        candidate = replacement.read_bytes()
+        candidate = project_input(replacement)
         patch = make_diff(target, original[target], candidate)
         if not patch:
             reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "La proposition ne contient aucune modification.")
@@ -178,6 +244,7 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
     manifest["validation"] = validation
     if wheels:
         manifest["dependencies"] = wheels
+    manifest["approval"] = new_request()
     encoded = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
     if patch is not None:
         (output / "proposal.diff").write_bytes(patch)
@@ -185,6 +252,7 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
     (output / "proposal.json").write_bytes(encoded)
     return {"status": "awaiting_approval", "proposal": str(output), "approval_sha256": digest(encoded),
             "operation": operation, "file": target, "destination": move_to,
+            "approval_expires_at": manifest["approval"]["expires_at"],
             "validation": validation, "wall_s": round(perf_counter() - began, 3)}
 
 
@@ -306,7 +374,7 @@ def require_operation_approval(manifest: dict, approved_delete: str | None,
                risk_class="R3", operation=operation, source=target, destination=destination)
 
 
-def apply_replacement(project: Path, proposal: Path, manifest: dict, original: bytes) -> None:
+def apply_replacement(project: Path, proposal: Path, manifest: dict, original: bytes, before_effect) -> None:
     target = manifest["target"]
     patch = (proposal / "proposal.diff").read_bytes()
     candidate = (proposal / "replacement.txt").read_bytes()
@@ -324,7 +392,7 @@ def apply_replacement(project: Path, proposal: Path, manifest: dict, original: b
             stream.flush()
             os.fsync(stream.fileno())
         shutil.copymode(destination, temporary)
-        check_current(project, manifest)
+        before_effect()
         os.replace(temporary, destination)
         temporary = None
     finally:
@@ -350,9 +418,63 @@ def validated_manifest(encoded: bytes) -> dict:
     return manifest
 
 
+def matches_application(project: Path, expected: dict, absent: list) -> bool:
+    try:
+        for name in absent:
+            project_file(project, name, absent=True)
+        return fingerprints(snapshot(project, expected)) == expected
+    except (OSError, ProjectError):
+        return False
+
+
+def renew_approval(project: Path, proposal: Path) -> dict:
+    project, proposal = project.resolve(strict=True), proposal.resolve(strict=True)
+    if proposal.is_relative_to(project):
+        reject(ErrorCode.PERMISSION_DENIED, "La proposition doit être stockée hors du projet.")
+    path = proposal / "proposal.json"
+    temporary = None
+    with project_lease(identity(project)):
+        manifest = validated_manifest(path.read_bytes())
+        check_current(project, manifest)
+        if application_state(proposal, action_key(manifest)) is not None:
+            reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "L'application a déjà commencé. Vérifiez l'état du projet.",
+                   reason="application_in_doubt")
+        request = manifest["approval"] = new_request()
+        encoded = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+        try:
+            with NamedTemporaryFile(dir=proposal, prefix="approval-", delete=False) as stream:
+                temporary = Path(stream.name)
+                stream.write(encoded)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temporary, path)
+            temporary = None
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
+    return {"status": "awaiting_approval", "proposal": str(proposal), "approval_sha256": digest(encoded),
+            "approval_expires_at": request["expires_at"]}
+
+
 def apply(project: Path, proposal: Path, approved_digest: str | None = None, *,
           approved_delete: str | None = None, approved_move: tuple[str, str] | None = None) -> dict:
-    encoded = (proposal / "proposal.json").read_bytes()
+    project, proposal = project.resolve(strict=True), proposal.resolve(strict=True)
+    if proposal.is_relative_to(project):
+        reject(ErrorCode.PERMISSION_DENIED, "La proposition doit être stockée hors du projet.")
+    try:
+        return apply_approved(project, proposal, approved_digest, approved_delete, approved_move)
+    except ProjectError as error:
+        decision = "paused" if error.error.code == ErrorCode.APPROVAL_EXPIRED else "refused"
+        risk = "R3" if error.error.details.get("risk_class") == "R3" else "R2"
+        audit_decision(proposal, action="project_apply", risk=risk, actor="runtime", decision=decision,
+                       reason=error.error.code.value)
+        raise
+
+
+def apply_approved(project: Path, proposal: Path, approved_digest: str | None,
+                   approved_delete: str | None, approved_move: tuple[str, str] | None) -> dict:
+    path = proposal / "proposal.json"
+    encoded = path.read_bytes()
     proposal_digest = digest(encoded)
     denied = authorize({"risk_class": "R2", "human_approval": approved_digest == proposal_digest})
     if denied:
@@ -360,71 +482,125 @@ def apply(project: Path, proposal: Path, approved_digest: str | None = None, *,
     manifest = validated_manifest(encoded)
     operation = manifest.get("operation", "replace")
     target, destination = manifest["target"], manifest.get("destination")
+    expires_at = approval_deadline(manifest, path)
+    require_fresh(expires_at)
     require_operation_approval(manifest, approved_delete, approved_move)
     expected, absent = expected_files(manifest)
+    key = action_key(manifest)
+    risk = "R2" if operation == "replace" else "R3"
+    result = {"status": "applied", "operation": operation, "file": target, "destination": destination,
+              "proposal_sha256": proposal_digest}
 
-    project = project.resolve(strict=True)
-    with project_lease(identity(project)):
+    project_id = identity(project)
+    with project_lease(project_id):
+        if path.read_bytes() != encoded:
+            reject(ErrorCode.APPROVAL_REQUIRED, "La demande d'approbation a changé.", risk_class="R2")
+        if project_id != manifest["project"]:
+            check_current(project, manifest)
+        require_fresh(expires_at)
+        state = application_state(proposal, key)
+        if state is not None:
+            if not matches_application(project, expected, absent):
+                reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "Le résultat de l'application doit être vérifié.",
+                       reason="application_in_doubt" if state == "applying" else "project_changed_after_apply")
+            if state == "applying":
+                mark_application(proposal, key, "applied")
+            return {**result, "replayed": True, "recovered": state == "applying"}
+
         current = check_current(project, manifest)
+
+        def begin_effect():
+            check_current(project, manifest)
+            require_fresh(expires_at)
+            audit_decision(proposal, action=operation, risk=risk, actor="human", decision="approved")
+            mark_application(proposal, key, "applying")
+            try:
+                require_fresh(expires_at)
+            except ProjectError:
+                discard_unstarted_application(proposal, key)
+                raise
+
         if operation == "replace":
-            apply_replacement(project, proposal, manifest, current[target])
+            apply_replacement(project, proposal, manifest, current[target], begin_effect)
         elif operation == "delete":
-            project_file(project, target).unlink()
+            source = project_file(project, target)
+            begin_effect()
+            source.unlink()
         else:
             source = project_file(project, target)
             target_path = project_file(project, destination, absent=True)
+            begin_effect()
             # Sur Windows, rename échoue si la destination existe et préserve le fichier concurrent.
             source.rename(target_path)
 
-        try:
-            for name in absent:
-                project_file(project, name, absent=True)
-            after = fingerprints(snapshot(project, expected))
-        except (OSError, ProjectError):
-            after = None
-        if after != expected:
-            reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "Opération effectuée, état du projet à vérifier.")
-    return {"status": "applied", "operation": operation, "file": target, "destination": destination,
-            "proposal_sha256": proposal_digest}
+        if not matches_application(project, expected, absent):
+            reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "Opération effectuée, état du projet à vérifier.",
+                   reason="application_in_doubt")
+        mark_application(proposal, key, "applied")
+    return result
 
 
 @dataclass(frozen=True)
-class ReplacementReview:
-    """Lie les octets présentés à l'accord transmis au parcours projet."""
+class ProposalReview:
+    """Lie le diff ou les chemins affichés à la proposition validée."""
 
     project: Path
     proposal: Path
     target: str
     test: str
-    diff: str
+    operation: str
+    destination: str | None
+    diff: str | None
     approval_sha256: str
+    approval_expires_at: datetime
 
-    def apply(self, approved: bool) -> dict:
-        return apply(self.project, self.proposal, self.approval_sha256 if approved else None)
+    def apply(self, approved: bool, *, approved_operation: bool = False) -> dict:
+        delete = self.target if approved_operation and self.operation == "delete" else None
+        move = None
+        if approved_operation and self.operation == "move" and self.destination is not None:
+            move = (self.target, self.destination)
+        return apply(self.project, self.proposal, self.approval_sha256 if approved else None,
+                     approved_delete=delete, approved_move=move)
 
 
-def preview_replacement(project: Path, proposal: Path) -> ReplacementReview:
+def preview_proposal(project: Path, proposal: Path) -> ProposalReview:
     project, proposal = project.resolve(strict=True), proposal.resolve(strict=True)
     if proposal.is_relative_to(project):
         reject(ErrorCode.PERMISSION_DENIED, "La proposition doit être stockée hors du projet.")
-    encoded = (proposal / "proposal.json").read_bytes()
+    path = proposal / "proposal.json"
+    encoded = path.read_bytes()
     manifest = validated_manifest(encoded)
     if identity(project) != manifest["project"]:
         reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Cette proposition appartient à un autre projet.",
                reason="consent_scope_mismatch")
-    if manifest.get("operation", "replace") != "replace":
+    operation = manifest.get("operation", "replace")
+    diff = None
+    if operation == "replace":
+        patch = (proposal / "proposal.diff").read_bytes()
+        if digest(patch) != manifest["diff_sha256"]:
+            reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le diff ne correspond pas à la proposition validée.",
+                   reason="proposal_changed")
+        diff = patch.decode("utf-8")
+    return ProposalReview(project, proposal, manifest["target"], manifest["test"], operation,
+                          manifest.get("destination"), diff, digest(encoded), approval_deadline(manifest, path))
+
+
+def preview_replacement(project: Path, proposal: Path) -> ProposalReview:
+    review = preview_proposal(project, proposal)
+    if review.operation != "replace":
         reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Sélectionnez une proposition contenant un diff de remplacement.")
-    patch = (proposal / "proposal.diff").read_bytes()
-    if digest(patch) != manifest["diff_sha256"]:
-        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le diff ne correspond pas à la proposition validée.",
-               reason="proposal_changed")
-    return ReplacementReview(project, proposal, manifest["target"], manifest["test"], patch.decode("utf-8"),
-                             digest(encoded))
+    return review
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    inspection = commands.add_parser("inspect-code", help="Lire ou chercher dans des fichiers projet sélectionnés")
+    inspection.add_argument("--project", required=True, type=Path)
+    inspection.add_argument("--file", required=True, action="append", help="Fichier relatif au projet, répétable pour la recherche")
+    inspection.add_argument("--contains", help="Texte littéral à chercher, sans tenir compte de la casse")
+    inspection.add_argument("--first-line", type=int, default=1)
+    inspection.add_argument("--limit", type=int, default=80)
     preparation = commands.add_parser("prepare", help="Préparer et tester une opération dans Windows Sandbox")
     preparation.add_argument("--project", required=True, type=Path)
     preparation.add_argument("--output", required=True, type=Path)
@@ -491,9 +667,16 @@ def main() -> int:
     approval.add_argument("--approve-delete", metavar="SOURCE", help="Accord explicite pour supprimer cette source")
     approval.add_argument("--approve-move", nargs=2, metavar=("SOURCE", "DESTINATION"),
                           help="Accord explicite pour ce déplacement")
+    renewal = commands.add_parser("renew-approval", help="Émettre une nouvelle demande pour une proposition intacte")
+    renewal.add_argument("--project", required=True, type=Path)
+    renewal.add_argument("--proposal", required=True, type=Path)
+    audit = commands.add_parser("verify-audit", help="Vérifier la chaîne locale des décisions")
+    audit.add_argument("--audit", required=True, type=Path)
     args = parser.parse_args()
     try:
-        if args.command == "prepare":
+        if args.command == "inspect-code":
+            result = inspect_code(args.project, args.file, contains=args.contains, first_line=args.first_line, limit=args.limit)
+        elif args.command == "prepare":
             result = prepare(args.project, args.output, args.file, args.replacement, args.test, args.python_runtime,
                              inputs=args.input, delete=args.delete, move_to=args.move_to, dependencies=args.dependency)
         elif args.command == "dependency-request":
@@ -517,16 +700,21 @@ def main() -> int:
             result = restore(args.project, args.evolution_db, args.backup)
         elif args.command == "backup-revoke":
             result = revoke_backup(args.project, args.evolution_db, args.consent)
+        elif args.command == "renew-approval":
+            result = renew_approval(args.project, args.proposal)
+        elif args.command == "verify-audit":
+            result = verify_audit(args.audit)
         else:
             result = apply(args.project, args.proposal, args.approve, approved_delete=args.approve_delete,
                            approved_move=tuple(args.approve_move) if args.approve_move is not None else None)
     except (ProjectError, PlanningError) as exc:
-        result = {"status": "refused", "error": exc.error.as_dict()}
+        status = "paused" if exc.error.code == ErrorCode.APPROVAL_EXPIRED else "refused"
+        result = {"status": status, "error": exc.error.as_dict()}
     except (OSError, RuntimeError, ValueError, TypeError, KeyError, sqlite3.Error, subprocess.SubprocessError) as exc:
         error = AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, str(exc))
         result = {"status": "failed", "error": error.as_dict()}
     print(json.dumps(result, ensure_ascii=True, indent=2))
-    return int(result["status"] in {"refused", "failed", "pending"})
+    return int(result["status"] in {"refused", "failed", "pending", "paused"})
 
 
 if __name__ == "__main__":

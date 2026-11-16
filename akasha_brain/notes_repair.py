@@ -7,9 +7,14 @@ import json
 import shutil
 import subprocess
 
-from bench.run_guided_repair import CHECKPOINTS, feedback_prompt, file_hash, infer, propose_change
+from bench.run_guided_repair import CHECKPOINTS, feedback_prompt, file_hash, infer, model_ram_limit, propose_change
+from contracts.akasha_contracts.errors import AkashaError, ErrorCode
+
+from .model_resources import DEFAULT_RAM_MIB, DEFAULT_VRAM_MIB, reserve_model
+from .planning import PlanningError
 
 PROMPT_FILE = Path(__file__).with_name("prompts") / "notes-repair-v1.json"
+CUDA_LIBRARY_SHA256 = "6cdcfaf0b3ac5fb5a728635b5bb64d78135d7ff0acb467839479288f974f9f9a"
 
 
 def load_repair_prompt() -> dict:
@@ -25,11 +30,32 @@ class RbitnetPaths:
     engine: Path
     model: Path
     tokenizer: Path
+    cuda_library: Path | None = None
+    vram_mib: int = DEFAULT_VRAM_MIB
+    model_ram_mib: int = DEFAULT_RAM_MIB
+
+    def __post_init__(self):
+        if self.cuda_library is not None and self.vram_mib <= 0:
+            raise ValueError("CUDA exige un budget de VRAM positif.")
+
+    @property
+    def backend(self):
+        return "cuda" if self.cuda_library is not None else "cpu"
 
     def verify(self) -> dict:
-        observed = {name: file_hash(getattr(self, name)) for name in CHECKPOINTS}
-        if observed != CHECKPOINTS:
-            raise RuntimeError("Le binaire, le modèle ou le tokenizer diffère du protocole CPU évalué.")
+        try:
+            observed = {name: file_hash(getattr(self, name)) for name in CHECKPOINTS}
+            if self.cuda_library is not None:
+                observed["cuda_library"] = file_hash(self.cuda_library)
+        except OSError as exc:
+            raise PlanningError(AkashaError(
+                ErrorCode.CAPABILITY_UNAVAILABLE, "Un artefact local Rbitnet est indisponible.",
+            )) from exc
+        expected = {**CHECKPOINTS, "cuda_library": CUDA_LIBRARY_SHA256} if self.cuda_library is not None else CHECKPOINTS
+        if observed != expected:
+            raise PlanningError(AkashaError(
+                ErrorCode.CAPABILITY_ENGINE_UNSUPPORTED, "Les artefacts Rbitnet diffèrent du protocole évalué.",
+            ))
         return observed
 
 
@@ -50,11 +76,12 @@ def stage_git(stage: Path) -> dict:
 def generate_patch(paths: RbitnetPaths, work: Path, stage: Path, source: str, prompt: str, seed: int) -> dict:
     work.mkdir()
     (work / "prompt.txt").write_text(prompt, encoding="utf-8")
-    response, startup_s, generation_s = infer(paths, work, prompt, seed)
+    with reserve_model("rbitnet", model_ram_limit(paths), vram_mib=paths.vram_mib if paths.cuda_library else 0) as residency:
+        response, startup_s, generation_s = infer(paths, work, prompt, seed)
     (work / "model-response.json").write_text(json.dumps(response, ensure_ascii=False, indent=2), encoding="utf-8")
     choice = response["choices"][0]
     result = {"seed": seed, "startup_s": round(startup_s, 3), "generation_s": round(generation_s, 3),
-              "finish_reason": choice.get("finish_reason"), "diff_applied": False}
+              "finish_reason": choice.get("finish_reason"), "diff_applied": False, "residency": residency}
     try:
         diff, candidate = propose_change(source, choice["message"].get("content") or "")
         if not diff:
