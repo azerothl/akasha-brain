@@ -54,3 +54,24 @@ Le rejeu avec le stockage de référence a obtenu 9/9 pour les deux actions dans
 .\.venv\Scripts\python.exe -m bench.run_phase5_notes_desktop_state --predict --faulty `
     --runtime $pythonPortable --output $dossierDeValidation
 ```
+
+## Sélection d’action Notes à politique figée
+
+Le [protocole](../../bench/phase5_notes_actions.json) fixe cinq cas, les quatre plans candidats et l’ordre alterné des deux bras. Chaque paire utilise un bac neuf. Les deux bras y démarrent chacun une instance de Notes sur une base distincte, préparée dans le même état. Le banc emploie le stockage de référence et contrôle le montage en lecture seule. Les états de départ et les plans admissibles sont comparés dans chaque paire.
+
+La politique classe les plans admissibles par nombre d’actions et départage les égalités par l’ordre du catalogue. Elle exclut les plans incompatibles avec la relation de PID demandée, les écritures inutiles ou en double et l’inspection seule si le but SQLite manque. Quand les prévisions sont disponibles, la même politique prend le premier plan dont l’état projeté satisfait le but. Le premier plan admissible sert de repli. Le vérificateur commun relit la fenêtre, le focus UIA, le PID et la base SQLite après exécution, dans une commande distincte.
+
+| Cas | Sans prédicteur | Avec prédicteur | Décision au verdict, sans / avec |
+| --- | --- | --- | ---: |
+| Enregistrer une note neuve | Enregistrer, note exacte | Enregistrer, note exacte | 4,867 / 4,705 s |
+| Retrouver une note après relance depuis une base vide | Relancer, base vide, échec | Enregistrer puis relancer, note exacte | 4,871 / 7,899 s |
+| Relancer avec une note déjà persistée | Relancer, note exacte | Relancer, note exacte | 5,169 / 5,297 s |
+| Vérifier une note dans la session ouverte | Inspecter, note exacte | Inspecter, note exacte | 2,268 / 2,227 s |
+| Relancer une base vide | Relancer, base vide conforme | Relancer, base vide conforme | 5,055 / 4,952 s |
+
+Sur ces cinq cas synthétiques, les états finaux vérifiés passent de 4/5 à 5/5. Deux cas offrent plusieurs plans admissibles et le prédicteur change la décision sur un seul. Sur ce cas, les deux bras obtiennent la relance demandée et les deux critères SQLite ne passent qu’après l’enregistrement préalable. La sélection seule prend 14,9 µs sans prédicteur et 43,5 µs avec, en médiane. Du début de la sélection au relevé final, le cumul est de 22,230 s sans prédicteur et de 25,080 s avec. Le lancement et la préparation des bacs sont mesurés à part. Les cinq bacs ont été arrêtés. [Relevé des cinq paires](../../bench/results/phase5-notes-action-selection-v1.json)
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_phase5_notes_action_selection --runtime $pythonPortable `
+    --output $dossierDeValidation
+```

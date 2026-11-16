@@ -1,0 +1,42 @@
+{
+  "protocol": "phase5-notes-action-selection-v1",
+  "policy": "shortest-admissible-plan-v1",
+  "plans": {
+    "inspect": [],
+    "save": ["save"],
+    "restart": ["restart"],
+    "save_then_restart": ["save", "restart"]
+  },
+  "cases": [
+    {
+      "id": "persist_new_note",
+      "initial": "empty",
+      "goal": {"exact_fixture_present": true, "pid_relation": "any"},
+      "order": ["without_predictor", "with_predictor"]
+    },
+    {
+      "id": "persist_before_restart",
+      "initial": "empty",
+      "goal": {"exact_fixture_present": true, "pid_relation": "different"},
+      "order": ["with_predictor", "without_predictor"]
+    },
+    {
+      "id": "restart_with_durable_note",
+      "initial": "saved",
+      "goal": {"exact_fixture_present": true, "pid_relation": "different"},
+      "order": ["without_predictor", "with_predictor"]
+    },
+    {
+      "id": "verify_existing_note",
+      "initial": "saved",
+      "goal": {"exact_fixture_present": true, "pid_relation": "same"},
+      "order": ["with_predictor", "without_predictor"]
+    },
+    {
+      "id": "restart_empty_notes",
+      "initial": "empty",
+      "goal": {"exact_fixture_present": false, "pid_relation": "different"},
+      "order": ["without_predictor", "with_predictor"]
+    }
+  ]
+}

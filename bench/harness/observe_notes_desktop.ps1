@@ -1,8 +1,9 @@
 param(
     [Parameter(Mandatory = $true)][ValidatePattern('^[a-f0-9]{8}$')][string]$Tag,
-    [ValidateSet('capture', 'before_save', 'after_save', 'after_restart', 'begin', 'save', 'restart')]
+    [ValidateSet('capture', 'before_save', 'after_save', 'after_restart', 'begin', 'save', 'restart', 'observe', 'close')]
     [string]$Mode = 'capture',
-    [int]$NotesId
+    [int]$NotesId,
+    [switch]$KeepRestarted
 )
 
 $ErrorActionPreference = 'Stop'
@@ -142,6 +143,16 @@ try {
         $app = $ownedApp
     }
 
+    if ($Mode -eq 'observe') {
+        $state = Observe-Notes $app.Id (Read-Database)
+        $keepOpen = $true
+        exit $state
+    }
+    if ($Mode -eq 'close') {
+        if (!$app.CloseMainWindow() -or !$app.WaitForExit(4000)) { throw 'Notes did not close.' }
+        exit 0x4601
+    }
+
     if ($Mode -in 'capture', 'save') {
         $failure = 23
         $dbResult = Invoke-NotesSave
@@ -166,7 +177,10 @@ try {
         Wait-NotesWindow $app.Id
     }
     $restarted = Observe-Notes $app.Id (Read-Database)
-    if ($Mode -eq 'restart') { exit $restarted }
+    if ($Mode -eq 'restart') {
+        $keepOpen = $KeepRestarted.IsPresent
+        exit $restarted
+    }
     @{ before_save = $before; after_save = $after; after_restart = $restarted } |
         ConvertTo-Json -Compress | Set-Content -LiteralPath $replayPath -Encoding Ascii
     exit 0x4600

@@ -1,0 +1,1618 @@
+{
+  "status": "completed",
+  "protocol": "phase5-notes-action-selection-v1",
+  "policy": "shortest-admissible-plan-v1",
+  "plans": {
+    "inspect": [],
+    "save": [
+      "save"
+    ],
+    "restart": [
+      "restart"
+    ],
+    "save_then_restart": [
+      "save",
+      "restart"
+    ]
+  },
+  "cases": [
+    {
+      "id": "persist_new_note",
+      "initial": "empty",
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "any"
+      },
+      "order": [
+        "without_predictor",
+        "with_predictor"
+      ]
+    },
+    {
+      "id": "persist_before_restart",
+      "initial": "empty",
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "different"
+      },
+      "order": [
+        "with_predictor",
+        "without_predictor"
+      ]
+    },
+    {
+      "id": "restart_with_durable_note",
+      "initial": "saved",
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "different"
+      },
+      "order": [
+        "without_predictor",
+        "with_predictor"
+      ]
+    },
+    {
+      "id": "verify_existing_note",
+      "initial": "saved",
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "same"
+      },
+      "order": [
+        "with_predictor",
+        "without_predictor"
+      ]
+    },
+    {
+      "id": "restart_empty_notes",
+      "initial": "empty",
+      "goal": {
+        "exact_fixture_present": false,
+        "pid_relation": "different"
+      },
+      "order": [
+        "without_predictor",
+        "with_predictor"
+      ]
+    }
+  ],
+  "sha256": {
+    "cases_and_policy": "bfea7f732e344461363d5471056258af554ccc10da4e07cea89aa184bc53b2a7",
+    "runner": "8ebd181668c3d4cb77fa2ba091a5f1007f37a3306e0760682336ce2e6cad251c",
+    "predictor": "51807bbe275d673bc886a347851ebb576921f6066b18aa2854db544c58e8abf1",
+    "sandbox_profile": "3ce64b6a621173c9d1be53fb0f6a1d732634ba2648aebfdd7ca5da3d1494ee4a",
+    "notes_app.py": "d5b3e7e52210116da488e5d99f24d33b7acc2c263e7e0bfdd17293a8a4086e34",
+    "notes_store.py": "f9f41e1680d1f6d3c55b64cf9b873ab18dd386aca516e316c2472bab4af1e9dc",
+    "observe_notes_desktop.ps1": "1ae9b89affb72271a4ba1856cfa370aaed7b07a9bfe7a90a4c44b61a35a1d028",
+    "observe_notes_desktop.py": "12b8b76e875cf0b3bceaec4ddc43ce4040e228709a343b93cf5306dd975de08e",
+    "probe_notes_isolation.ps1": "43ca6674cf7af18fc8ed9d0d6b4f6796c500f155f26382459a92a26ecd85d8cd",
+    "probe_guest_channels.ps1": "0e3b749c11b3bce3ef7da7ec62d71ee2c2cbd51cb6e06c88c9e88c5ce0c63f14"
+  },
+  "pairs": {
+    "persist_new_note": {
+      "arms": {
+        "without_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:56:39.284107+00:00",
+              "finished_at": "2026-11-16T22:56:41.777652+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 7264,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 0,
+              "exact_fixture_present": false
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "save",
+              "restart",
+              "save_then_restart"
+            ],
+            "projections": {},
+            "chosen": "save",
+            "steps": [
+              "save"
+            ]
+          },
+          "decision_us": 16.9,
+          "setup_s": 13.04,
+          "actions": [
+            {
+              "action": "save",
+              "state": {
+                "type": "DesktopState",
+                "version": "1.0.0",
+                "observation_window": {
+                  "started_at": "2026-11-16T22:56:41.778652+00:00",
+                  "finished_at": "2026-11-16T22:56:44.239706+00:00",
+                  "clock": "host_utc"
+                },
+                "provenance": {
+                  "scope": "disposable_notes_in_windows_sandbox",
+                  "process": "Windows Get-Process",
+                  "window": "Windows UI Automation and Win32 GetForegroundWindow",
+                  "sqlite": "separate Python process, SQLite read-only"
+                },
+                "process": {
+                  "pid": 7264,
+                  "alive": true
+                },
+                "window": {
+                  "title": "Notes — banc Akasha",
+                  "visible": true,
+                  "foreground_owned_by_process": true,
+                  "uia_focus_owned_by_process": true
+                },
+                "sqlite": {
+                  "integrity_check": "ok",
+                  "row_count": 1,
+                  "exact_fixture_present": true
+                },
+                "unobserved": [
+                  "widget_values",
+                  "screenshot"
+                ]
+              },
+              "wall_s": 2.461
+            }
+          ],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:56:44.239706+00:00",
+              "finished_at": "2026-11-16T22:56:46.644172+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 7264,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": true,
+            "exact_fixture": true
+          },
+          "success": true,
+          "execution_s": 2.461,
+          "verify_s": 2.404,
+          "decision_to_verdict_s": 4.867,
+          "closed": true
+        },
+        "with_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:56:54.922578+00:00",
+              "finished_at": "2026-11-16T22:56:57.252159+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 7284,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 0,
+              "exact_fixture_present": false
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "save",
+              "restart",
+              "save_then_restart"
+            ],
+            "projections": {
+              "save": {
+                "final": {
+                  "process.alive": true,
+                  "window.title": "Notes — banc Akasha",
+                  "window.visible": true,
+                  "window.foreground_owned_by_process": true,
+                  "window.uia_focus_owned_by_process": true,
+                  "sqlite.integrity_check": "ok",
+                  "sqlite.row_count": 1,
+                  "sqlite.exact_fixture_present": true,
+                  "process.pid_relation": "same"
+                },
+                "matches_goal": true
+              },
+              "restart": {
+                "final": {
+                  "process.alive": true,
+                  "window.title": "Notes — banc Akasha",
+                  "window.visible": true,
+                  "window.foreground_owned_by_process": true,
+                  "window.uia_focus_owned_by_process": true,
+                  "sqlite.integrity_check": "ok",
+                  "sqlite.row_count": 0,
+                  "sqlite.exact_fixture_present": false,
+                  "process.pid_relation": "different"
+                },
+                "matches_goal": false
+              },
+              "save_then_restart": {
+                "final": {
+                  "process.alive": true,
+                  "window.title": "Notes — banc Akasha",
+                  "window.visible": true,
+                  "window.foreground_owned_by_process": true,
+                  "window.uia_focus_owned_by_process": true,
+                  "sqlite.integrity_check": "ok",
+                  "sqlite.row_count": 1,
+                  "sqlite.exact_fixture_present": true,
+                  "process.pid_relation": "different"
+                },
+                "matches_goal": true
+              }
+            },
+            "chosen": "save",
+            "steps": [
+              "save"
+            ]
+          },
+          "decision_us": 55.9,
+          "setup_s": 8.457,
+          "actions": [
+            {
+              "action": "save",
+              "state": {
+                "type": "DesktopState",
+                "version": "1.0.0",
+                "observation_window": {
+                  "started_at": "2026-11-16T22:56:57.253159+00:00",
+                  "finished_at": "2026-11-16T22:56:59.721462+00:00",
+                  "clock": "host_utc"
+                },
+                "provenance": {
+                  "scope": "disposable_notes_in_windows_sandbox",
+                  "process": "Windows Get-Process",
+                  "window": "Windows UI Automation and Win32 GetForegroundWindow",
+                  "sqlite": "separate Python process, SQLite read-only"
+                },
+                "process": {
+                  "pid": 7284,
+                  "alive": true
+                },
+                "window": {
+                  "title": "Notes — banc Akasha",
+                  "visible": true,
+                  "foreground_owned_by_process": true,
+                  "uia_focus_owned_by_process": true
+                },
+                "sqlite": {
+                  "integrity_check": "ok",
+                  "row_count": 1,
+                  "exact_fixture_present": true
+                },
+                "unobserved": [
+                  "widget_values",
+                  "screenshot"
+                ]
+              },
+              "wall_s": 2.468
+            }
+          ],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:56:59.721462+00:00",
+              "finished_at": "2026-11-16T22:57:01.957008+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 7284,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": true,
+            "exact_fixture": true
+          },
+          "success": true,
+          "execution_s": 2.468,
+          "verify_s": 2.236,
+          "decision_to_verdict_s": 4.705,
+          "closed": true
+        }
+      },
+      "sandbox_id": "371731a2-5b7f-4e48-bf48-c85c97c3d962",
+      "isolation": {
+        "mount_and_scratch_exit": 17679,
+        "channels_exit": 16655
+      },
+      "matched_initial_state_and_admissibility": true,
+      "sandbox_stopped": true,
+      "wall_s": 52.305
+    },
+    "persist_before_restart": {
+      "arms": {
+        "with_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:57:29.395731+00:00",
+              "finished_at": "2026-11-16T22:57:32.160509+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 8568,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 0,
+              "exact_fixture_present": false
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "restart",
+              "save_then_restart"
+            ],
+            "projections": {
+              "restart": {
+                "final": {
+                  "process.alive": true,
+                  "window.title": "Notes — banc Akasha",
+                  "window.visible": true,
+                  "window.foreground_owned_by_process": true,
+                  "window.uia_focus_owned_by_process": true,
+                  "sqlite.integrity_check": "ok",
+                  "sqlite.row_count": 0,
+                  "sqlite.exact_fixture_present": false,
+                  "process.pid_relation": "different"
+                },
+                "matches_goal": false
+              },
+              "save_then_restart": {
+                "final": {
+                  "process.alive": true,
+                  "window.title": "Notes — banc Akasha",
+                  "window.visible": true,
+                  "window.foreground_owned_by_process": true,
+                  "window.uia_focus_owned_by_process": true,
+                  "sqlite.integrity_check": "ok",
+                  "sqlite.row_count": 1,
+                  "sqlite.exact_fixture_present": true,
+                  "process.pid_relation": "different"
+                },
+                "matches_goal": true
+              }
+            },
+            "chosen": "save_then_restart",
+            "steps": [
+              "save",
+              "restart"
+            ]
+          },
+          "decision_us": 43.5,
+          "setup_s": 9.072,
+          "actions": [
+            {
+              "action": "save",
+              "state": {
+                "type": "DesktopState",
+                "version": "1.0.0",
+                "observation_window": {
+                  "started_at": "2026-11-16T22:57:32.162511+00:00",
+                  "finished_at": "2026-11-16T22:57:34.900421+00:00",
+                  "clock": "host_utc"
+                },
+                "provenance": {
+                  "scope": "disposable_notes_in_windows_sandbox",
+                  "process": "Windows Get-Process",
+                  "window": "Windows UI Automation and Win32 GetForegroundWindow",
+                  "sqlite": "separate Python process, SQLite read-only"
+                },
+                "process": {
+                  "pid": 8568,
+                  "alive": true
+                },
+                "window": {
+                  "title": "Notes — banc Akasha",
+                  "visible": true,
+                  "foreground_owned_by_process": true,
+                  "uia_focus_owned_by_process": true
+                },
+                "sqlite": {
+                  "integrity_check": "ok",
+                  "row_count": 1,
+                  "exact_fixture_present": true
+                },
+                "unobserved": [
+                  "widget_values",
+                  "screenshot"
+                ]
+              },
+              "wall_s": 2.739
+            },
+            {
+              "action": "restart",
+              "state": {
+                "type": "DesktopState",
+                "version": "1.0.0",
+                "observation_window": {
+                  "started_at": "2026-11-16T22:57:34.900421+00:00",
+                  "finished_at": "2026-11-16T22:57:37.713306+00:00",
+                  "clock": "host_utc"
+                },
+                "provenance": {
+                  "scope": "disposable_notes_in_windows_sandbox",
+                  "process": "Windows Get-Process",
+                  "window": "Windows UI Automation and Win32 GetForegroundWindow",
+                  "sqlite": "separate Python process, SQLite read-only"
+                },
+                "process": {
+                  "pid": 9204,
+                  "alive": true
+                },
+                "window": {
+                  "title": "Notes — banc Akasha",
+                  "visible": true,
+                  "foreground_owned_by_process": true,
+                  "uia_focus_owned_by_process": true
+                },
+                "sqlite": {
+                  "integrity_check": "ok",
+                  "row_count": 1,
+                  "exact_fixture_present": true
+                },
+                "unobserved": [
+                  "widget_values",
+                  "screenshot"
+                ]
+              },
+              "wall_s": 2.813
+            }
+          ],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:57:37.713306+00:00",
+              "finished_at": "2026-11-16T22:57:40.058456+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 9204,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": true,
+            "exact_fixture": true
+          },
+          "success": true,
+          "execution_s": 5.552,
+          "verify_s": 2.345,
+          "decision_to_verdict_s": 7.899,
+          "closed": true
+        },
+        "without_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:57:48.213201+00:00",
+              "finished_at": "2026-11-16T22:57:50.521912+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 4852,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 0,
+              "exact_fixture_present": false
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "restart",
+              "save_then_restart"
+            ],
+            "projections": {},
+            "chosen": "restart",
+            "steps": [
+              "restart"
+            ]
+          },
+          "decision_us": 17.3,
+          "setup_s": 8.205,
+          "actions": [
+            {
+              "action": "restart",
+              "state": {
+                "type": "DesktopState",
+                "version": "1.0.0",
+                "observation_window": {
+                  "started_at": "2026-11-16T22:57:50.525078+00:00",
+                  "finished_at": "2026-11-16T22:57:53.125954+00:00",
+                  "clock": "host_utc"
+                },
+                "provenance": {
+                  "scope": "disposable_notes_in_windows_sandbox",
+                  "process": "Windows Get-Process",
+                  "window": "Windows UI Automation and Win32 GetForegroundWindow",
+                  "sqlite": "separate Python process, SQLite read-only"
+                },
+                "process": {
+                  "pid": 3228,
+                  "alive": true
+                },
+                "window": {
+                  "title": "Notes — banc Akasha",
+                  "visible": true,
+                  "foreground_owned_by_process": true,
+                  "uia_focus_owned_by_process": true
+                },
+                "sqlite": {
+                  "integrity_check": "ok",
+                  "row_count": 0,
+                  "exact_fixture_present": false
+                },
+                "unobserved": [
+                  "widget_values",
+                  "screenshot"
+                ]
+              },
+              "wall_s": 2.601
+            }
+          ],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:57:53.125954+00:00",
+              "finished_at": "2026-11-16T22:57:55.393117+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 3228,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 0,
+              "exact_fixture_present": false
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": false,
+            "exact_fixture": false
+          },
+          "success": false,
+          "execution_s": 2.601,
+          "verify_s": 2.268,
+          "decision_to_verdict_s": 4.871,
+          "closed": true
+        }
+      },
+      "sandbox_id": "7de7f6dd-9712-4af9-bd30-fc541939c24d",
+      "isolation": {
+        "mount_and_scratch_exit": 17679,
+        "channels_exit": 16655
+      },
+      "matched_initial_state_and_admissibility": true,
+      "sandbox_stopped": true,
+      "wall_s": 53.388
+    },
+    "restart_with_durable_note": {
+      "arms": {
+        "without_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:58:25.575781+00:00",
+              "finished_at": "2026-11-16T22:58:27.847924+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 9188,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "restart"
+            ],
+            "projections": {},
+            "chosen": "restart",
+            "steps": [
+              "restart"
+            ]
+          },
+          "decision_us": 14.2,
+          "setup_s": 11.523,
+          "actions": [
+            {
+              "action": "restart",
+              "state": {
+                "type": "DesktopState",
+                "version": "1.0.0",
+                "observation_window": {
+                  "started_at": "2026-11-16T22:58:27.850978+00:00",
+                  "finished_at": "2026-11-16T22:58:30.581011+00:00",
+                  "clock": "host_utc"
+                },
+                "provenance": {
+                  "scope": "disposable_notes_in_windows_sandbox",
+                  "process": "Windows Get-Process",
+                  "window": "Windows UI Automation and Win32 GetForegroundWindow",
+                  "sqlite": "separate Python process, SQLite read-only"
+                },
+                "process": {
+                  "pid": 8896,
+                  "alive": true
+                },
+                "window": {
+                  "title": "Notes — banc Akasha",
+                  "visible": true,
+                  "foreground_owned_by_process": true,
+                  "uia_focus_owned_by_process": true
+                },
+                "sqlite": {
+                  "integrity_check": "ok",
+                  "row_count": 1,
+                  "exact_fixture_present": true
+                },
+                "unobserved": [
+                  "widget_values",
+                  "screenshot"
+                ]
+              },
+              "wall_s": 2.73
+            }
+          ],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:58:30.581011+00:00",
+              "finished_at": "2026-11-16T22:58:33.018212+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 8896,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": true,
+            "exact_fixture": true
+          },
+          "success": true,
+          "execution_s": 2.73,
+          "verify_s": 2.437,
+          "decision_to_verdict_s": 5.169,
+          "closed": true
+        },
+        "with_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:58:43.817958+00:00",
+              "finished_at": "2026-11-16T22:58:46.587750+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 4264,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "restart"
+            ],
+            "projections": {
+              "restart": {
+                "final": {
+                  "process.alive": true,
+                  "window.title": "Notes — banc Akasha",
+                  "window.visible": true,
+                  "window.foreground_owned_by_process": true,
+                  "window.uia_focus_owned_by_process": true,
+                  "sqlite.integrity_check": "ok",
+                  "sqlite.row_count": 1,
+                  "sqlite.exact_fixture_present": true,
+                  "process.pid_relation": "different"
+                },
+                "matches_goal": true
+              }
+            },
+            "chosen": "restart",
+            "steps": [
+              "restart"
+            ]
+          },
+          "decision_us": 41.3,
+          "setup_s": 11.472,
+          "actions": [
+            {
+              "action": "restart",
+              "state": {
+                "type": "DesktopState",
+                "version": "1.0.0",
+                "observation_window": {
+                  "started_at": "2026-11-16T22:58:46.590754+00:00",
+                  "finished_at": "2026-11-16T22:58:49.530601+00:00",
+                  "clock": "host_utc"
+                },
+                "provenance": {
+                  "scope": "disposable_notes_in_windows_sandbox",
+                  "process": "Windows Get-Process",
+                  "window": "Windows UI Automation and Win32 GetForegroundWindow",
+                  "sqlite": "separate Python process, SQLite read-only"
+                },
+                "process": {
+                  "pid": 2656,
+                  "alive": true
+                },
+                "window": {
+                  "title": "Notes — banc Akasha",
+                  "visible": true,
+                  "foreground_owned_by_process": true,
+                  "uia_focus_owned_by_process": true
+                },
+                "sqlite": {
+                  "integrity_check": "ok",
+                  "row_count": 1,
+                  "exact_fixture_present": true
+                },
+                "unobserved": [
+                  "widget_values",
+                  "screenshot"
+                ]
+              },
+              "wall_s": 2.939
+            }
+          ],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:58:49.530601+00:00",
+              "finished_at": "2026-11-16T22:58:51.884729+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 2656,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": true,
+            "exact_fixture": true
+          },
+          "success": true,
+          "execution_s": 2.939,
+          "verify_s": 2.354,
+          "decision_to_verdict_s": 5.297,
+          "closed": true
+        }
+      },
+      "sandbox_id": "f5112726-63ee-4ebb-adb3-095a14e9821d",
+      "isolation": {
+        "mount_and_scratch_exit": 17679,
+        "channels_exit": 16655
+      },
+      "matched_initial_state_and_admissibility": true,
+      "sandbox_stopped": true,
+      "wall_s": 56.638
+    },
+    "verify_existing_note": {
+      "arms": {
+        "with_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:59:20.746523+00:00",
+              "finished_at": "2026-11-16T22:59:23.122664+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 9188,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "inspect"
+            ],
+            "projections": {
+              "inspect": {
+                "final": {
+                  "process.alive": true,
+                  "window.title": "Notes — banc Akasha",
+                  "window.visible": true,
+                  "window.foreground_owned_by_process": true,
+                  "window.uia_focus_owned_by_process": true,
+                  "sqlite.integrity_check": "ok",
+                  "sqlite.row_count": 1,
+                  "sqlite.exact_fixture_present": true
+                },
+                "matches_goal": true
+              }
+            },
+            "chosen": "inspect",
+            "steps": []
+          },
+          "decision_us": 26.8,
+          "setup_s": 10.938,
+          "actions": [],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:59:23.125664+00:00",
+              "finished_at": "2026-11-16T22:59:25.350066+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 9188,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": true,
+            "exact_fixture": true
+          },
+          "success": true,
+          "execution_s": 0.0,
+          "verify_s": 2.225,
+          "decision_to_verdict_s": 2.227,
+          "closed": true
+        },
+        "without_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:59:36.351428+00:00",
+              "finished_at": "2026-11-16T22:59:38.840796+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 9088,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "inspect"
+            ],
+            "projections": {},
+            "chosen": "inspect",
+            "steps": []
+          },
+          "decision_us": 14.9,
+          "setup_s": 11.055,
+          "actions": [],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T22:59:38.842797+00:00",
+              "finished_at": "2026-11-16T22:59:41.108745+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 9088,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 1,
+              "exact_fixture_present": true
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": true,
+            "exact_fixture": true
+          },
+          "success": true,
+          "execution_s": 0.0,
+          "verify_s": 2.266,
+          "decision_to_verdict_s": 2.268,
+          "closed": true
+        }
+      },
+      "sandbox_id": "84335fae-adb9-418a-84bd-df758e6f83b8",
+      "isolation": {
+        "mount_and_scratch_exit": 17679,
+        "channels_exit": 16655
+      },
+      "matched_initial_state_and_admissibility": true,
+      "sandbox_stopped": true,
+      "wall_s": 48.996
+    },
+    "restart_empty_notes": {
+      "arms": {
+        "without_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T23:00:07.872125+00:00",
+              "finished_at": "2026-11-16T23:00:10.621946+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 8404,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 0,
+              "exact_fixture_present": false
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "restart"
+            ],
+            "projections": {},
+            "chosen": "restart",
+            "steps": [
+              "restart"
+            ]
+          },
+          "decision_us": 14.4,
+          "setup_s": 9.973,
+          "actions": [
+            {
+              "action": "restart",
+              "state": {
+                "type": "DesktopState",
+                "version": "1.0.0",
+                "observation_window": {
+                  "started_at": "2026-11-16T23:00:10.623462+00:00",
+                  "finished_at": "2026-11-16T23:00:13.264678+00:00",
+                  "clock": "host_utc"
+                },
+                "provenance": {
+                  "scope": "disposable_notes_in_windows_sandbox",
+                  "process": "Windows Get-Process",
+                  "window": "Windows UI Automation and Win32 GetForegroundWindow",
+                  "sqlite": "separate Python process, SQLite read-only"
+                },
+                "process": {
+                  "pid": 8916,
+                  "alive": true
+                },
+                "window": {
+                  "title": "Notes — banc Akasha",
+                  "visible": true,
+                  "foreground_owned_by_process": true,
+                  "uia_focus_owned_by_process": true
+                },
+                "sqlite": {
+                  "integrity_check": "ok",
+                  "row_count": 0,
+                  "exact_fixture_present": false
+                },
+                "unobserved": [
+                  "widget_values",
+                  "screenshot"
+                ]
+              },
+              "wall_s": 2.641
+            }
+          ],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T23:00:13.264678+00:00",
+              "finished_at": "2026-11-16T23:00:15.676115+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 8916,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 0,
+              "exact_fixture_present": false
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": true,
+            "exact_fixture": true
+          },
+          "success": true,
+          "execution_s": 2.641,
+          "verify_s": 2.411,
+          "decision_to_verdict_s": 5.055,
+          "closed": true
+        },
+        "with_predictor": {
+          "before": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T23:00:24.171865+00:00",
+              "finished_at": "2026-11-16T23:00:26.508397+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 9200,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 0,
+              "exact_fixture_present": false
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "decision": {
+            "admissible": [
+              "restart"
+            ],
+            "projections": {
+              "restart": {
+                "final": {
+                  "process.alive": true,
+                  "window.title": "Notes — banc Akasha",
+                  "window.visible": true,
+                  "window.foreground_owned_by_process": true,
+                  "window.uia_focus_owned_by_process": true,
+                  "sqlite.integrity_check": "ok",
+                  "sqlite.row_count": 0,
+                  "sqlite.exact_fixture_present": false,
+                  "process.pid_relation": "different"
+                },
+                "matches_goal": true
+              }
+            },
+            "chosen": "restart",
+            "steps": [
+              "restart"
+            ]
+          },
+          "decision_us": 63.4,
+          "setup_s": 8.684,
+          "actions": [
+            {
+              "action": "restart",
+              "state": {
+                "type": "DesktopState",
+                "version": "1.0.0",
+                "observation_window": {
+                  "started_at": "2026-11-16T23:00:26.512458+00:00",
+                  "finished_at": "2026-11-16T23:00:29.098535+00:00",
+                  "clock": "host_utc"
+                },
+                "provenance": {
+                  "scope": "disposable_notes_in_windows_sandbox",
+                  "process": "Windows Get-Process",
+                  "window": "Windows UI Automation and Win32 GetForegroundWindow",
+                  "sqlite": "separate Python process, SQLite read-only"
+                },
+                "process": {
+                  "pid": 9120,
+                  "alive": true
+                },
+                "window": {
+                  "title": "Notes — banc Akasha",
+                  "visible": true,
+                  "foreground_owned_by_process": true,
+                  "uia_focus_owned_by_process": true
+                },
+                "sqlite": {
+                  "integrity_check": "ok",
+                  "row_count": 0,
+                  "exact_fixture_present": false
+                },
+                "unobserved": [
+                  "widget_values",
+                  "screenshot"
+                ]
+              },
+              "wall_s": 2.586
+            }
+          ],
+          "after": {
+            "type": "DesktopState",
+            "version": "1.0.0",
+            "observation_window": {
+              "started_at": "2026-11-16T23:00:29.098535+00:00",
+              "finished_at": "2026-11-16T23:00:31.460792+00:00",
+              "clock": "host_utc"
+            },
+            "provenance": {
+              "scope": "disposable_notes_in_windows_sandbox",
+              "process": "Windows Get-Process",
+              "window": "Windows UI Automation and Win32 GetForegroundWindow",
+              "sqlite": "separate Python process, SQLite read-only"
+            },
+            "process": {
+              "pid": 9120,
+              "alive": true
+            },
+            "window": {
+              "title": "Notes — banc Akasha",
+              "visible": true,
+              "foreground_owned_by_process": true,
+              "uia_focus_owned_by_process": true
+            },
+            "sqlite": {
+              "integrity_check": "ok",
+              "row_count": 0,
+              "exact_fixture_present": false
+            },
+            "unobserved": [
+              "widget_values",
+              "screenshot"
+            ]
+          },
+          "verification": {
+            "live": true,
+            "window": true,
+            "foreground": true,
+            "uia_focus": true,
+            "pid_relation": true,
+            "integrity": true,
+            "rows": true,
+            "exact_fixture": true
+          },
+          "success": true,
+          "execution_s": 2.586,
+          "verify_s": 2.362,
+          "decision_to_verdict_s": 4.952,
+          "closed": true
+        }
+      },
+      "sandbox_id": "34f4c449-9a87-4472-b786-cecfd818cb37",
+      "isolation": {
+        "mount_and_scratch_exit": 17679,
+        "channels_exit": 16655
+      },
+      "matched_initial_state_and_admissibility": true,
+      "sandbox_stopped": true,
+      "wall_s": 50.512
+    }
+  },
+  "summary": {
+    "without_predictor": {
+      "verified": 4,
+      "total": 5,
+      "median_decision_us": 14.9,
+      "sum_decision_to_verdict_s": 22.23
+    },
+    "with_predictor": {
+      "verified": 5,
+      "total": 5,
+      "median_decision_us": 43.5,
+      "sum_decision_to_verdict_s": 25.08
+    }
+  },
+  "wall_s": 262.818
+}
