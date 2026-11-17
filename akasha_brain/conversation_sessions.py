@@ -50,27 +50,32 @@ class ConversationSession:
 
 
 class SessionStore:
-    def __init__(self, path: Path, *, clock=utc_now):
+    def __init__(self, path: Path, *, clock=utc_now, initialize=True):
         nominal = path.parent.resolve() / path.name
         if nominal.resolve() != nominal:
             raise ValueError("Le fichier de sessions doit être local et sans lien.")
         self.path = nominal
         self.clock = clock
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with connect(self.path, create=True) as db:
-            db.execute("""CREATE TABLE IF NOT EXISTS conversation_sessions (
-                number INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL,
-                active_project TEXT, global_item TEXT
-            )""")
-            db.execute("""CREATE TABLE IF NOT EXISTS conversation_session_projects (
-                session_id TEXT NOT NULL REFERENCES conversation_sessions(id) ON DELETE CASCADE,
-                scope TEXT NOT NULL, path TEXT NOT NULL, PRIMARY KEY(session_id, scope)
-            )""")
-            db.execute("""CREATE TABLE IF NOT EXISTS conversation_session_facts (
-                session_id TEXT NOT NULL REFERENCES conversation_sessions(id) ON DELETE CASCADE,
-                scope TEXT NOT NULL, kind TEXT NOT NULL, value TEXT NOT NULL,
-                created_at TEXT NOT NULL, expires_at TEXT NOT NULL, PRIMARY KEY(session_id, scope, kind)
-            )""")
+        if initialize:
+            with connect(self.path, create=True) as db:
+                self.create_schema(db)
+
+    @staticmethod
+    def create_schema(db):
+        db.execute("""CREATE TABLE IF NOT EXISTS conversation_sessions (
+            number INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL,
+            active_project TEXT, global_item TEXT
+        )""")
+        db.execute("""CREATE TABLE IF NOT EXISTS conversation_session_projects (
+            session_id TEXT NOT NULL REFERENCES conversation_sessions(id) ON DELETE CASCADE,
+            scope TEXT NOT NULL, path TEXT NOT NULL, PRIMARY KEY(session_id, scope)
+        )""")
+        db.execute("""CREATE TABLE IF NOT EXISTS conversation_session_facts (
+            session_id TEXT NOT NULL REFERENCES conversation_sessions(id) ON DELETE CASCADE,
+            scope TEXT NOT NULL, kind TEXT NOT NULL, value TEXT NOT NULL,
+            created_at TEXT NOT NULL, expires_at TEXT NOT NULL, PRIMARY KEY(session_id, scope, kind)
+        )""")
 
     @staticmethod
     def key(session_id: SessionId) -> str:
@@ -98,7 +103,8 @@ class SessionStore:
         return tuple((SessionId(UUID(row["id"])), row["number"]) for row in rows)
 
     def startup(self) -> tuple[tuple[tuple[SessionId, int], ...], ConversationSession]:
-        with connect(self.path) as db:
+        with connect(self.path, create=True) as db:
+            self.create_schema(db)
             entries = self.entries(db)
             if not entries:
                 self.insert(db)

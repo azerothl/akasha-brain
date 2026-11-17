@@ -4,12 +4,21 @@
   "process_restart_verified": true,
   "structured_facts_restored": true,
   "synthetic_secret_absent": true,
+  "controlled_backup": {
+    "encrypted_items": 1,
+    "checked_before_and_after_restart": true,
+    "synthetic_item_restored_and_verified": true
+  },
   "timing": {
-    "baseline_ms": 9.242,
-    "threshold_ms": 18.484,
+    "baseline_ms": 14.301,
+    "threshold_ms": 28.602,
     "samples": 20,
     "remembered_facts": 2,
-    "median_ms": 17.22,
-    "passed": true
-  }
+    "profile": "Windows Tk avec le thème du bureau",
+    "median_ms": 19.738,
+    "passed": true,
+    "baseline_commit": "44fa9f4931196db753cc25e95ef640981c2fe531",
+    "alternating_pairs": true
+  },
+  "windows_tests_contracts_passed": 272
 }
