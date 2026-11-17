@@ -109,16 +109,24 @@ def save_task(folder: Path, record: dict) -> None:
 
 class NotesTasks:
     def __init__(self, directory: Path, runtime: Path | None, repair: RbitnetPaths | None, rapidocr: bool,
-                 *, evolution_db: Path | None = None, evolution_budget: EvolutionBudget = DEFAULT_EVOLUTION_BUDGET):
+                 *, evolution_db: Path | None = None, evolution_budget: EvolutionBudget = DEFAULT_EVOLUTION_BUDGET,
+                 integrated=None):
         self.directory = directory
         self.runtime = runtime
         self.repair = repair
         self.rapidocr = rapidocr
         self.evolution_db = evolution_db
+        self.integrated = integrated
         self.evolution_budget = evolution_budget
         self.catalog = load_catalog()
         self.goal = json.loads(GOAL.read_bytes())
-        if self.evolution_db is None:
+        if integrated is not None:
+            if evolution_db is not None or repair is None or repair.backend != "cpu":
+                raise ValueError("La session intégrée exige Rbitnet CPU et un seul registre d'évolution.")
+            self.plan = compile_goal(self.goal, self.catalog, rbitnet=True, rapidocr=True)
+            self.integrated_status = integrated.status()
+            integrated.recover()
+        elif self.evolution_db is None:
             self.plan = compile_goal(self.goal, self.catalog, rbitnet=repair is not None, rapidocr=rapidocr)
         else:
             if repair is None or rapidocr:
@@ -128,6 +136,8 @@ class NotesTasks:
         self.updates = SimpleQueue()
         self.scheduler = DesktopJobs()
         self.execution = None
+        if integrated is not None and runtime is not None:
+            self.schedule_integrated(runtime)
 
     @property
     def busy(self) -> bool:
@@ -142,7 +152,9 @@ class NotesTasks:
         if self.busy or self.runtime is None or not (self.runtime / "python.exe").is_file():
             raise RuntimeError("Le lanceur est occupé ou le dossier Python portable est incomplet.")
         run_id = str(uuid4())
-        if self.evolution_db is None:
+        if self.integrated is not None:
+            goal = self.goal
+        elif self.evolution_db is None:
             goal = {**self.goal, "goal_id": run_id}
         else:
             self.read_evolution()
@@ -181,8 +193,12 @@ class NotesTasks:
         def progress(report):
             self.updates.put((folder, {**record, **report}))
 
+        receipt = None
         try:
-            if self.evolution_db is None:
+            if self.integrated is not None:
+                report, receipt = self.integrated.run_task(goal, self.catalog, runtime, folder / "result", self.repair,
+                                                           self.evolution_budget, progress=progress)
+            elif self.evolution_db is None:
                 report = run_notes(goal, self.catalog, runtime, folder / "result", self.repair,
                                    rapidocr=self.rapidocr, progress=progress)
             else:
@@ -194,7 +210,24 @@ class NotesTasks:
             report = {"status": "failed", "error": {"message": str(error)}}
         final = {**record, **report}
         try:
-            save_task(folder, {key: final[key] for key in ("created_at", "graph", "status", "trace", "error") if key in final})
+            save_task(folder, {key: final[key] for key in ("created_at", "graph", "status", "trace", "error", "phase6_execution")
+                               if key in final})
         except OSError:
             pass  # Le rapport du lanceur reste disponible.
         self.updates.put((folder, final))
+        if self.integrated is not None:
+            self.integrated.enqueue(folder.name, final["status"], receipt)
+            self.schedule_integrated(runtime)
+
+    def schedule_integrated(self, runtime: Path) -> None:
+        self.integrated_status = self.integrated.status()
+        if self.integrated_status["paused"]:
+            return
+        for task in self.integrated.pending():
+            self.scheduler.submit(lambda task=task: self.maintain_integrated(task, runtime), background=True)
+
+    def maintain_integrated(self, task: str, runtime: Path):
+        try:
+            return self.integrated.maintain(task, runtime, self.directory, self.evolution_budget)
+        finally:
+            self.integrated_status = self.integrated.status()

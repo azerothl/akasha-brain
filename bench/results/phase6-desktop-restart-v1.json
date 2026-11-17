@@ -1,0 +1,462 @@
+{
+  "protocol": "phase6-desktop-restart-v1",
+  "status": "passed",
+  "checks": {
+    "task_triggered_while_paused": true,
+    "first_task_used_qualified_skill": true,
+    "pending_job_resumed_on_desktop_start": true,
+    "parent_selected_by_next_task": true,
+    "no_candidate_trial_after_downgrade": true,
+    "independent_working_sandboxes": true,
+    "normal_desktop_results_verified": true,
+    "reopened_phase_3_with_no_pending_tasks": true,
+    "operator_rollback_stayed_active_after_restart": true,
+    "sources_unchanged": true
+  },
+  "sources_sha256": {
+    "akasha_brain/desktop.py": "3ecf49ed8c45f3d50fd861506bb41221ea7499b5387fc7133a332b3b773dff47",
+    "akasha_brain/desktop_tasks.py": "c8aabdd3866daa07f5a84b98c72f7a73a36f0b88fcdc3f86896497e001f4a733",
+    "akasha_brain/phase6_runtime.py": "cde33b6cabd6a25c127476b063d61c41c505ed901d575d8e93714b59c9f5b459",
+    "akasha_brain/phase6_skill.py": "9b41f435f7aaa48dda412d9f50b49c8a8acb8f80d67037f55e3ff4e7ec4df3b4",
+    "akasha_brain/integrated_evolution.py": "4978ee522df5407f54aa543d2b53364646f3c9872021e3ae425c3b7edd403fda",
+    "bench/run_phase6_desktop.py": "24e4ad414000c4a22aaab06b0ae03d0fa6f3f7d9d298c9fdeb899a6a0fd069b3"
+  },
+  "archives_sha256": {
+    "route": "da3d6febe8f06c2713816417abf8019fc856a89ffef9b88a92a6d1e71db69a40",
+    "skill": "3fabd479438967e7ce36a51c572520a19c39714eb2ce7daec4c18c0ee4e64175",
+    "memory": "514a183d21da062e39c8be1b5606dfb8496cbcd3def7bf14b3f825048ec538a1"
+  },
+  "launch": {
+    "task": "03665403-54fc-46c2-93b4-1d6d24fb6327",
+    "before": {
+      "autonomy_phase": 6,
+      "effective": {
+        "route": "with_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "signed_active": {
+        "route": "with_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "rollback_proofs": {},
+      "jobs": {},
+      "paused": true
+    },
+    "after": {
+      "autonomy_phase": 6,
+      "effective": {
+        "route": "with_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "signed_active": {
+        "route": "with_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "rollback_proofs": {},
+      "jobs": {
+        "waiting": 1
+      },
+      "paused": true
+    },
+    "execution": {
+      "skill": "qualified_reuse",
+      "memory": "contextual"
+    },
+    "job": {
+      "state": "waiting",
+      "detail": null
+    },
+    "task_status": "passed",
+    "sandbox": "80004550-23e3-4110-8fc3-98342a20358e",
+    "sandbox_stopped": true,
+    "tests_passed": 4,
+    "desktop": {
+      "ocr_save_button_used": true,
+      "app_restarted": true,
+      "ocr_note_selected_after_restart": true,
+      "ocr_content_visible": true,
+      "sqlite_exact_row": true
+    },
+    "checked_diff_in_history": true,
+    "banner": "Autonomie 6 · Suivi en pause"
+  },
+  "resume": {
+    "task": "ab564db5-5650-4f9a-9560-b1ceeff9f586",
+    "before": {
+      "autonomy_phase": 3,
+      "effective": {
+        "route": "without_predictor",
+        "skill": "generation",
+        "memory": "contextual"
+      },
+      "signed_active": {
+        "route": "without_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "rollback_proofs": {
+        "route": "8b6d9c44a70d34491b3ebdfb2eef8408d8921fc3815c0d00e19bb0551868e861"
+      },
+      "jobs": {
+        "finished": 1
+      },
+      "paused": false
+    },
+    "after": {
+      "autonomy_phase": 3,
+      "effective": {
+        "route": "without_predictor",
+        "skill": "generation",
+        "memory": "contextual"
+      },
+      "signed_active": {
+        "route": "without_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "rollback_proofs": {
+        "route": "8b6d9c44a70d34491b3ebdfb2eef8408d8921fc3815c0d00e19bb0551868e861"
+      },
+      "jobs": {
+        "finished": 2
+      },
+      "paused": false
+    },
+    "execution": {
+      "skill": "generation",
+      "memory": "contextual"
+    },
+    "job": {
+      "state": "finished",
+      "detail": {
+        "skill": {
+          "local": {
+            "active": "qualified_reuse",
+            "alerts": [],
+            "attribution": {
+              "same_input": true,
+              "verified_gain": 0,
+              "wall_delta_ms": 185,
+              "decision_us": 123735
+            }
+          },
+          "autonomy_phase": 3,
+          "effective": {
+            "route": "without_predictor",
+            "skill": "generation",
+            "memory": "contextual"
+          },
+          "signed_active": {
+            "route": "without_predictor",
+            "skill": "qualified_reuse",
+            "memory": "contextual"
+          },
+          "rollback_proofs": {
+            "route": "8b6d9c44a70d34491b3ebdfb2eef8408d8921fc3815c0d00e19bb0551868e861"
+          }
+        },
+        "effective": {
+          "autonomy_phase": 3,
+          "effective": {
+            "route": "without_predictor",
+            "skill": "generation",
+            "memory": "contextual"
+          },
+          "signed_active": {
+            "route": "without_predictor",
+            "skill": "qualified_reuse",
+            "memory": "contextual"
+          },
+          "rollback_proofs": {
+            "route": "8b6d9c44a70d34491b3ebdfb2eef8408d8921fc3815c0d00e19bb0551868e861"
+          }
+        }
+      }
+    },
+    "task_status": "passed",
+    "sandbox": "7ba39e46-230c-4d83-a4cb-75c900227da7",
+    "sandbox_stopped": true,
+    "tests_passed": 4,
+    "desktop": {
+      "ocr_save_button_used": true,
+      "app_restarted": true,
+      "ocr_note_selected_after_restart": true,
+      "ocr_content_visible": true,
+      "sqlite_exact_row": true
+    },
+    "checked_diff_in_history": true,
+    "banner": "Autonomie 3 · 0 suivi(s) en attente"
+  },
+  "operator": {
+    "before": {
+      "autonomy_phase": 6,
+      "effective": {
+        "route": "with_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "signed_active": {
+        "route": "with_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "rollback_proofs": {},
+      "jobs": {},
+      "paused": false
+    },
+    "after": {
+      "autonomy_phase": 3,
+      "effective": {
+        "route": "without_predictor",
+        "skill": "generation",
+        "memory": "contextual"
+      },
+      "signed_active": {
+        "route": "with_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "rollback_proofs": {
+        "operator": "f355fc76cbf5a3def7277085077dfc68d4144d9cf958832b27767e0583b7a525"
+      },
+      "jobs": {},
+      "paused": false
+    },
+    "banner": "Autonomie 3 · 0 suivi(s) en attente"
+  },
+  "operator_reopened": {
+    "status": {
+      "autonomy_phase": 3,
+      "effective": {
+        "route": "without_predictor",
+        "skill": "generation",
+        "memory": "contextual"
+      },
+      "signed_active": {
+        "route": "with_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "rollback_proofs": {
+        "operator": "f355fc76cbf5a3def7277085077dfc68d4144d9cf958832b27767e0583b7a525"
+      },
+      "jobs": {},
+      "paused": false
+    }
+  },
+  "resumed_initial_job": {
+    "state": "finished",
+    "detail": {
+      "skill": {
+        "local": {
+          "active": "qualified_reuse",
+          "alerts": [],
+          "attribution": {
+            "same_input": true,
+            "verified_gain": 0,
+            "wall_delta_ms": -44001,
+            "decision_us": 94300
+          }
+        },
+        "autonomy_phase": 6,
+        "effective": {
+          "route": "with_predictor",
+          "skill": "qualified_reuse",
+          "memory": "contextual"
+        },
+        "signed_active": {
+          "route": "with_predictor",
+          "skill": "qualified_reuse",
+          "memory": "contextual"
+        },
+        "rollback_proofs": {}
+      },
+      "route": {
+        "selected": "with_predictor",
+        "mismatches": [
+          "sqlite.row_count",
+          "sqlite.exact_fixture_present"
+        ],
+        "observation": {
+          "local": {
+            "active": "without_predictor",
+            "alerts": [
+              "verification"
+            ],
+            "attribution": {
+              "same_input": true,
+              "verified_gain": 0,
+              "wall_delta_ms": 2278,
+              "decision_us": 63
+            },
+            "decision": {
+              "document": {
+                "version": 1,
+                "family": "route",
+                "action": "rollback",
+                "cycle": "f177b3b7-495d-45b1-ae4d-c3f85ea586af",
+                "policy_sha256": "ccb5ad715e49cc694b4fece3203b337c13ba86af5f068b4ddc8f5984ea894664",
+                "from": "with_predictor",
+                "to": "without_predictor",
+                "previous_decision_sha256": "62df894463d5c588951654b99c96746c865cf129620a850690e95d3c06ad4bc6",
+                "stages": [
+                  {
+                    "stage": "replay",
+                    "sha256": "3beb33e176a8255d1a979aae181abf07a784f868f384a2c57889b60de553affe"
+                  },
+                  {
+                    "stage": "shadow",
+                    "sha256": "7952c2a494feb5812fa7cd2e4a026ca5035b742174df16a91f4827c5fcea004d"
+                  },
+                  {
+                    "stage": "limited",
+                    "sha256": "b9deebd2c6d2dbdcb41904e2c1fda778a8b159a904b633a8cc352726e3991e20"
+                  }
+                ],
+                "trigger_sha256": "757c5066219b6c7b0ed063d733a62ce843618e8b610e0b0199ef5357932c56ec"
+              },
+              "signature": "-----BEGIN SSH SIGNATURE-----\r\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAg7GT2pANa8EqP7eqFP1r+o27iUn\r\neLK9IDM36eCZGf8YwAAAAdYWthc2hhLm5vdGVzLWxpbmsuZGVjaXNpb24udjEAAAAAAAAA\r\nBnNoYTUxMgAAAFMAAAALc3NoLWVkMjU1MTkAAABA1GVUAdygU9ttjGqsd/mtF7H0GdeXhu\r\nRTe8FGB7AKMumVBe0KP8sDFfrEcBtZqpcUhGRP8/hgiSVN+pfUgelLCw==\r\n-----END SSH SIGNATURE-----\r\n"
+            }
+          },
+          "autonomy_phase": 3,
+          "effective": {
+            "route": "without_predictor",
+            "skill": "generation",
+            "memory": "contextual"
+          },
+          "signed_active": {
+            "route": "without_predictor",
+            "skill": "qualified_reuse",
+            "memory": "contextual"
+          },
+          "rollback_proofs": {
+            "route": "8b6d9c44a70d34491b3ebdfb2eef8408d8921fc3815c0d00e19bb0551868e861"
+          }
+        }
+      },
+      "effective": {
+        "autonomy_phase": 3,
+        "effective": {
+          "route": "without_predictor",
+          "skill": "generation",
+          "memory": "contextual"
+        },
+        "signed_active": {
+          "route": "without_predictor",
+          "skill": "qualified_reuse",
+          "memory": "contextual"
+        },
+        "rollback_proofs": {
+          "route": "8b6d9c44a70d34491b3ebdfb2eef8408d8921fc3815c0d00e19bb0551868e861"
+        }
+      }
+    }
+  },
+  "wall_s": 242.36,
+  "reopened": {
+    "status": {
+      "autonomy_phase": 3,
+      "effective": {
+        "route": "without_predictor",
+        "skill": "generation",
+        "memory": "contextual"
+      },
+      "signed_active": {
+        "route": "without_predictor",
+        "skill": "qualified_reuse",
+        "memory": "contextual"
+      },
+      "rollback_proofs": {
+        "route": "8b6d9c44a70d34491b3ebdfb2eef8408d8921fc3815c0d00e19bb0551868e861"
+      },
+      "jobs": {
+        "finished": 2
+      },
+      "paused": false
+    }
+  },
+  "decision_public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOxk9qQDWvBKj+3qhT9a/qNu4lJ3iyvSAzN+ngmRn/GM",
+  "operator_decision": {
+    "document": {
+      "action": "operator_rollback",
+      "from": {
+        "memory": "contextual",
+        "route": "with_predictor",
+        "skill": "qualified_reuse"
+      },
+      "identity": "9b661e1f0da215ad8c36e78ad7e9ea8cde4381893dcb7d5fde5a99a5394bc167",
+      "to": {
+        "memory": "contextual",
+        "route": "without_predictor",
+        "skill": "generation"
+      },
+      "version": 1
+    },
+    "signature": "-----BEGIN SSH SIGNATURE-----\r\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAg7GT2pANa8EqP7eqFP1r+o27iUn\r\neLK9IDM36eCZGf8YwAAAAdYWthc2hhLm5vdGVzLWxpbmsuZGVjaXNpb24udjEAAAAAAAAA\r\nBnNoYTUxMgAAAFMAAAALc3NoLWVkMjU1MTkAAABAw4dYGE9ieUY1JszbvSt+6nOpftRadL\r\nCYZikVNuyU6Bvp+IFkCZ0cM2q0PGX8DboE1DJ5NHsYxGMPkFSfSJaxCw==\r\n-----END SSH SIGNATURE-----\r\n"
+  },
+  "native_runs": {
+    "launch": {
+      "sandbox_id": "80004550-23e3-4110-8fc3-98342a20358e",
+      "sandbox_stopped": true,
+      "wall_s": 71.937,
+      "isolation": {
+        "declared_disabled_channels": [
+          "Networking",
+          "ClipboardRedirection",
+          "AudioInput",
+          "VideoInput",
+          "PrinterRedirection",
+          "VGpu"
+        ],
+        "guest_read_input": true,
+        "guest_write_to_input_denied": true,
+        "guest_create_in_input_denied": true,
+        "guest_scratch_write": true,
+        "guest_no_default_route": true,
+        "guest_no_camera": true,
+        "guest_no_audio_capture": true,
+        "guest_no_redirected_printer": true,
+        "host_sources_unchanged": true,
+        "host_staging_unchanged": true
+      }
+    },
+    "resume": {
+      "sandbox_id": "7ba39e46-230c-4d83-a4cb-75c900227da7",
+      "sandbox_stopped": true,
+      "wall_s": 116.979,
+      "isolation": {
+        "declared_disabled_channels": [
+          "Networking",
+          "ClipboardRedirection",
+          "AudioInput",
+          "VideoInput",
+          "PrinterRedirection",
+          "VGpu"
+        ],
+        "guest_read_input": true,
+        "guest_write_to_input_denied": true,
+        "guest_create_in_input_denied": true,
+        "guest_scratch_write": true,
+        "guest_no_default_route": true,
+        "guest_no_camera": true,
+        "guest_no_audio_capture": true,
+        "guest_no_redirected_printer": true,
+        "host_sources_unchanged": true,
+        "host_staging_unchanged": true
+      }
+    },
+    "route_supervision": {
+      "sandbox_id": "29e97a66-ab56-43de-a4b1-99e3915c15e9",
+      "isolation": {
+        "mount_and_scratch_exit": 17679,
+        "channels_exit": 16655
+      },
+      "sandbox_stopped": true,
+      "wall_s": 39.286
+    }
+  }
+}

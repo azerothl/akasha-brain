@@ -1,0 +1,914 @@
+{
+  "protocol": "phase6-skill-evolution-v1",
+  "status": "passed",
+  "policy": {
+    "family": "skill",
+    "parent": "generation",
+    "candidate": "qualified_reuse",
+    "freeze_sha256": "102e10cbc720da5f690e4d3be10293f8f8b10550d997826cb2ca10b7bbb38a0b",
+    "replay": [
+      "notes_desktop"
+    ],
+    "shadow": [
+      "notes_code"
+    ],
+    "limited": "notes_desktop",
+    "decision_limit_us": 2000000,
+    "min_wall_savings_ms": 5000
+  },
+  "sources_sha256": {
+    "run_phase6_skill_evolution.py": "7f64edb60eca663d11fdb38907f371b7060c4e290a1f7c52d88fc793be436a4e",
+    "goal_notes_regression.json": "a1104b32fe760db22789febc987a3b98b071a5fcc454398ebd9b2164f5844424",
+    "memory_workflows.py": "bfaa5e790f34c44e53877c7c7f5291f85cd9cc9fd3a50455fbe64414cb2055c4",
+    "notes_runtime.py": "76b1deb3436b71b2f641732fcadff75ee5d362cc97a45d3869c98e757b1ff151",
+    "bounded_evolution.py": "db98796013288621a0a3aeca65b46e964f8f637e6c20e81d4627fc79e6452b1d",
+    "authz.py": "160d0cf90c5358f912799bdd8245c2fda2a295b0d8f50aae0b9c4c1f3731f179"
+  },
+  "library": {
+    "capture": {
+      "captured": 6,
+      "excluded": 0,
+      "expired": 0
+    },
+    "notes_code": 2,
+    "notes_desktop": 3,
+    "proofs_sha256": {
+      "cycle/report.json": "189326c842df34b71e3a5b0a70f068018f313ac676512bb2656ab19e2318de08",
+      "rollback-proof/report.json": "fc03b8a9564c204038f188ad97ef45f82654f69a4be13a9293b78a437083ceb1",
+      "cycle/evolution/replay/report.json": "c9a37dc3a708b1d848622a750d43461ee1d34d6722b62931373f451fa630f895",
+      "cycle/evolution/shadow/report.json": "d2389d2868c083dfe5a349430f27eed6fcc2721119968ebe225a434d291bf965",
+      "cycle/evolution/limited/report.json": "9a12a2ad4a222c1088ceef5406b00dc070e766bc0cfe912a1a02c9d0ca6b35c6"
+    }
+  },
+  "case_inputs_sha256": {
+    "notes_code": "25f621a3544a65278d4724414aaf383627fd83827e8262a3f77b9c57c013dc7c",
+    "notes_desktop": "e9adae61624ed9349f1b22706d1439a6c2f81cb5218aad3574e25984918ec9ed"
+  },
+  "budget": {
+    "max_sandboxes": 8,
+    "wall_s": 1200,
+    "cpu_threads": 8,
+    "model_ram_mib": 8192
+  },
+  "stages": {
+    "replay": {
+      "trials": {
+        "generation": {
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify_desktop",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": {
+              "ocr_save_button_used": true,
+              "app_restarted": true,
+              "ocr_note_selected_after_restart": true,
+              "ocr_content_visible": true,
+              "sqlite_exact_row": true
+            },
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          },
+          "wall_ms": 116802,
+          "decision_us": 24648,
+          "sandbox_id": "fac287e9-8c38-4f4e-be3d-583ce5c01771",
+          "error": null,
+          "before_effect": false
+        },
+        "qualified_reuse": {
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify_desktop",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": {
+              "ocr_save_button_used": true,
+              "app_restarted": true,
+              "ocr_note_selected_after_restart": true,
+              "ocr_content_visible": true,
+              "sqlite_exact_row": true
+            },
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          },
+          "wall_ms": 63571,
+          "decision_us": 3437,
+          "sandbox_id": "f269c37e-aa44-4dac-bad7-10d9a52aeb86",
+          "error": null,
+          "before_effect": false
+        }
+      },
+      "assessment": {
+        "receipts": [
+          {
+            "sandbox_id": "fac287e9-8c38-4f4e-be3d-583ce5c01771",
+            "case": "notes_desktop",
+            "version": "generation",
+            "input_sha256": "e9adae61624ed9349f1b22706d1439a6c2f81cb5218aad3574e25984918ec9ed",
+            "result_sha256": "ee073f0dcd67e0fcfd7e0e072ec6072988cec7f8ebe350094b0bfeeafa27fedc",
+            "safe": true,
+            "verified": true,
+            "decision_us": 24648,
+            "wall_ms": 116802,
+            "mismatches": []
+          },
+          {
+            "sandbox_id": "f269c37e-aa44-4dac-bad7-10d9a52aeb86",
+            "case": "notes_desktop",
+            "version": "qualified_reuse",
+            "input_sha256": "e9adae61624ed9349f1b22706d1439a6c2f81cb5218aad3574e25984918ec9ed",
+            "result_sha256": "ee073f0dcd67e0fcfd7e0e072ec6072988cec7f8ebe350094b0bfeeafa27fedc",
+            "safe": true,
+            "verified": true,
+            "decision_us": 3437,
+            "wall_ms": 63571,
+            "mismatches": []
+          }
+        ],
+        "qualified": true,
+        "cases": {
+          "notes_desktop": {
+            "candidate_verified": true,
+            "parent_verified": true,
+            "verified_gain": 0,
+            "wall_delta_ms": -53231,
+            "equivalent_and_faster": true
+          }
+        }
+      },
+      "active_after": "generation"
+    },
+    "shadow": {
+      "trials": {
+        "qualified_reuse": {
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": null,
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          },
+          "wall_ms": 39597,
+          "decision_us": 24866,
+          "sandbox_id": "e389d9b5-2e24-4711-9336-1bb51de4b1c2",
+          "error": null,
+          "before_effect": false
+        },
+        "generation": {
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": null,
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          },
+          "wall_ms": 88439,
+          "decision_us": 4488,
+          "sandbox_id": "0a483694-074c-44c6-a64c-336205255c22",
+          "error": null,
+          "before_effect": false
+        }
+      },
+      "assessment": {
+        "receipts": [
+          {
+            "sandbox_id": "e389d9b5-2e24-4711-9336-1bb51de4b1c2",
+            "case": "notes_code",
+            "version": "qualified_reuse",
+            "input_sha256": "25f621a3544a65278d4724414aaf383627fd83827e8262a3f77b9c57c013dc7c",
+            "result_sha256": "32ab6176e27bd92dbf31cea16b13e3d407d9b8adfefe245da38bec1e477d1fd7",
+            "safe": true,
+            "verified": true,
+            "decision_us": 24866,
+            "wall_ms": 39597,
+            "mismatches": []
+          },
+          {
+            "sandbox_id": "0a483694-074c-44c6-a64c-336205255c22",
+            "case": "notes_code",
+            "version": "generation",
+            "input_sha256": "25f621a3544a65278d4724414aaf383627fd83827e8262a3f77b9c57c013dc7c",
+            "result_sha256": "32ab6176e27bd92dbf31cea16b13e3d407d9b8adfefe245da38bec1e477d1fd7",
+            "safe": true,
+            "verified": true,
+            "decision_us": 4488,
+            "wall_ms": 88439,
+            "mismatches": []
+          }
+        ],
+        "qualified": true,
+        "cases": {
+          "notes_code": {
+            "candidate_verified": true,
+            "parent_verified": true,
+            "verified_gain": 0,
+            "wall_delta_ms": -48842,
+            "equivalent_and_faster": true
+          }
+        }
+      },
+      "active_after": "generation"
+    },
+    "limited": {
+      "trials": {
+        "qualified_reuse": {
+          "outcome": {
+            "status": "passed",
+            "steps": [
+              {
+                "id": "localize",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "generate_diff",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify",
+                "status": "passed",
+                "authorization": "allowed"
+              },
+              {
+                "id": "verify_desktop",
+                "status": "passed",
+                "authorization": "allowed"
+              }
+            ],
+            "diff_applied": true,
+            "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+            "git_apply_check": true,
+            "guest_sha256_verified": true,
+            "tests": [
+              {
+                "name": "test_saved_note_survives_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_two_notes_with_accents_multiline_survive_restart",
+                "status": "passed"
+              },
+              {
+                "name": "test_save_acknowledged_in_session",
+                "status": "passed"
+              },
+              {
+                "name": "test_select_redisplays_content",
+                "status": "passed"
+              }
+            ],
+            "sqlite": 0,
+            "desktop": {
+              "ocr_save_button_used": true,
+              "app_restarted": true,
+              "ocr_note_selected_after_restart": true,
+              "ocr_content_visible": true,
+              "sqlite_exact_row": true
+            },
+            "isolation": {
+              "declared_disabled_channels": [
+                "Networking",
+                "ClipboardRedirection",
+                "AudioInput",
+                "VideoInput",
+                "PrinterRedirection",
+                "VGpu"
+              ],
+              "guest_read_input": true,
+              "guest_write_to_input_denied": true,
+              "guest_create_in_input_denied": true,
+              "guest_scratch_write": true,
+              "guest_no_default_route": true,
+              "guest_no_camera": true,
+              "guest_no_audio_capture": true,
+              "guest_no_redirected_printer": true,
+              "host_sources_unchanged": true,
+              "host_staging_unchanged": true
+            },
+            "authorizations": {
+              "missing_confinement": "permission_denied",
+              "out_of_scope": "permission_denied"
+            },
+            "sandbox_stopped": true
+          },
+          "wall_ms": 70355,
+          "decision_us": 12674,
+          "sandbox_id": "b0d3bc95-f040-46fa-8a41-db3c503af03a",
+          "error": null,
+          "before_effect": false
+        }
+      },
+      "assessment": {
+        "receipts": [
+          {
+            "sandbox_id": "b0d3bc95-f040-46fa-8a41-db3c503af03a",
+            "case": "notes_desktop",
+            "version": "qualified_reuse",
+            "input_sha256": "e9adae61624ed9349f1b22706d1439a6c2f81cb5218aad3574e25984918ec9ed",
+            "result_sha256": "ee073f0dcd67e0fcfd7e0e072ec6072988cec7f8ebe350094b0bfeeafa27fedc",
+            "safe": true,
+            "verified": true,
+            "decision_us": 12674,
+            "wall_ms": 70355,
+            "mismatches": []
+          }
+        ],
+        "qualified": true,
+        "cases": {
+          "notes_desktop": {
+            "candidate_verified": true,
+            "equivalent_and_faster": true
+          }
+        },
+        "decision": {
+          "document": {
+            "version": 1,
+            "family": "skill",
+            "action": "promote",
+            "cycle": "3040f1c1-6048-425a-9e63-f2cbf5277377",
+            "policy_sha256": "8b94cf224c09d759223d7a91dca619f6ef3437233caef523807b04f2098ed6cd",
+            "from": "generation",
+            "to": "qualified_reuse",
+            "previous_decision_sha256": null,
+            "stages": [
+              {
+                "stage": "replay",
+                "sha256": "517ae70dd6260a86a31efe1a4e1f5d22faa95b7846eef107530486fbf855dbf6"
+              },
+              {
+                "stage": "shadow",
+                "sha256": "8a32ccc9a2dee9b10c3acf941648171780ba05c209c9e33ffb5ff4a3fcbba673"
+              },
+              {
+                "stage": "limited",
+                "sha256": "41f21dde607b0c5132793b750281c251589f5612e6b23d415de16450885d07fd"
+              }
+            ],
+            "trigger_sha256": "41f21dde607b0c5132793b750281c251589f5612e6b23d415de16450885d07fd"
+          },
+          "signature": "-----BEGIN SSH SIGNATURE-----\r\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAg2hMOcGKl4gtmznvQr/VvPFRTum\r\nmd7IDyrStFPN96lW0AAAAdYWthc2hhLm5vdGVzLWxpbmsuZGVjaXNpb24udjEAAAAAAAAA\r\nBnNoYTUxMgAAAFMAAAALc3NoLWVkMjU1MTkAAABAVLvcxkmgUaR16ayApIm+wgOc2ghbLy\r\nlUn9eNIfxh0u5P7cXAiXkzfqp7JNJ/imZX3d0oPTofgQWMizuRzO0KBQ==\r\n-----END SSH SIGNATURE-----\r\n"
+        }
+      },
+      "active_after": "qualified_reuse"
+    }
+  },
+  "live": {
+    "nominal": {
+      "outcome": {
+        "status": "passed",
+        "steps": [
+          {
+            "id": "localize",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "generate_diff",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify_desktop",
+            "status": "passed",
+            "authorization": "allowed"
+          }
+        ],
+        "diff_applied": true,
+        "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "git_apply_check": true,
+        "guest_sha256_verified": true,
+        "tests": [
+          {
+            "name": "test_saved_note_survives_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_two_notes_with_accents_multiline_survive_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_save_acknowledged_in_session",
+            "status": "passed"
+          },
+          {
+            "name": "test_select_redisplays_content",
+            "status": "passed"
+          }
+        ],
+        "sqlite": 0,
+        "desktop": {
+          "ocr_save_button_used": true,
+          "app_restarted": true,
+          "ocr_note_selected_after_restart": true,
+          "ocr_content_visible": true,
+          "sqlite_exact_row": true
+        },
+        "isolation": {
+          "declared_disabled_channels": [
+            "Networking",
+            "ClipboardRedirection",
+            "AudioInput",
+            "VideoInput",
+            "PrinterRedirection",
+            "VGpu"
+          ],
+          "guest_read_input": true,
+          "guest_write_to_input_denied": true,
+          "guest_create_in_input_denied": true,
+          "guest_scratch_write": true,
+          "guest_no_default_route": true,
+          "guest_no_camera": true,
+          "guest_no_audio_capture": true,
+          "guest_no_redirected_printer": true,
+          "host_sources_unchanged": true,
+          "host_staging_unchanged": true
+        },
+        "authorizations": {
+          "missing_confinement": "permission_denied",
+          "out_of_scope": "permission_denied"
+        },
+        "sandbox_stopped": true
+      },
+      "wall_ms": 68004,
+      "decision_us": 36467,
+      "sandbox_id": "d5b3a825-4675-4354-87d7-12605053dd25",
+      "error": null,
+      "before_effect": false,
+      "selected": "qualified_reuse",
+      "monitor": {
+        "active": "qualified_reuse",
+        "alerts": []
+      }
+    },
+    "revocation": {
+      "outcome": {
+        "status": "failed",
+        "steps": [
+          {
+            "id": "localize",
+            "status": "failed",
+            "authorization": "denied"
+          }
+        ],
+        "diff_applied": null,
+        "diff_sha256": null,
+        "git_apply_check": null,
+        "guest_sha256_verified": null,
+        "tests": null,
+        "sqlite": null,
+        "desktop": null,
+        "isolation": {
+          "declared_disabled_channels": [
+            "Networking",
+            "ClipboardRedirection",
+            "AudioInput",
+            "VideoInput",
+            "PrinterRedirection",
+            "VGpu"
+          ],
+          "guest_read_input": true,
+          "guest_write_to_input_denied": true,
+          "guest_create_in_input_denied": true,
+          "guest_scratch_write": true,
+          "guest_no_default_route": true,
+          "guest_no_camera": true,
+          "guest_no_audio_capture": true,
+          "guest_no_redirected_printer": true
+        },
+        "authorizations": {
+          "missing_confinement": "permission_denied",
+          "out_of_scope": "permission_denied"
+        },
+        "sandbox_stopped": true
+      },
+      "wall_ms": 20853,
+      "decision_us": 36623,
+      "sandbox_id": "a5057ebd-e5b4-40e2-acbb-44ab77df4ef7",
+      "error": "erasure_requested",
+      "before_effect": true,
+      "selected": "qualified_reuse",
+      "monitor": {
+        "active": "generation",
+        "alerts": [
+          "verification"
+        ],
+        "decision": {
+          "document": {
+            "version": 1,
+            "family": "skill",
+            "action": "rollback",
+            "cycle": "3040f1c1-6048-425a-9e63-f2cbf5277377",
+            "policy_sha256": "8b94cf224c09d759223d7a91dca619f6ef3437233caef523807b04f2098ed6cd",
+            "from": "qualified_reuse",
+            "to": "generation",
+            "previous_decision_sha256": "5ecff4d4f51d7a342814d381ff80689ff9da33a92182d1b2a86671d378b79c95",
+            "stages": [
+              {
+                "stage": "replay",
+                "sha256": "517ae70dd6260a86a31efe1a4e1f5d22faa95b7846eef107530486fbf855dbf6"
+              },
+              {
+                "stage": "shadow",
+                "sha256": "8a32ccc9a2dee9b10c3acf941648171780ba05c209c9e33ffb5ff4a3fcbba673"
+              },
+              {
+                "stage": "limited",
+                "sha256": "41f21dde607b0c5132793b750281c251589f5612e6b23d415de16450885d07fd"
+              }
+            ],
+            "trigger_sha256": "716d9edc66ea7e485c5271d7fb2d1d0b3acc42efa36f378ef2389b51f06cbacf"
+          },
+          "signature": "-----BEGIN SSH SIGNATURE-----\r\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAg2hMOcGKl4gtmznvQr/VvPFRTum\r\nmd7IDyrStFPN96lW0AAAAdYWthc2hhLm5vdGVzLWxpbmsuZGVjaXNpb24udjEAAAAAAAAA\r\nBnNoYTUxMgAAAFMAAAALc3NoLWVkMjU1MTkAAABAUPLNp2452Bh7lSwls1MeHBVMh/BL+V\r\nfYMOTDEzqmIzL2YBOANT8pQGnX0to4r3tZfVTD1Vel9n5OnL3cYCgWBg==\r\n-----END SSH SIGNATURE-----\r\n"
+        }
+      }
+    },
+    "after_rollback": {
+      "outcome": {
+        "status": "passed",
+        "steps": [
+          {
+            "id": "localize",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "generate_diff",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify",
+            "status": "passed",
+            "authorization": "allowed"
+          },
+          {
+            "id": "verify_desktop",
+            "status": "passed",
+            "authorization": "allowed"
+          }
+        ],
+        "diff_applied": true,
+        "diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "git_apply_check": true,
+        "guest_sha256_verified": true,
+        "tests": [
+          {
+            "name": "test_saved_note_survives_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_two_notes_with_accents_multiline_survive_restart",
+            "status": "passed"
+          },
+          {
+            "name": "test_save_acknowledged_in_session",
+            "status": "passed"
+          },
+          {
+            "name": "test_select_redisplays_content",
+            "status": "passed"
+          }
+        ],
+        "sqlite": 0,
+        "desktop": {
+          "ocr_save_button_used": true,
+          "app_restarted": true,
+          "ocr_note_selected_after_restart": true,
+          "ocr_content_visible": true,
+          "sqlite_exact_row": true
+        },
+        "isolation": {
+          "declared_disabled_channels": [
+            "Networking",
+            "ClipboardRedirection",
+            "AudioInput",
+            "VideoInput",
+            "PrinterRedirection",
+            "VGpu"
+          ],
+          "guest_read_input": true,
+          "guest_write_to_input_denied": true,
+          "guest_create_in_input_denied": true,
+          "guest_scratch_write": true,
+          "guest_no_default_route": true,
+          "guest_no_camera": true,
+          "guest_no_audio_capture": true,
+          "guest_no_redirected_printer": true,
+          "host_sources_unchanged": true,
+          "host_staging_unchanged": true
+        },
+        "authorizations": {
+          "missing_confinement": "permission_denied",
+          "out_of_scope": "permission_denied"
+        },
+        "sandbox_stopped": true
+      },
+      "wall_ms": 116445,
+      "decision_us": 71754,
+      "sandbox_id": "30d66b58-32ba-403b-ab33-c2c4964ec851",
+      "error": null,
+      "before_effect": false,
+      "selected": "generation",
+      "monitor": {
+        "active": "generation",
+        "alerts": []
+      }
+    }
+  },
+  "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINoTDnBipeILZs570K/1bzxUU7ppneyA8q0rRTzfepVt",
+  "erasure": {
+    "status": "verified",
+    "removed": 8,
+    "desktop_reuse_unavailable": true
+  },
+  "events": [
+    "initialized",
+    "stage_reserved",
+    "trial_admitted",
+    "trial_admitted",
+    "stage_verified",
+    "stage_reserved",
+    "trial_admitted",
+    "trial_admitted",
+    "stage_verified",
+    "stage_reserved",
+    "trial_admitted",
+    "stage_verified",
+    "promote",
+    "observed",
+    "observed",
+    "rollback",
+    "observed"
+  ],
+  "checks": {
+    "one_promotion_one_rollback": true,
+    "nominal_matches_baseline": true,
+    "revoked_before_effect": true,
+    "revoked_skill_unavailable": true,
+    "parent_reverified": true,
+    "signatures_verified": true,
+    "sources_unchanged": true,
+    "distinct_sandboxes": true
+  },
+  "wall_s": 585.185
+}

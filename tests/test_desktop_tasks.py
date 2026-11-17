@@ -5,6 +5,7 @@ import pytest
 
 from akasha_brain import desktop_tasks
 from akasha_brain.notes_evolution import CANDIDATE, PARENT, set_evolution_paused
+from akasha_brain.phase6_skill import verified_diff
 
 
 def test_graph_lays_out_dependencies_in_stable_layers():
@@ -40,6 +41,23 @@ def test_desktop_reads_only_the_verified_diff_of_the_selected_attempt(tmp_path):
     assert desktop_tasks.checked_task_diff(tmp_path, {**row, "attempt": 2}) is None
     path.write_bytes(b"altered")
     assert desktop_tasks.checked_task_diff(tmp_path, row) is None
+
+
+def test_integrated_history_reads_the_guest_verified_diff_from_staging(tmp_path):
+    content = b"--- a/notes_store.py\n+++ b/notes_store.py\n"
+    path = tmp_path / "input/rbitnet-1/proposal.diff"
+    path.parent.mkdir(parents=True)
+    path.write_bytes(content)
+    result = {"diff_file": "rbitnet-1/proposal.diff", "diff_sha256": sha256(content).hexdigest(),
+              "guest_sha256_verified": True}
+    report = {"trace": [{"id": "generate_diff", "attempt": 1, "result": result}]}
+
+    assert verified_diff(tmp_path, report) == content
+    path.write_bytes(b"altered")
+    with pytest.raises(RuntimeError, match="empreinte"):
+        verified_diff(tmp_path, report)
+    result["guest_sha256_verified"] = False
+    assert verified_diff(tmp_path, report) is None
 
 
 def test_desktop_launch_exposes_stage_transitions_and_persists_history(tmp_path, monkeypatch):

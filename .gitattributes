@@ -24,3 +24,13 @@
 /bench/run_phase5_notes_monitor.py text eol=lf
 /bench/results/phase5-notes-action-selection-v1.json text eol=crlf
 /bench/results/phase5-notes-monitor-v1.json text eol=crlf
+
+# Conserver les octets des rapports relus par le registre intégré.
+/bench/results/phase5-code-transition-v1.json text eol=crlf
+/bench/results/phase6-*.json text eol=crlf
+/bench/results/phase6-desktop-restart-v1.json text eol=lf
+/akasha_brain/desktop.py text eol=lf
+/akasha_brain/desktop_tasks.py text eol=lf
+/akasha_brain/integrated_evolution.py text eol=lf
+/akasha_brain/phase6_*.py text eol=lf
+/bench/run_phase6_*.py text eol=lf

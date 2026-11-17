@@ -1,0 +1,218 @@
+{
+  "status": "passed",
+  "library": {
+    "notes-rbitnet": 2,
+    "notes-rbitnet-ocr": 3
+  },
+  "ranking": {
+    "counts": {
+      "similarity": {
+        "correct": 3,
+        "unsafe_selections": 10
+      },
+      "filtered_similarity": {
+        "correct": 13,
+        "unsafe_selections": 0
+      },
+      "gated": {
+        "correct": 13,
+        "unsafe_selections": 0
+      }
+    },
+    "cases": [
+      {
+        "case": "notes_ocr_nominal",
+        "expected": "notes-rbitnet-ocr",
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": "notes-rbitnet-ocr",
+        "gated": "notes-rbitnet-ocr",
+        "refusals": {
+          "notes-rbitnet-ocr": [],
+          "notes-rbitnet": [
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "notes_code_nominal",
+        "expected": "notes-rbitnet",
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": "notes-rbitnet",
+        "gated": "notes-rbitnet",
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "desktop_scope"
+          ],
+          "notes-rbitnet": []
+        }
+      },
+      {
+        "case": "notes_ocr_termes_code",
+        "expected": "notes-rbitnet-ocr",
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": "notes-rbitnet-ocr",
+        "gated": "notes-rbitnet-ocr",
+        "refusals": {
+          "notes-rbitnet-ocr": [],
+          "notes-rbitnet": [
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "notes_code_termes_ocr",
+        "expected": "notes-rbitnet",
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": "notes-rbitnet",
+        "gated": "notes-rbitnet",
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "desktop_scope"
+          ],
+          "notes-rbitnet": []
+        }
+      },
+      {
+        "case": "ecriture_hors_perimetre",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "permission_denied"
+          ],
+          "notes-rbitnet": [
+            "permission_denied",
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "approbation_en_attente",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "approval_required"
+          ],
+          "notes-rbitnet": [
+            "approval_required",
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "cible_ambigue",
+        "expected": null,
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "needs_clarification",
+            "desktop_scope"
+          ],
+          "notes-rbitnet": [
+            "needs_clarification"
+          ]
+        }
+      },
+      {
+        "case": "transfert_reserve",
+        "expected": null,
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "contract_precondition_failed",
+            "desktop_scope"
+          ],
+          "notes-rbitnet": [
+            "graph_changed"
+          ]
+        }
+      },
+      {
+        "case": "ocr_absent",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "ocr_unavailable"
+          ],
+          "notes-rbitnet": [
+            "desktop_scope"
+          ]
+        }
+      },
+      {
+        "case": "code_sans_ocr",
+        "expected": "notes-rbitnet",
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": "notes-rbitnet",
+        "gated": "notes-rbitnet",
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "desktop_scope",
+            "ocr_unavailable"
+          ],
+          "notes-rbitnet": []
+        }
+      },
+      {
+        "case": "bac_indisponible",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "sandbox_unavailable"
+          ],
+          "notes-rbitnet": [
+            "desktop_scope",
+            "sandbox_unavailable"
+          ]
+        }
+      },
+      {
+        "case": "version_capacite_absente",
+        "expected": null,
+        "similarity": "notes-rbitnet",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "capability_unavailable",
+            "desktop_scope"
+          ],
+          "notes-rbitnet": [
+            "capability_unavailable"
+          ]
+        }
+      },
+      {
+        "case": "verificateur_modifie",
+        "expected": null,
+        "similarity": "notes-rbitnet-ocr",
+        "filtered_similarity": null,
+        "gated": null,
+        "refusals": {
+          "notes-rbitnet-ocr": [
+            "inputs_changed"
+          ],
+          "notes-rbitnet": [
+            "desktop_scope",
+            "inputs_changed"
+          ]
+        }
+      }
+    ]
+  }
+}

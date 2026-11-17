@@ -20,6 +20,7 @@ from .desktop_tasks import (
 from .model_resources import DEFAULT_VRAM_MIB
 from .notes_evolution import STAGES, EvolutionBudget, rollback, set_evolution_paused
 from .notes_repair import RbitnetPaths
+from .phase6_runtime import Phase6Session
 from .planning import PlanningError
 
 BASE = "#111723"
@@ -249,6 +250,16 @@ class Desktop:
         ttk.Button(task_header, text="Conversation", command=self.open_conversation).pack(side="right", padx=(0, 10))
         if self.tasks.evolution_db:
             self.build_evolution(header)
+        elif self.tasks.integrated is not None:
+            bar = tk.Frame(header, bg=PANEL, padx=12, pady=8)
+            bar.pack(fill="x", pady=(12, 0))
+            self.integrated_label = self.label(bar, bg=PANEL, fg=MUTED, size=9)
+            self.integrated_label.pack(side="left")
+            self.integrated_button = ttk.Button(bar, command=self.toggle_integrated_pause)
+            self.integrated_button.pack(side="right")
+            self.integrated_rollback = ttk.Button(bar, text="Retour à la référence", command=self.rollback_integrated)
+            self.integrated_rollback.pack(side="right", padx=8)
+            self.update_integrated()
 
         sidebar = tk.Frame(self.root, bg=PANEL, padx=16, pady=16)
         sidebar.grid(row=1, column=0, sticky="nsew")
@@ -548,6 +559,8 @@ class Desktop:
 
     def poll(self):
         self.root.after(150, self.poll)
+        if self.tasks.integrated is not None:
+            self.update_integrated()
         changed = False
         while True:
             try:
@@ -561,8 +574,37 @@ class Desktop:
         if changed:
             self.refresh_history()
             self.render()
+
+    def update_integrated(self):
+        state = self.tasks.integrated_status
+        jobs = state["jobs"]
+        activity = ("Suivi en pause" if state["paused"] else "Suivi en cours"
+                    if self.tasks.scheduler.working_in_background else f"{jobs.get('waiting', 0)} suivi(s) en attente")
+        if jobs.get("failed", 0) or jobs.get("interrupted", 0):
+            activity += f" · {jobs.get('failed', 0) + jobs.get('interrupted', 0)} suivi(s) interrompu(s) ou en échec"
+        self.integrated_label.configure(text=f"Autonomie {state['autonomy_phase']} · {activity}")
+        self.integrated_button.configure(text="Reprendre" if state["paused"] else "Pause")
+        busy = self.tasks.busy or self.tasks.scheduler.working_in_background
+        self.integrated_rollback.configure(state="normal" if state["autonomy_phase"] == 6 and not busy else "disabled")
+
+    def toggle_integrated_pause(self):
+        try:
+            self.tasks.integrated.set_paused(not self.tasks.integrated_status["paused"])
+            self.tasks.schedule_integrated(self.tasks.runtime)
+        except (OSError, RuntimeError, sqlite3.Error) as error:
+            self.message = str(error)
+            self.update_status()
         else:
             self.update_status()
+
+    def rollback_integrated(self):
+        try:
+            self.tasks.integrated_status = self.tasks.integrated.request_rollback()
+            self.message = "Les politiques de référence sont actives."
+        except (OSError, RuntimeError, PlanningError, sqlite3.Error) as error:
+            self.message = str(error)
+        self.update_status()
+        self.update_integrated()
 
 
 def main():
@@ -577,6 +619,8 @@ def main():
                         help="Qwen3.5-2B CPU pour les synthèses locales de la conversation")
     parser.add_argument("--rapidocr", action="store_true")
     parser.add_argument("--evolution-db", type=Path, help="Registre d’évolution du banc synthétique Notes")
+    parser.add_argument("--integrated-session", type=Path, help="Session de phase 6 qualifiée pour le banc Notes")
+    parser.add_argument("--integrated-key", type=Path, help="Clé locale de décision de la session de phase 6")
     defaults = DEFAULT_EVOLUTION_BUDGET
     parser.add_argument("--evolution-wall-s", type=int, default=defaults.wall_s, help="Durée du cycle candidat")
     parser.add_argument("--evolution-max-trials", type=int, default=defaults.max_trials, help="Nombre d’essais candidats")
@@ -595,6 +639,10 @@ def main():
         parser.error("--cuda-library exige --rbitnet et un budget VRAM positif")
     if args.evolution_db and (not args.rbitnet or args.rapidocr):
         parser.error("--evolution-db exige --rbitnet et sélectionne le graphe actif")
+    if bool(args.integrated_session) != bool(args.integrated_key):
+        parser.error("--integrated-session et --integrated-key doivent être fournis ensemble")
+    if args.integrated_session and (not args.rbitnet or not args.python_runtime or args.cuda_library or args.evolution_db):
+        parser.error("--integrated-session exige --python-runtime et --rbitnet CPU avec un seul registre")
     if min(args.evolution_cpu_threads, args.evolution_model_ram_mb) <= 0:
         parser.error("Les limites de threads et de RAM de Rbitnet doivent être positives")
     repair = (RbitnetPaths(*(path.resolve() for path in args.rbitnet),
@@ -603,9 +651,13 @@ def main():
     communication = RbitnetPaths(*(path.resolve() for path in args.communication)) if args.communication else None
     budget = EvolutionBudget(args.evolution_wall_s, args.evolution_max_trials,
                              args.evolution_cpu_threads, args.evolution_model_ram_mb)
-    app = NotesTasks(args.runs.resolve(), args.python_runtime, repair, args.rapidocr,
-                     evolution_db=args.evolution_db.resolve() if args.evolution_db else None,
-                     evolution_budget=budget)
+    try:
+        integrated = Phase6Session(args.integrated_session, args.integrated_key) if args.integrated_session else None
+        app = NotesTasks(args.runs.resolve(), args.python_runtime, repair, args.rapidocr,
+                         evolution_db=args.evolution_db.resolve() if args.evolution_db else None,
+                         evolution_budget=budget, integrated=integrated)
+    except (OSError, RuntimeError, ValueError, sqlite3.Error) as error:
+        parser.error(str(error))
     root = tk.Tk()
     Desktop(root, app, data_registry=args.data_db, data_project=args.data_project, proposal=args.proposal,
             dependency_requests=args.dependency_request, communication=communication)

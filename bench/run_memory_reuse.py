@@ -19,15 +19,14 @@ from akasha_brain.planning import load_catalog
 from bench.run_guided_repair import execution_limits, write_report
 
 
-def ranking_trial(library, goal, catalog, runtime):
+def ranking_cases(goal, catalog, context):
     code_text = "notes sauvegarde correction persistance sqlite note code tests"
     desktop_text = "notes sauvegarde correction persistance sqlite note relance bureau redémarrage ocr"
     code = {**goal, "user_intent": code_text}
     visual = {**goal, "user_intent": desktop_text}
-    context = observe(runtime, True)
     assert context.ocr_available and context.isolated_runtime_available
     code_context = replace(context, desktop_requested=False)
-    cases = (
+    return (
         ("notes_ocr_nominal", visual, catalog, context, CANDIDATE),
         ("notes_code_nominal", code, catalog, code_context, PARENT),
         ("notes_ocr_termes_code", code, catalog, context, CANDIDATE),
@@ -46,8 +45,11 @@ def ranking_trial(library, goal, catalog, runtime):
         ("verificateur_modifie", visual, catalog, replace(context, files={**context.files,
          "text": {**context.files["text"], "verifiers/verify_notes.py": "changed"}}), None),
     )
+
+
+def ranking_trial(library, goal, catalog, runtime):
     results = []
-    for case, request, capabilities, state, expected in cases:
+    for case, request, capabilities, state, expected in ranking_cases(goal, catalog, observe(runtime, True)):
         comparison = library.compare(request, capabilities, state)
         choices = {arm: comparison[arm]["graph"] if comparison[arm] else None
                    for arm in ("similarity", "filtered_similarity", "gated")}
