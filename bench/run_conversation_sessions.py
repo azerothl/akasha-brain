@@ -21,9 +21,9 @@ from akasha_brain.project_check import inspect_project
 CANARY = "AKASHA_G1_TEST_9ec22425c0f749f0"
 
 
-def verify_storage(root):
-    representations = (CANARY.encode(), CANARY.encode("utf-16le"), sha256(CANARY.encode()).hexdigest().encode(),
-                       sha256(CANARY.encode()).digest())
+def verify_storage(root, witness=CANARY):
+    representations = (witness.encode(), witness.encode("utf-16le"), sha256(witness.encode()).hexdigest().encode(),
+                       sha256(witness.encode()).digest())
     for path in root.rglob("*"):
         if path.is_file():
             data = path.read_bytes()
