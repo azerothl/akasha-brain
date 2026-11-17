@@ -7,6 +7,7 @@ from pathlib import Path
 from queue import Empty, SimpleQueue
 import re
 from tempfile import TemporaryDirectory
+from threading import Event
 import tkinter as tk
 from tkinter import filedialog, ttk
 from unicodedata import normalize
@@ -15,8 +16,9 @@ from uuid import uuid4
 from bench.run_guided_repair import CHECKPOINTS, file_hash
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
+from .capability_recovery import Recovery
 from .conversation_planning import (
-    DRIVE_PATH, PROJECT_TOOLS, compile_local_plan, execute_intents, infer_intent, intent_parts,
+    DRIVE_PATH, PROJECT_TOOLS, compile_local_plan, execute_intents, explicit_media_step, infer_intent, intent_parts,
     load_conversation_catalog, references, refines_project_summary,
 )
 from .desktop_tasks import latest_steps, test_counts
@@ -185,6 +187,8 @@ class ConversationPane:
         self.change = self.test_file = self.project_job = self.proposal = self.project_error = None
         self.inspection = self.check_job = self.check_result = None
         self.intent_job = self.pending_intent = self.conversation_plan = self.test_plan = None
+        self.intent_cancel = Event()
+        self.intent_progress = SimpleQueue()
         self.intent_error = None
         self.conversation_steps = ()
         self.last_summary_project = None
@@ -251,6 +255,9 @@ class ConversationPane:
         cancelled = request.casefold() in ("annule", "annuler")
         if cancelled:
             self.pending_intent = None
+            self.intent_cancel.set()
+            if self.intent_job is not None:
+                self.intent_job[3].cancel()
             self.intent_job = None
         elif self.pending_intent is not None:
             original, turn = self.pending_intent
@@ -261,6 +268,10 @@ class ConversationPane:
             self.request_intent(request, refine_summary=True)
             return
         if self.communication is not None and len(intent_parts(request)) > 1:
+            self.change = self.test_file = None
+            self.request_intent(request)
+            return
+        if len(intent_parts(request)) == 1 and explicit_media_step(request, references(request)):
             self.change = self.test_file = None
             self.request_intent(request)
             return
@@ -347,6 +358,8 @@ class ConversationPane:
 
     def select_project(self, project):
         if project != self.project:
+            if self.intent_job is not None:
+                self.intent_cancel.set()
             self.project = project
             self.inspection = self.check_result = self.test_plan = None
             self.last_summary_project = None
@@ -379,24 +392,41 @@ class ConversationPane:
             self.add("Akasha", "Précisez l’objectif en 8 000 caractères maximum, avec le chemin des fichiers concernés.")
             return
         project = self.project
+        communication, catalog = self.communication, self.catalog
+        self.intent_cancel = cancelled = Event()
+        self.intent_progress = progress = SimpleQueue()
+        database = (self.tasks.directory / "capability-recovery.sqlite").resolve()
+        recovery = Recovery(database, self.tasks.runtime, progress.put, cancelled.is_set)
+        if project is not None and database.is_relative_to(project):
+            recovery = None
 
         def plan():
             refs = references(request)
             if refine_summary:
                 proposed = {"tool": "project.summarize", "refs": [], "detail": ""}
+            elif len(intent_parts(request)) == 1 and (media := explicit_media_step(request, refs)):
+                proposed = media
             else:
-                profile = communication_profile(self.communication)
-                proposed = infer_intent(self.communication, profile["chat_template"], request, refs, self.catalog,
+                profile = communication_profile(communication)
+                proposed = infer_intent(communication, profile["chat_template"], request, refs, catalog,
                                         selected=project is not None)
-            return execute_intents(request, proposed, refs, project, self.catalog)
+            return execute_intents(request, proposed, refs, project, catalog, recovery=recovery)
 
         self.intent_job = (request, project, turn, self.tasks.scheduler.submit(plan))
         self.add("Akasha", "J’analyse votre demande.")
 
     def poll_intent(self):
-        if self.intent_job is None or not self.intent_job[3].done():
+        if self.intent_job is None:
             return
         request, project, turn, job = self.intent_job
+        if self.project == project:
+            while True:
+                try:
+                    self.add("Akasha", self.intent_progress.get_nowait())
+                except Empty:
+                    break
+        if not job.done():
+            return
         self.intent_job = None
         if project != self.project:
             self.add("Akasha", "Le dossier a changé pendant l’analyse. Reformulez la demande pour ce dossier.")

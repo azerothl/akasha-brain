@@ -180,7 +180,8 @@ def expected_files(manifest: dict) -> tuple[dict, list]:
     return files, [source]
 
 
-def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None, node: bool = False) -> dict:
+def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None, node: bool = False,
+                        prepare_runtime=None, export_result=None) -> dict:
     if active_sandboxes():
         reject(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Une session Windows Sandbox est déjà active.")
     profile = read_profile()
@@ -197,6 +198,8 @@ def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None, node: bo
         shutil.copyfile(runtime, stage / "node.exe")
     else:
         shutil.copytree(runtime, stage / "python")
+    if prepare_runtime is not None:
+        prepare_runtime(stage / "python")
     if (stage / "proposal.diff").is_file():
         stage_git(stage)
     pip_version = stage_installer(stage) if has_dependencies else None
@@ -221,6 +224,7 @@ def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None, node: bo
         if result != 0x4700:
             reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "La validation dans le bac a échoué.",
                    guest_exit_code=result)
+        exported = export_result(sandbox, mount_path, tag) if export_result is not None else None
     finally:
         if sandbox in active_sandboxes():
             wsb("stop", "--id", sandbox)
@@ -230,6 +234,8 @@ def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None, node: bo
                   "disabled_channels": list(CHANNELS), "channel_probe": channels, "guest_exit_code": result}
     if pip_version is not None:
         validation["dependency_installation"] = {"offline": True, "pip_version": pip_version}
+    if export_result is not None:
+        validation["exported"] = exported
     return validation
 
 

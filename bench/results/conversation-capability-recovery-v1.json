@@ -1,0 +1,61 @@
+{
+  "status": "passed",
+  "generation_gap": {
+    "capability": "image.generate",
+    "status": "waiting",
+    "events": [
+      "missing",
+      "local_discovery"
+    ],
+    "updated_at": "2026-11-17T14:51:13.505924+00:00",
+    "reason": "no_supported_image_engine_detected",
+    "engines_found": []
+  },
+  "first_attempt": {
+    "capability": "image.ocr",
+    "status": "resumed",
+    "events": [
+      "missing",
+      "local_discovery",
+      "candidate",
+      "qualification",
+      "activated",
+      "resumed"
+    ],
+    "updated_at": "2026-11-17T14:53:15.901891+00:00",
+    "candidate_sha256": "b9d81bff45f595dac0b3d67a990f3843b3e9b3e07afb48f00c5ea090a8bf190c"
+  },
+  "reuse_after_reopen": {
+    "capability": "image.ocr",
+    "status": "resumed",
+    "events": [
+      "reused",
+      "resumed"
+    ],
+    "updated_at": "2026-11-17T14:54:24.673383+00:00",
+    "candidate_sha256": "b9d81bff45f595dac0b3d67a990f3843b3e9b3e07afb48f00c5ea090a8bf190c"
+  },
+  "qualification": {
+    "status": "passed",
+    "sandbox_id": "75ebce64-53cd-4e72-bb96-0f439e46f73e",
+    "sandbox_stopped": true,
+    "read_only_input": true,
+    "disabled_channels": [
+      "Networking",
+      "ClipboardRedirection",
+      "AudioInput",
+      "VideoInput",
+      "PrinterRedirection",
+      "VGpu"
+    ],
+    "channel_probe": 16655,
+    "guest_exit_code": 18176
+  },
+  "synthetic_checks": 2,
+  "inputs_preserved": true,
+  "wall_s": {
+    "generation_discovery": 0.25,
+    "qualification_and_resume": 121.125,
+    "reuse_after_reopen": 67.484
+  }
+}

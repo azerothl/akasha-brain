@@ -13,6 +13,8 @@ from contracts.akasha_contracts.authz import authorize
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 from contracts.akasha_contracts.validate import validate
 
+from .capability_recovery import Recovery
+from .ocr_recovery import CAPABILITY as OCR_CAPABILITY, IMAGE_TYPES, MANIFEST as OCR_MANIFEST
 from .planning import PlanningError
 from .project import CODE_FILE_LIMIT, inspect_code, project_file, project_input
 from .project_check import ProjectCheck, inspect_project
@@ -31,7 +33,7 @@ PROJECT_TOOLS = ("project.inspect", "project.summarize")
 DRIVE_PATH = re.compile(r"^[a-zA-Z]:[\\/]")
 INTENT_BOUNDARY = re.compile(
     r"\s+(?:(?:puis|ensuite)\s+|et\s+(?=(?:fais|faites|donne|donnez|résume|resume|vérifie|verifie|présente|compare|"
-    r"explique|indique|dis|lance|affiche|envoie)\b))", re.IGNORECASE,
+    r"explique|indique|dis|lance|affiche|envoie|lis|extrais|transcris|génère|genere|crée)\b))", re.IGNORECASE,
 )
 PROJECT_CHECK_STEP = re.compile(
     r"^(?:(?:tu peux|peux-tu|pouvez-vous)\s+)?(?:v[ée]rifie[rz]?|examine[rz]?|contr[ôo]le[rz]?)\s+"
@@ -43,6 +45,15 @@ SHORT_REFINEMENT = re.compile(r"(?:plus (?:complet|d[ée]taill[ée]|de d[ée]tai
 SUMMARY_REFINEMENT = re.compile(
     r"(?:(?:fais|donne)(?:[- ]moi)?\s+|(?:peux-tu|pouvez-vous)\s+(?:me\s+)?(?:faire|donner)\s+)?"
     r"(?:un\s+)?r[ée]sum[ée]\s+(?:plus\s+(?:complet|d[ée]taill[ée])|d[ée]taill[ée])[?!.\s]*", re.I,
+)
+OCR_REQUEST = re.compile(
+    r"^(?:(?:(?:est[- ]ce que\s+)?(?:tu peux|vous pouvez)|peux-tu|pouvez-vous|pourrais-tu)\s+(?:me\s+)?)?"
+    r"(?:(?:lis|lire|extrais|extraire|transcris|transcrire)\s+(?:le\s+)?texte\b"
+    r"|(?P<ocr>(?:fais|faire)\s+(?:l[’']|un\s+)ocr\b))", re.I,
+)
+IMAGE_REQUEST = re.compile(
+    r"^(?:(?:(?:est[- ]ce que\s+)?(?:tu peux|vous pouvez)|peux-tu|pouvez-vous|pourrais-tu)\s+(?:me\s+)?)?"
+    r"(?:g[ée]n[ée]r(?:e|er)|cr[ée](?:e|er))(?:[- ]moi)?\s+(?:une |l[’'])image\b", re.I,
 )
 SYSTEM = """Construis le plan qui répond à toute la demande. Réponds uniquement par un tableau JSON ordonné, une entrée par résultat demandé, même pour une seule action. Chaque entrée comprend tool (identifiant exact), refs (liste d'indices entiers des chemins utilisés, dans l'ordre) et detail (chaîne vide). Reprends la même référence dans chaque étape qui vise ce dossier. refs est vide pour le dossier sélectionné sans référence explicite.
 project.inspect vérifie la configuration et recense les tests. project.summarize explique à quoi sert le dépôt et de quoi il se compose. Si l'utilisateur demande les deux, produis les deux étapes.
@@ -136,6 +147,17 @@ def explicit_project_step(part: str, refs: list[str], *, selected: bool) -> dict
     return {"tool": tool, "refs": [refs.index(targets[0]) + 1] if targets else [], "detail": ""}
 
 
+def explicit_media_step(part: str, refs: list[str]) -> dict | None:
+    if match := OCR_REQUEST.match(part):
+        targets = [refs.index(name) + 1 for name in references(part)
+                   if name in refs and PureWindowsPath(name).suffix.lower() in IMAGE_TYPES]
+        if targets or match.group("ocr"):
+            return {"tool": OCR_CAPABILITY, "refs": targets, "detail": ""}
+    if IMAGE_REQUEST.match(part):
+        return {"tool": "image.generate", "refs": [], "detail": ""}
+    return None
+
+
 def infer_intent(paths, template: str, request: str, refs: list[str], catalog: dict, *, selected: bool) -> list[dict]:
     tools = {key: item["description"] for key, item in catalog.items() if item["risk_class"] == "R0"}
     parts = intent_parts(request)
@@ -147,7 +169,9 @@ def infer_intent(paths, template: str, request: str, refs: list[str], catalog: d
     with ExitStack() as stack:
         model = None
         for part in parts:
-            explicit = explicit_project_step(part, refs, selected=selected) if segmented else None
+            explicit = explicit_media_step(part, refs)
+            if explicit is None and segmented:
+                explicit = explicit_project_step(part, refs, selected=selected)
             if explicit:
                 steps = [explicit]
             else:
@@ -180,17 +204,20 @@ def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], c
     manifest = catalog.get(capability)
     if manifest is None:
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Cette capacité ne figure pas dans le registre local.", capability=capability)
+    if capability == OCR_CAPABILITY and manifest != OCR_MANIFEST:
+        stop(ErrorCode.PERMISSION_DENIED, "Le manifeste OCR diffère de l’adaptateur autorisé.")
     permissions = manifest["permissions"]
-    expected = ({"tier": "windows-sandbox", "network_egress": False}, "local-temporary", "R1") if test else (
+    confined = test or capability == OCR_CAPABILITY
+    expected = ({"tier": "windows-sandbox", "network_egress": False}, "local-temporary", "R1") if confined else (
         {}, "none", "R0")
     if (manifest.get("sandbox", {}), manifest.get("side_effects"), manifest["risk_class"]) != expected or (
         permissions.get("reads") != ["selected-project"] or
-        permissions.get("network") or (not test and (permissions.get("writes") or permissions.get("execute")))
-        or (test and permissions.get("writes") != ["sandbox-scratch"])
+        permissions.get("network") or (not confined and (permissions.get("writes") or permissions.get("execute")))
+        or (confined and permissions.get("writes") != ["sandbox-scratch"])
     ):
         stop(ErrorCode.PERMISSION_DENIED, "Les permissions de la capacité dépassent le périmètre de ce plan.")
     goal = {"goal_id": str(uuid4()), "user_intent": request, "inputs": list(inputs),
-            "constraints": {"allowed_actions": [capability], "environment_id": "windows-sandbox" if test else "local"},
+            "constraints": {"allowed_actions": [capability], "environment_id": "windows-sandbox" if confined else "local"},
             "success_conditions": [{"predicate": "test_suite_passes" if test else "file_exists", "on": "CodeState",
                                     "args": {"inputs": list(inputs)}}], "risk_class": manifest["risk_class"]}
     if test:
@@ -203,7 +230,7 @@ def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], c
     errors = validate(goal, "GoalSpec")
     if errors:
         raise PlanningError(errors[0])
-    if not test and (denied := authorize({"risk_class": goal["risk_class"]})):
+    if not confined and (denied := authorize({"risk_class": goal["risk_class"]})):
         raise PlanningError(denied)
     return ConversationPlan(goal, capability, manifest["version"], inputs)
 
@@ -217,12 +244,19 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
         stop(ErrorCode.NEEDS_CLARIFICATION, "Pouvez-vous préciser quels fichiers ou quel dossier sont concernés ?")
     if tool == "missing":
         what = " ".join(detail.split())[:180]
-        stop(ErrorCode.CAPABILITY_UNAVAILABLE, f"Il me manque un outil local pour cette demande{f' ({what})' if what else ''}.")
+        if re.search(r"\bimage\.ocr\b", what):
+            tool = OCR_CAPABILITY
+        else:
+            hint = {"capability": "image.generate"} if re.search(r"\bimage\.generate\b", what) else {}
+            stop(ErrorCode.CAPABILITY_UNAVAILABLE, f"Il me manque un outil local pour cette demande{f' ({what})' if what else ''}.", **hint)
     if tool == "clarify":
         question = " ".join(detail.split())[:180]
         message = question if question.endswith("?") else "Quel résultat souhaitez-vous obtenir, et sur quels éléments ?"
         stop(ErrorCode.NEEDS_CLARIFICATION, message)
-    if tool not in (*PROJECT_TOOLS, "documents.compare", "file.read"):
+    if tool == "image.generate":
+        stop(ErrorCode.CAPABILITY_UNAVAILABLE, "La génération d’images n’est pas disponible dans le registre local.",
+             capability=tool)
+    if tool not in (*PROJECT_TOOLS, "documents.compare", "file.read", OCR_CAPABILITY):
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "L’outil proposé est indisponible depuis la conversation.", capability=tool)
     paths = tuple(refs[index - 1] for index in indexes)
     if tool in PROJECT_TOOLS:
@@ -231,7 +265,7 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
             paths = explicit or ((str(project),) if project is not None else ())
         if len(paths) != 1 or not DRIVE_PATH.match(paths[0]):
             stop(ErrorCode.NEEDS_CLARIFICATION, "Quel dossier de projet souhaitez-vous examiner ?", needs_project=True)
-    if tool in {"documents.compare", "file.read"}:
+    if tool in {"documents.compare", "file.read", OCR_CAPABILITY}:
         required = 2 if tool == "documents.compare" else 1
         if len(set(paths)) != required or len(paths) != required:
             question = "Quels sont les deux documents à comparer, dans l’ordre ?" if required == 2 else "Quel fichier souhaitez-vous lire ?"
@@ -239,6 +273,8 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
         if project is None:
             stop(ErrorCode.NEEDS_CLARIFICATION, "Dans quel dossier se trouvent les fichiers à lire ?", needs_project=True)
         paths = tuple(scoped_name(project, path) for path in paths)
+        if tool == OCR_CAPABILITY and Path(paths[0]).suffix.lower() not in IMAGE_TYPES:
+            stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Indiquez une image PNG ou JPEG.")
         if tool == "documents.compare" and any(Path(path).suffix.lower() not in DOCUMENT_FORMATS for path in paths):
             stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Il me manque un lecteur pour comparer ces formats de documents.")
     return compile_local_plan(request, tool, paths, catalog)
@@ -257,14 +293,25 @@ def resolve_project(name: str) -> Path:
 
 
 def execute_intents(request: str, proposed, refs: list[str], project: Path | None,
-                    catalog: dict) -> list[ConversationReply | AkashaError]:
+                    catalog: dict, *, recovery: Recovery | None = None) -> list[ConversationReply | AkashaError]:
     steps = proposed if isinstance(proposed, list) else [proposed]
     if not steps:
         stop(ErrorCode.NEEDS_CLARIFICATION, "Quels résultats souhaitez-vous obtenir ?")
     replies = []
     for step in steps:
+        if recovery is not None:
+            recovery.checkpoint()
         try:
-            plan = plan_intent(request, step, refs, project, catalog)
+            candidate = None
+            try:
+                plan = plan_intent(request, step, refs, project, catalog)
+            except PlanningError as error:
+                if recovery is None or error.error.code != ErrorCode.CAPABILITY_UNAVAILABLE:
+                    raise
+                manifest, candidate, events = recovery.activate(error.error, project)
+                capability = manifest["capability_id"]
+                plan = plan_intent(request, {**step, "tool": capability}, refs, project,
+                                   {**catalog, capability: manifest})
             if plan.capability in PROJECT_TOOLS:
                 target = resolve_project(plan.inputs[0])
                 if plan.capability == "project.inspect":
@@ -275,6 +322,10 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
                 project = target
             elif plan.capability == "documents.compare":
                 output = compare_documents(project, plan.inputs)
+            elif plan.capability == OCR_CAPABILITY:
+                if candidate is None:
+                    stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "L’OCR requiert une capacité qualifiée par le registre local.")
+                output = recovery.resume(plan.capability, candidate, events, project, plan.inputs[0])
             else:
                 output = inspect_code(project, list(plan.inputs))
         except (PlanningError, ProjectError) as error:
