@@ -223,6 +223,7 @@ class Recovery:
                 raise PlanningError(AkashaError(ErrorCode.CONTRACT_POSTCONDITION_FAILED,
                     "La qualification OCR n’a pas fourni de preuve de confinement et de réussite."))
             events.append("activated")
+            proof = {**proof, "adaptation": {"level": "D", "capability": capability, "passed": True}}
             self.record(capability, "activated", events, fingerprint=candidate.fingerprint, proof=proof)
             self.progress("Capacité RapidOCR validée. Je reprends votre demande dans un nouveau bac.")
             return provider.MANIFEST, candidate, events
