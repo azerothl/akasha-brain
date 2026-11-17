@@ -14,13 +14,25 @@ class DesktopJobs:
         self.working_in_background = False
 
     def submit(self, operation, *, background=False):
-        result = Future()
         with self.lock:
-            queue = self.maintenance if background else self.interactive
-            queue.append((result, operation))
-            if self.worker is None:
-                self.worker = Thread(target=self.run, name="Akasha Windows Sandbox")
-                self.worker.start()
+            return self.enqueue(operation, self.maintenance if background else self.interactive)
+
+    def submit_if_idle(self, operation):
+        with self.lock:
+            if self.worker is not None:
+                return None
+            return self.enqueue(operation, self.maintenance)
+
+    def interactive_pending(self):
+        with self.lock:
+            return bool(self.interactive)
+
+    def enqueue(self, operation, queue):
+        result = Future()
+        queue.append((result, operation))
+        if self.worker is None:
+            self.worker = Thread(target=self.run, name="Akasha Windows Sandbox")
+            self.worker.start()
         return result
 
     def run(self):

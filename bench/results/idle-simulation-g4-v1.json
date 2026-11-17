@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "evaluated_cases": 16,
+  "scores": {
+    "reference": 10,
+    "candidate": 12
+  },
+  "candidate": {
+    "parent": "notes-selection-reference",
+    "policy": "notes-selection-predictor"
+  },
+  "timing": {
+    "samples": 20,
+    "baseline_p95_ms": 0.216,
+    "preemption_p95_ms": 1.632,
+    "added_p95_ms": 1.416,
+    "maximum_added_ms": 3000
+  },
+  "preemption": {
+    "status": "preempted",
+    "completed_cases": 1,
+    "host_cpu": 0.2885,
+    "host_free_ram_mib": 19505
+  },
+  "notes_baseline": {
+    "status": "passed",
+    "tests": [
+      4,
+      4
+    ],
+    "sqlite": "passed",
+    "wall_s": 48.78,
+    "sandbox_stopped": true
+  },
+  "notes_after_preemption": {
+    "status": "passed",
+    "tests": [
+      4,
+      4
+    ],
+    "sqlite": "passed",
+    "wall_s": 50.109,
+    "sandbox_stopped": true
+  }
+}
