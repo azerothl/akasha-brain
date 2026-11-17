@@ -1,6 +1,7 @@
 """Compare deux sélections d'action Notes à politique figée dans Windows Sandbox."""
 
 import argparse
+from contextlib import contextmanager
 import json
 import secrets
 import shutil
@@ -92,7 +93,7 @@ def guest_command(sandbox: str, probe: str, mode: str, pid: int | None = None) -
     return observe(sandbox, command, started_at=datetime.now(UTC).isoformat())
 
 
-def run_arm(sandbox: str, mount: str, case: dict, plans: dict, arm: str, data: dict, persist) -> None:
+def run_arm(sandbox: str, mount: str, case: dict, plans: dict, arm: str, data: dict, persist, *, selector=None) -> None:
     setup_start = perf_counter()
     tag = secrets.token_hex(4)
     probe = fr"{POWERSHELL} -File {mount}\observe_notes_desktop.ps1 -Tag {tag}"
@@ -105,7 +106,10 @@ def run_arm(sandbox: str, mount: str, case: dict, plans: dict, arm: str, data: d
         raise RuntimeError(f"État de départ invalide pour {case['id']} / {arm}.")
 
     decision_start = perf_counter_ns()
-    decision = select_plan(plans, case["goal"], before, use_predictor=arm == "with_predictor")
+    if selector is None:
+        decision = select_plan(plans, case["goal"], before, use_predictor=arm == "with_predictor")
+    else:
+        decision = selector(plans, case["goal"], before)
     decision_us = (perf_counter_ns() - decision_start) / 1000
     data.update(before=before, decision=decision, decision_us=round(decision_us, 3),
                 setup_s=round(perf_counter() - setup_start, 3), actions=[])
@@ -133,9 +137,10 @@ def run_arm(sandbox: str, mount: str, case: dict, plans: dict, arm: str, data: d
           f"vérifié={data['success']}, {data['decision_to_verdict_s']:.3f} s", flush=True)
 
 
-def run_pair(case: dict, stage: Path, tag: str, profile: str, plans: dict, pair: dict, persist) -> None:
+@contextmanager
+def isolated_notes_sandbox(stage: Path, tag: str, profile: str, evidence: dict, persist):
     started = perf_counter()
-    sandbox = pair["sandbox_id"] = str(uuid4())
+    sandbox = evidence["sandbox_id"] = str(uuid4())
     if active_sandboxes():
         raise RuntimeError("Une autre session Windows Sandbox est ouverte.")
     mount = fr"C:\AkashaGuidedInput-{tag}"
@@ -148,10 +153,23 @@ def run_pair(case: dict, stage: Path, tag: str, profile: str, plans: dict, pair:
         wsb("share", "--id", sandbox, "--host-path", str(stage), "--sandbox-path", mount)
         isolation = guest_exit(sandbox, fr"{POWERSHELL} -File {mount}\probe_notes_isolation.ps1 -Tag {tag}")
         channels = guest_exit(sandbox, fr"{POWERSHELL} -File {mount}\probe_guest_channels.ps1")
-        pair["isolation"] = {"mount_and_scratch_exit": isolation, "channels_exit": channels}
+        evidence["isolation"] = {"mount_and_scratch_exit": isolation, "channels_exit": channels}
         if isolation != 0x450F or channels not in (0x410F, 0x411F):
             raise RuntimeError("Les sondes d'isolation de Notes ont échoué.")
 
+        yield sandbox, mount
+    finally:
+        if sandbox in active_sandboxes():
+            wsb("stop", "--id", sandbox)
+        evidence["sandbox_stopped"] = sandbox not in active_sandboxes()
+        evidence["wall_s"] = round(perf_counter() - started, 3)
+        persist()
+    if not evidence["sandbox_stopped"]:
+        raise RuntimeError("Arrêt du bac non confirmé.")
+
+
+def run_pair(case: dict, stage: Path, tag: str, profile: str, plans: dict, pair: dict, persist) -> None:
+    with isolated_notes_sandbox(stage, tag, profile, pair, persist) as (sandbox, mount):
         arms = pair["arms"]
         for arm in case["order"]:
             arms[arm] = {}
@@ -162,14 +180,6 @@ def run_pair(case: dict, stage: Path, tag: str, profile: str, plans: dict, pair:
                 or left["decision"]["admissible"] != right["decision"]["admissible"]):
             raise RuntimeError(f"Départ ou admissibilité non appariés pour {case['id']}.")
         pair["matched_initial_state_and_admissibility"] = True
-    finally:
-        if sandbox in active_sandboxes():
-            wsb("stop", "--id", sandbox)
-        pair["sandbox_stopped"] = sandbox not in active_sandboxes()
-        pair["wall_s"] = round(perf_counter() - started, 3)
-        persist()
-    if not pair["sandbox_stopped"]:
-        raise RuntimeError("Arrêt du bac non confirmé.")
 
 
 def run(runtime: Path, output: Path) -> dict:

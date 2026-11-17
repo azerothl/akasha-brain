@@ -88,3 +88,21 @@ Les 12 cas invalides ont été refusés avant l’appel à la suppression native
 .\.venv\Scripts\python.exe -m bench.run_phase5_project_transition_guard --runtime $pythonPortable `
     --output $dossierDeValidation
 ```
+
+## Surveillance de Notes et désactivation du prédicteur
+
+Le banc rejoue le cas figé « retrouver la note après relance, base initialement vide », dans un même Windows Sandbox et avec une base neuve à chaque essai. Le sélecteur et le moniteur tournent sur l’hôte. Le bac exécute les actions et produit les relevés UIA et SQLite. Le seuil de 10 ms et le retard injecté de 30 ms servent à exercer l’alerte de latence.
+
+| Essai | Action retenue | Sélection | Écarts ou alerte |
+| --- | --- | ---: | --- |
+| Nominal | Enregistrer puis relancer | 51,5 µs | 9/9 variables conformes |
+| Stockage fautif | Enregistrer puis relancer | 47,0 µs | Écart de nombre de lignes et de présence de la note exacte |
+| Ralentissement injecté | Enregistrer puis relancer | 30,418 ms | Alerte de latence, 9/9 variables conformes |
+| Prédicteur désactivé | Relancer | 24,9 µs | Zéro appel au prédicteur, même choix et même état final que la référence publiée |
+
+L’essai désactivé retrouve le verdict de référence sur ce cas. Le processus redémarre et SQLite reste vide, ce que le vérificateur signale. La campagne a duré 97,8 s et le bac a été arrêté. [Relevé des quatre essais](../../bench/results/phase5-notes-monitor-v1.json)
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_phase5_notes_monitor --runtime $pythonPortable `
+    --output $dossierDeValidation
+```

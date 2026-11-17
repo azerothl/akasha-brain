@@ -16,3 +16,11 @@
 /bench/results/phase4-tasks-*.json text eol=lf
 /bench/results/phase4-tasks-baseline-v1.json text eol=crlf
 /bench/results/phase4-tasks-specialist-v1.json text eol=crlf
+
+# Le rapport de suivi Notes référence ces sources et la comparaison figée.
+/akasha_brain/desktop_state.py text eol=lf
+/bench/phase5_notes_actions.json text eol=lf
+/bench/run_phase5_notes_action_selection.py text eol=lf
+/bench/run_phase5_notes_monitor.py text eol=lf
+/bench/results/phase5-notes-action-selection-v1.json text eol=crlf
+/bench/results/phase5-notes-monitor-v1.json text eol=crlf
