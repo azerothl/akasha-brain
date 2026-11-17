@@ -75,6 +75,9 @@ def test_missing_generator_prepares_an_exact_download_without_contacting_its_sou
     assert result.output.prompt == "un chat devant un miroir" and result.output.review.artifact == image_assets.ENGINE
     assert report(state, "image.generate")["events"] == ["missing", "local_discovery", "approval_requested"]
     assert state.stored("image.ocr") is None
+    assert explicit_media_step("Génère une image d’un chat", []) == {
+        "tool": "image.generate", "refs": [], "detail": "un chat",
+    }
     assert explicit_media_step("Explique comment générer une image", []) is None
     assert explicit_media_step("Lis le texte de guide.md", ["guide.md"]) is None
 

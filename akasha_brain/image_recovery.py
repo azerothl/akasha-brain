@@ -44,11 +44,12 @@ def select_backend(runtime: Path | None) -> ImageBackend:
         from .image_linux import LinuxImageBackend
 
         return LinuxImageBackend.local()
-    if runtime is None or not all((runtime / name).exists()
-                                  for name in ("python.exe", "pythonw.exe", "python312.dll", "tcl8.6", "tk8.6")):
+    if runtime is None or not all((runtime / name).is_file() for name in ("python.exe", "python312.dll")):
         reject(ErrorCode.CAPABILITY_UNAVAILABLE, "Configurez le Python portable de Windows Sandbox avant la génération.")
-    from .image_windows import WindowsImageBackend
+    from .image_windows import WindowsImageBackend, system32
 
+    if not (system32() / "hcsdiag.exe").is_file():
+        reject(ErrorCode.CAPABILITY_UNAVAILABLE, "La sortie headless requiert l’outil système hcsdiag.exe.")
     return WindowsImageBackend(runtime)
 
 

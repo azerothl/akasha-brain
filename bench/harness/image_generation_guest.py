@@ -1,61 +1,45 @@
-"""Lance le moteur hors ligne et présente sa sortie sur une surface balisée."""
+"""Génère dans Windows Sandbox et écrit une enveloppe PNG sur stdout."""
 
+from base64 import b64encode
+from hashlib import sha256
 import json
-import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
-import tkinter as tk
+from tempfile import TemporaryDirectory
 
 
-def start():
-    script = Path(__file__)
-    source = Path(sys.executable).parent
-    runtime = Path.cwd().parent / "python-local"
-    shutil.copytree(source, runtime)
-    environment = {**os.environ, "TCL_LIBRARY": str(runtime / "tcl8.6"), "TK_LIBRARY": str(runtime / "tk8.6")}
-    subprocess.Popen([str(runtime / "pythonw.exe"), "-I", "-B", str(script), "--worker", str(source.parent)],
-                     env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-
-def generate(mount):
-    settings = json.loads(Path("image-request.json").read_bytes())
-    binaries = Path.cwd().parent / "generator"
-    shutil.copytree(mount / "engine", binaries)
-    engine = binaries / "sd-cli.exe"
-    target = Path.cwd() / "generated.png"
-    with Path("image-engine.log").open("wb") as log:
+def main():
+    root = Path(__file__).parent
+    byte_limit = int(sys.argv[1])
+    prompt = (root / "image-prompt.txt").read_text(encoding="utf-8")
+    with TemporaryDirectory(prefix="akasha-image-") as directory:
+        work = Path(directory)
+        engine = work / "engine"
+        shutil.copytree(root / "engine", engine)
+        target = work / "result.png"
         result = subprocess.run([
-            str(engine), "-m", str(mount / "image-model.gguf"), "-p", settings["prompt"],
+            str(engine / "sd-cli.exe"), "-m", str(root / "image-model.gguf"), "-p", prompt,
             "--steps", "4", "--cfg-scale", "1.0", "--sampling-method", "euler_a",
             "-W", "512", "-H", "512", "-t", "8", "--seed", "3927", "-o", str(target),
-        ], cwd=binaries, stdout=log, stderr=subprocess.STDOUT, timeout=540)
-    if result.returncode != 0 or not 1 <= target.stat().st_size <= 2 * 1024**2:
-        raise RuntimeError(f"Sortie du moteur invalide, code 0x{result.returncode & 0xffffffff:08x}.")
-    root = tk.Tk()
-    root.overrideredirect(True)
-    root.attributes("-topmost", True)
-    root.geometry("544x544+12+12")
-    image = tk.PhotoImage(master=root, file=str(target), format="png")
-    if (image.width(), image.height()) != (512, 512):
-        raise ValueError("Dimensions de l’image générée inattendues.")
-    colors = {image.get(x, y) for x in range(0, 512, 32) for y in range(0, 512, 32)}
-    if len(colors) < 24:
-        raise ValueError("L’image générée est vide ou uniforme.")
-    canvas = tk.Canvas(root, width=544, height=544, highlightthickness=0, bg=settings["frame"])
-    canvas.pack()
-    canvas.create_image(16, 16, anchor="nw", image=image)
-    root.update()
-    Path("image-status.txt").write_text("ready", encoding="ascii")
-    root.mainloop()
+        ], cwd=engine, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=540, creationflags=subprocess.CREATE_NO_WINDOW)
+        if result.returncode:
+            return 3
+        info = target.lstat()
+        if (not stat.S_ISREG(info.st_mode) or info.st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT
+                or not 1 <= info.st_size <= byte_limit):
+            return 4
+        with target.open("rb") as stream:
+            raw = stream.read(byte_limit + 1)
+        if len(raw) != info.st_size:
+            return 4
+        packet = {"bytes": len(raw), "sha256": sha256(raw).hexdigest(), "data": b64encode(raw).decode("ascii")}
+        print(json.dumps(packet, separators=(",", ":")), flush=True)
+    return 0
 
 
 if __name__ == "__main__":
-    if sys.argv[1:2] == ["--worker"]:
-        try:
-            generate(Path(sys.argv[2]))
-        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError, tk.TclError):
-            Path("image-status.txt").write_text("failed", encoding="ascii")
-    else:
-        start()
+    sys.exit(main())

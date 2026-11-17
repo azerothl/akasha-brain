@@ -54,7 +54,7 @@ OCR_REQUEST = re.compile(
 )
 IMAGE_REQUEST = re.compile(
     r"^(?:(?:(?:est[- ]ce que\s+)?(?:tu peux|vous pouvez)|peux-tu|pouvez-vous|pourrais-tu)\s+(?:me\s+)?)?"
-    r"(?:g[ée]n[ée]r(?:e|er)|cr[ée](?:e|er))(?:[- ]moi)?\s+(?:une |l[’'])image\b", re.I,
+    r"(?:g[ée]n[èée]r(?:e|er)|cr[ée](?:e|er))(?:[- ]moi)?\s+(?:une |l[’'])image\b", re.I,
 )
 SYSTEM = """Construis le plan qui répond à toute la demande. Réponds uniquement par un tableau JSON ordonné, une entrée par résultat demandé, même pour une seule action. Chaque entrée comprend tool (identifiant exact), refs (liste d'indices entiers des chemins utilisés, dans l'ordre) et detail (chaîne vide). Reprends la même référence dans chaque étape qui vise ce dossier. refs est vide pour le dossier sélectionné sans référence explicite.
 project.inspect vérifie la configuration et recense les tests. project.summarize explique à quoi sert le dépôt et de quoi il se compose. Si l'utilisateur demande les deux, produis les deux étapes.

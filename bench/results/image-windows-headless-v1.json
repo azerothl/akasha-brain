@@ -1,0 +1,104 @@
+{
+  "status": "passed",
+  "engine": "stable-diffusion.cpp CPU / SD-Turbo Q4_0",
+  "platform": "Windows Sandbox",
+  "cli": {
+    "status": "passed",
+    "output": "selfie.png",
+    "validation": {
+      "status": "passed",
+      "sandbox_stopped": true,
+      "sandbox_id": "ab89ec87-305d-4183-83be-cf5d5f1b5546",
+      "guest_exit_code": 0,
+      "read_only_input": true,
+      "mount_probe": 17679,
+      "channel_probe": 16671,
+      "disabled_channels": [
+        "Networking",
+        "ClipboardRedirection",
+        "AudioInput",
+        "VideoInput",
+        "PrinterRedirection",
+        "VGpu"
+      ],
+      "headless": true,
+      "export_transport": "hcs-stdout",
+      "backend": "windows-sandbox",
+      "candidate_sha256": "d8d7a56787ff0090a3e6c9fb0e8c831c9c8e7e4fb2ca0160c7d400b2a5a53cb9",
+      "png": {
+        "format": "PNG",
+        "width": 512,
+        "height": 512,
+        "bytes": 406506,
+        "sha256": "10e96116048e9d0380df4f69ae4d6da214bacc79ab29cdd3a294ac5733df6688",
+        "input_sha256": "a0cf37fe329942addc24d3ac5732395c2c4d6fd001e3c11fe663111066077b74"
+      }
+    },
+    "qualification": {
+      "status": "passed",
+      "sandbox_stopped": true,
+      "sandbox_id": "5b01e6dd-b3ce-4517-b78c-30b5be9dbbc5",
+      "guest_exit_code": 0,
+      "read_only_input": true,
+      "mount_probe": 17679,
+      "channel_probe": 16671,
+      "disabled_channels": [
+        "Networking",
+        "ClipboardRedirection",
+        "AudioInput",
+        "VideoInput",
+        "PrinterRedirection",
+        "VGpu"
+      ],
+      "headless": true,
+      "export_transport": "hcs-stdout",
+      "backend": "windows-sandbox",
+      "candidate_sha256": "d8d7a56787ff0090a3e6c9fb0e8c831c9c8e7e4fb2ca0160c7d400b2a5a53cb9",
+      "png": {
+        "format": "PNG",
+        "width": 512,
+        "height": 512,
+        "bytes": 518893,
+        "sha256": "14d1a999cad76a77d8613c02b8d8110d919cee1f5a81bf150f0c9106a0c3e2cf",
+        "input_sha256": "295ed4ba80b11d7ac488f5a580269563982290e591fe0726710bcf40565acfa4"
+      }
+    },
+    "wall_s": 103.638
+  },
+  "conversation": {
+    "status": "passed",
+    "wall_s": 52.938,
+    "qualification_reused": true,
+    "used_admin_elevation": false,
+    "image_shown_in_chat": true,
+    "validation": {
+      "status": "passed",
+      "sandbox_stopped": true,
+      "sandbox_id": "857dab96-35f6-4d8d-a697-c0ea65c0414f",
+      "guest_exit_code": 0,
+      "read_only_input": true,
+      "mount_probe": 17679,
+      "channel_probe": 16671,
+      "disabled_channels": [
+        "Networking",
+        "ClipboardRedirection",
+        "AudioInput",
+        "VideoInput",
+        "PrinterRedirection",
+        "VGpu"
+      ],
+      "headless": true,
+      "export_transport": "hcs-stdout",
+      "backend": "windows-sandbox",
+      "candidate_sha256": "d8d7a56787ff0090a3e6c9fb0e8c831c9c8e7e4fb2ca0160c7d400b2a5a53cb9",
+      "png": {
+        "format": "PNG",
+        "width": 512,
+        "height": 512,
+        "bytes": 406506,
+        "sha256": "10e96116048e9d0380df4f69ae4d6da214bacc79ab29cdd3a294ac5733df6688",
+        "input_sha256": "a0cf37fe329942addc24d3ac5732395c2c4d6fd001e3c11fe663111066077b74"
+      }
+    }
+  }
+}
