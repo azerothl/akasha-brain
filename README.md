@@ -2,6 +2,8 @@
 
 MVP Windows d’un système agentique composé de modèles, d’outils et de compétences spécialisés. Le banc local permet de suivre le graphe d’une tâche, de vérifier une réparation et d’exercer l’évolution bornée. Les phases 0 à 6 sont qualifiées sur le banc bureau et code. [Audit de validation](docs/plans/phase6_status.md#audit-des-preuves-des-phases-0-à-6)
 
+La conversation Windows permet aussi d’examiner un projet, de comparer des documents et de reprendre certaines demandes après qualification d’une capacité locale. La génération d’images sur CPU dispose de parcours CLI et MCP sans fenêtre sur Windows et Linux. Le parcours Linux a été validé sous Ubuntu WSL2 avec Bubblewrap. [État livré et preuves](docs/plans/phase6_status.md#interfaces-et-capacités-livrées-après-la-qualification-du-banc)
+
 ## Installer le MVP sur Windows
 
 Utilisez Windows 11 x64 24H2 ou plus récent, sur une édition compatible avec Windows Sandbox et avec la virtualisation activée. Activez la fonctionnalité Windows Sandbox dans les fonctionnalités Windows ou avec `Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM -All` dans un PowerShell administrateur. Redémarrez si Windows le demande. [Installation de Windows Sandbox](https://learn.microsoft.com/en-us/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-install)
@@ -75,22 +77,6 @@ Depuis l’interface Windows, la qualification RapidOCR sur CPU et la première 
 
 Pour générer une image, écrivez « Génère une image d’un chat faisant un selfie devant un miroir ». Akasha cherche l’archive CPU et les poids épinglés dans son cache et dans le dossier Téléchargements. Il affiche la source, la licence, la taille et l’empreinte de chaque fichier manquant. **Autoriser ce téléchargement** vaut pour le fichier affiché. Une fois les deux SHA-256 vérifiés, Akasha qualifie SD-Turbo sur une image synthétique, puis reprend votre demande dans un bac neuf de 8 Gio, hors ligne. Sous Windows, le bac démarre sans fenêtre. Akasha reçoit le PNG 512 × 512 par la sortie standard de l’invité via `hcsdiag.exe`, vérifie sa taille et son empreinte avant décodage, puis affiche le résultat dans la conversation. La CLI image peut enregistrer le résultat avec `--output`. Si le modèle de communication local est configuré, Akasha l’utilise pour traduire la description en anglais. [Moteur CPU](https://github.com/leejet/stable-diffusion.cpp/releases/tag/master-955-b7a74e6) · [Poids et licence](https://huggingface.co/samoudi/sd-turbo-gguf)
 
-### Générer une image sans fenêtre sous Linux
-
-Utilisez Linux x86_64 compatible avec le binaire Ubuntu 24.04 du catalogue, un compte non privilégié, Python 3 système et Bubblewrap avec les espaces de noms utilisateur activés. Dans une venv, installez `jsonschema==4.26.0`, `Pygments==2.21.0` et `Pillow==13.0.0`.
-
-```bash
-python -m akasha_brain.image_cli \
-  --prompt "A cat taking a mirror selfie with a smartphone visible in its paw" \
-  --output selfie.png
-```
-
-La CLI indique la taille, la source, la licence et l’empreinte de chaque artefact manquant et attend un accord distinct dans le terminal. Les poids déjà présents et vérifiés sont réutilisés. `--runs` permet de choisir le dossier du registre et du cache `image-engine`. Le backend Linux vérifie le confinement avant de démarrer le moteur, avec les entrées en lecture seule et un espace temporaire privé. Le PNG sort par un flux borné. Akasha le vérifie, retire ses métadonnées et renvoie sa taille et son SHA-256 dans le relevé JSON. Le fichier de destination doit être nouveau.
-
-Le rejeu du selfie a pris **85 s** depuis la conversation Windows avec la qualification en cache, avant l’extraction du backend commun. Sous Ubuntu WSL2, la CLI a refusé le téléchargement sans accord, vérifié l’archive Linux après accord, qualifié le moteur et exporté le PNG en **66,6 s** au total. Le fichier a conservé la même empreinte après copie. La suite Windows a passé 260 tests et les contrôles ciblés Linux en ont passé 7. [Relevé Windows et Linux](bench/results/image-windows-linux-v1.json)
-
-Avec l’export Windows sans fenêtre, la CLI a qualifié le moteur et exporté le selfie en **103,6 s**. La conversation a réutilisé la qualification et affiché le même PNG 512 × 512 en **52,9 s**, avec le même SHA-256. Les deux rejeux ont utilisé la sortie standard HCS, avec le réseau désactivé et les entrées en lecture seule. [Relevé Windows headless](bench/results/image-windows-headless-v1.json)
-
 Sur Documentalist (`4538575`), le résumé détaillé a lu 49 sources JavaScript et TypeScript. La relance a pris **0,328 s** et produit 12 références vérifiées, dont le filtrage de la recherche, l’instantané de publication et l’écriture chiffrée dans SQLite. Les 163 empreintes comparées et l’état Git sont identiques avant et après l’essai en lecture seule. [Relevé de validation](bench/results/documentalist-code-summary-v1.json)
 
 Pour lire un fichier, écrivez `Lis value.py`. Pour tester un remplacement, saisissez `Remplace "VALUE = 7" par "VALUE = 11" dans value.py`, indiquez le chemin relatif d’un script de test existant, puis confirmez **Tester le remplacement**. Le verdict et l’aperçu du diff reviennent dans la conversation. **Examiner le diff** ouvre la fenêtre d’approbation avec le diff complet.
@@ -135,6 +121,34 @@ $rapport = Join-Path $env:LOCALAPPDATA "AkashaBrain\notes-$([guid]::NewGuid().To
     --python-runtime $pythonPortable --output $rapport
 ```
 
+## Générer une image sans fenêtre en CLI
+
+Depuis la racine du dépôt sous Windows, utilisez la venv et le Python portable préparés ci-dessus. Le parcours image utilise `wsb.exe` et `hcsdiag.exe`. Terminez toute session Windows Sandbox active avant le lancement.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.image_cli --python-runtime $pythonPortable `
+    --prompt "A cat taking a mirror selfie with a smartphone visible in its paw" `
+    --output .\selfie.png
+```
+
+Sous Linux, utilisez un hôte x86_64 compatible avec le binaire Ubuntu 24.04 du catalogue, un compte non privilégié, Python 3 système à `/usr/bin/python3` et Bubblewrap avec les espaces de noms utilisateur activés. Depuis le checkout, préparez une venv avec Python 3.12 et installez les dépendances hôtes.
+
+```bash
+python3.12 -m venv .venv
+./.venv/bin/python -m pip install 'jsonschema==4.26.0' 'Pygments==2.21.0' 'Pillow==13.0.0'
+./.venv/bin/python -m akasha_brain.image_cli \
+  --prompt "A cat taking a mirror selfie with a smartphone visible in its paw" \
+  --output selfie.png
+```
+
+La CLI indique la taille, la source, la licence et l’empreinte de chaque artefact manquant et attend un accord distinct dans le terminal. Les poids déjà présents et vérifiés sont réutilisés. `--runs` permet de choisir le dossier du registre et du cache `image-engine`. Le backend Linux vérifie le confinement avant de démarrer le moteur, avec les entrées en lecture seule et un espace temporaire privé. Le PNG sort par un flux borné. Akasha le vérifie, retire ses métadonnées et renvoie sa taille et son SHA-256 dans le relevé JSON. Le fichier de destination doit être nouveau.
+
+Le dossier par défaut est `%LOCALAPPDATA%\AkashaBrain\runs` sous Windows et `~/AkashaBrain/runs` sous Linux lorsque `LOCALAPPDATA` est absent. Le cache contient l’archive CPU propre à la plateforme et les mêmes poids SD-Turbo Q4_0. La CLI et MCP transmettent la description fournie au moteur. La conversation Windows peut la traduire en anglais avec son modèle de communication configuré.
+
+Le rejeu du selfie a pris **85 s** depuis la conversation Windows avec la qualification en cache, avant l’extraction du backend commun. Sous Ubuntu WSL2, la CLI a refusé le téléchargement sans accord, vérifié l’archive Linux après accord, qualifié le moteur et exporté le PNG en **66,6 s** au total. Le fichier a conservé la même empreinte après copie. La suite Windows a passé 260 tests et les contrôles ciblés Linux en ont passé 7. [Relevé Windows et Linux](bench/results/image-windows-linux-v1.json)
+
+Avec l’export Windows sans fenêtre, la CLI a qualifié le moteur et exporté le selfie en **103,6 s**. La conversation a réutilisé la qualification et affiché le même PNG 512 × 512 en **52,9 s**, avec le même SHA-256. Les deux rejeux ont utilisé la sortie standard HCS, avec le réseau désactivé et les entrées en lecture seule. [Relevé Windows headless](bench/results/image-windows-headless-v1.json)
+
 ## Utiliser Akasha Brain depuis un agent
 
 Installez le SDK MCP dans la venv du projet, puis déclarez le serveur dans votre client MCP local. Le serveur utilise les entrées et sorties standard du processus. [Configuration d’un client MCP](https://py.sdk.modelcontextprotocol.io/get-started/real-host/)
@@ -158,17 +172,43 @@ Adaptez les chemins absolus de cet exemple au dépôt.
 
 L’agent peut appeler `notes_plan`, puis `notes_start` pour obtenir un identifiant et `notes_status` pour suivre la tâche jusqu’au verdict. Le résultat indique les tests, SQLite et, si le parcours le produit, le diff vérifié. Ces appels opèrent sur le banc synthétique Notes dans Windows Sandbox.
 
-Le serveur relit le dossier Python portable enregistré par l’application. Les arguments `--python-runtime`, `--rbitnet` et `--rapidocr` permettent de configurer son lancement. Les rapports MCP sont conservés sous `%LOCALAPPDATA%\AkashaBrain\agent-runs` par défaut.
+Le serveur relit le dossier Python portable enregistré par l’application. Les arguments `--python-runtime`, `--rbitnet` et `--rapidocr` permettent de configurer son lancement. `--runs` choisit le dossier des rapports Notes et des propositions de projet, par défaut `%LOCALAPPDATA%\AkashaBrain\agent-runs` sous Windows. `--image-runs` choisit séparément le registre de qualification et le cache des images.
 
 ### Générer une image sans fenêtre
 
 Le serveur MCP fonctionne aussi sous Linux pour ce parcours. Lancez le même script avec le Python de la venv sur la plateforme choisie. Installez `Pillow==13.0.0` et utilisez les prérequis du bac décrits dans la section image.
+
+Sous Linux, installez `mcp==2.0.1` dans la venv image. Pour configurer le client MCP, donnez les chemins absolus de `.venv/bin/python` et de `scripts/akasha-mcp.py`. Le serveur choisit le backend de l’OS où tourne ce processus.
+
+| Outil | Arguments | Résultat |
+| --- | --- | --- |
+| `image_start` | `prompt`, de 1 à 1 500 caractères | Identifiant `task_id` et mise en file |
+| `image_status` | `task_id` | État, artefact à approuver ou verdict |
+| `image_resume` | `task_id` | Nouvelle vérification du cache et reprise de la demande conservée |
+| `image_result` | `task_id` | État structuré et, après réussite, PNG en contenu image MCP |
 
 1. Appelez `image_start` avec la description dans `prompt`, puis suivez `image_status` avec le `task_id` retourné.
 2. Si le statut est `awaiting_download_approval`, la réponse indique l’artefact, sa source, sa taille, sa licence et son SHA-256. Dans un terminal interactif, lancez `python -m akasha_brain.image_cli --prepare` et examinez chaque téléchargement séparément. Avec un cache personnalisé, indiquez le même dossier dans `--image-runs` pour MCP et `--runs` pour la CLI. L’agent reprend ensuite la demande initiale avec `image_resume`.
 3. Une fois le statut `passed`, appelez `image_result`. Le client reçoit le verdict structuré et un contenu MCP `image/png`. Il peut enregistrer le PNG et comparer l’empreinte à `verdict.png.sha256`.
 
 Les identifiants et les PNG restent disponibles pendant la durée de vie du processus MCP. Le client peut conserver le fichier qu’il reçoit.
+
+Les états sont `waiting`, `running`, `awaiting_download_approval`, `passed` et `failed`. Une reprise admise conserve le même `task_id` et la description initiale. `wall_s` mesure la dernière tentative exécutée. Les accords sont recueillis dans la CLI interactive, avec un reçu distinct pour chaque artefact téléchargé.
+
+Pour un cache personnalisé sous Windows, configurez le serveur avec `"--image-runs", "D:/cache/akasha-images"`, puis lancez cette commande dans un terminal.
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.image_cli --prepare `
+    --runs 'D:/cache/akasha-images' --python-runtime $pythonPortable
+```
+
+Sous Linux, configurez `--image-runs` avec le même chemin absolu que `--runs` dans cette commande.
+
+```bash
+./.venv/bin/python -m akasha_brain.image_cli --prepare --runs "$HOME/AkashaBrain/runs"
+```
+
+`--prepare` vérifie et complète les artefacts après les accords. L’appel `image_resume` suivant effectue la qualification si nécessaire, puis génère le selfie dans un bac neuf. Avec `--project`, choisissez un cache extérieur au projet configuré.
 
 Avec le moteur déjà qualifié en cache, le client MCP a récupéré le selfie vérifié en **50,2 s** dans Windows Sandbox et en **29,7 s** sous Ubuntu WSL2 avec Bubblewrap. Les deux bacs étaient sans fenêtre et hors ligne. Le client a recalculé le SHA-256 des PNG et l’a comparé au verdict. [Relevé des rejeux](bench/results/image-mcp-headless-v1.json)
 
@@ -208,3 +248,4 @@ Dans le parcours complet, le premier diff Rbitnet, obtenu avec la graine 742, a 
 - [Notes de recherche](docs/research/research-notes.md) — bibliographie annotée et implications pour le système.
 - [Plan de développement](docs/plans/development-plan.md) — étapes et critères du MVP.
 - [Validation du graphe complet Notes](docs/plans/phase1_status.md#graphe-complet-rbitnet-cpu-et-rapidocr-v2) et [configuration de l’évolution intégrée](docs/plans/phase6_status.md#raccordement-à-linterface-desktop).
+- [Profil des bacs et export PNG](bench/harness/sandbox_profile.md#exécution-image-sans-fenêtre-sur-windows-et-linux) — contrôles de confinement et transport des images.

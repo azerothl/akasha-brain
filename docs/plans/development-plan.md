@@ -1,16 +1,24 @@
 # Akasha Brain — Plan de développement
 
-**Statut :** plan v0.16, issu de la spécification v0.17\
-**Date :** 2026-11-16\
-**Banc d'essai initial :** bureau & code local (poste Windows d'abord, environnement isolé). La cible de fond reste le modèle du monde spatial et l'action dans un environnement.
+**Statut :** plan v0.18, issu de la spécification v0.19\
+**Date :** 2026-11-17\
+**Banc d'essai initial :** bureau & code local (poste Windows d'abord, environnement isolé). La cible produit est l’agent universel local à domaines croissants. La piste spatiale est séparée.
 
 ## Objectif
 
 Construire progressivement le système décrit par la [spécification d'architecture](../architecture/brain-system-spec.md), en prouvant à chaque phase une capacité mesurable contre une baseline fixe, avant d'ajouter la suivante. Fondements et limites : [notes de recherche](../research/research-notes.md).
 
+## État livré au 17 novembre 2026
+
+Les phases 0 à 6 ont leurs preuves de qualification sur le banc bureau et code Windows. L’application desktop expose la conversation, les tâches et l’évolution intégrée. Les extensions livrées depuis cette qualification comprennent la planification des demandes libres, le résumé détaillé du code, l’accès agent via MCP et la récupération de capacités déclarées. [Audit et extensions livrées](phase6_status.md)
+
+Le parcours image dispose d’une exécution commune sur CPU avec deux backends headless, Windows Sandbox et Bubblewrap sous Linux. La conversation Windows, la CLI et MCP utilisent la même chaîne de découverte, d’accord par artefact, de qualification et de validation du PNG. Le serveur MCP a été vérifié avec le moteur déjà qualifié et à cache vide. Les deux rejeux à cache vide ont exercé des accords distincts et la reprise du selfie sous le même identifiant. Les réponses d’accord étaient simulées dans la CLI, avec des sources locales pour les artefacts approuvés. [Rejeux MCP](../../bench/results/image-mcp-headless-v1.json) · [Cache vide](../../bench/results/image-mcp-cold-cache-v1.json)
+
+La qualification Linux publiée couvre les images en CLI et MCP sous Ubuntu WSL2 avec un compte non privilégié. Les parcours Notes, projet et interface desktop ont été qualifiés sur Windows.
+
 ## Périmètre et critères du MVP
 
-Le MVP est une application desktop Windows d'abord, composée de deux parcours et d'une évolution automatique limitée au banc isolé. Le périmètre est décrit dans la spec §2.6 et §11.7 ; le modèle du monde spatial reste la cible de fond.
+Le MVP est une application desktop Windows d'abord, composée de deux parcours et d'une évolution automatique limitée au banc isolé. Le périmètre est décrit dans la spec §2.6 et §11.7. La cible produit post-MVP est l’agent universel local. La piste spatiale est séparée.
 
 - **Banc de référence — notes :** créer une petite application réelle et son dépôt avec un bug volontaire : « Enregistrer » affiche la note et annonce le succès, mais ne la persiste pas ; après fermeture et relance, la note a disparu. Le langage, l'interface, le stockage et le détail de l'implémentation fautive sont choisis en Phase 0 ; état initial, données et vérificateurs sont figés et restaurables.
 - **Vérifications notes :** reproduire l'échec, corriger dans le bac, puis vérifier que la note réapparaît avec son contenu exact après arrêt et relance. Les non-régressions vérifient deux notes distinctes, dont une avec accents et plusieurs lignes. Présenter diff et résultats ; les tests et l'oracle sont protégés contre les modifications du candidat.
@@ -152,7 +160,7 @@ La sortie du MVP doit démontrer les deux parcours sur CPU, une évolution autom
 
 **Risques / rollback :** dynamique apprise surcréditée → ablation obligatoire et politique sans modèle du monde conservée comme repli ; rollback = désactivation du prédicteur. Les résultats ne valident pas à eux seuls la perception spatiale ni l'action dans un environnement physique.
 
-Différés sur ce banc : reconstruction 3D métrique, contrôle continu, génération d'écran comme preuve. Ces capacités restent compatibles avec la cible de fond et nécessitent un plan de recherche et d'évaluation dédié.
+Différés sur ce banc : reconstruction 3D métrique, contrôle continu, génération d'écran comme preuve. Ces capacités appartiennent à la piste spatiale séparée et nécessitent un plan de recherche et d'évaluation dédié.
 
 ## Phase 6 — Évolution intégrée
 
@@ -167,11 +175,26 @@ Différés sur ce banc : reconstruction 3D métrique, contrôle continu, génér
 
 **Risques / rollback :** dérive silencieuse → alertes sur les métriques de la Phase 5 et retour au niveau d'autonomie de la Phase 3.
 
-## Cible de fond — Modèle du monde spatial et agent incarné
+## Post-MVP — Agent universel local
 
-Le plan de prototype s'arrête à la validation des mécanismes sur le banc bureau & code. La cible de fond reste un agent qui perçoit et suit l'état d'un environnement spatial, prédit les conséquences de ses actions et agit d'abord en simulation, puis dans des environnements réels selon des garanties adaptées au risque. Un plan ultérieur définira les tâches, capteurs, simulateurs, métriques et seuils de passage propres à cette cible ; la Phase 5 ne prétend pas la couvrir.
+Les phases 0 à 6 ont validé les mécanismes sur le banc bureau et code. La suite produit est l’agent universel local (§2.1 de la spec).
 
-## Questions ouvertes (à trancher avant la phase concernée)
+- **G1 ouvre et restaure les sessions avec une mémoire structurée.** Un contrôle hors modèle applique le schéma d’admission avant toute écriture durable de session. Le texte libre, les pièces jointes et les valeurs dont l’admissibilité reste indéterminée demeurent volatiles. Le test de sortie injecte un secret synthétique et vérifie son absence et celle de son empreinte dans les mémoires, fichiers de session, traces, journaux et sauvegardes contrôlés, y compris après redémarrage (§10.6).
+- **G2 ajoute le vault hybride.** Le keystore OS reçoit les secrets admis et le vault applicatif gère les métadonnées de handle. La résolution d’un handle exige une action autorisée et journalisée (§10.6).
+- **G3 diagnostique les lacunes puis cherche une reprise déclarée.** Une approbation requise suspend la demande. `missing` signale l’absence de capacité admissible après recherche, `abstain` clôt une demande insuffisamment étayée et une proposition de construction décrit un candidat soumis à évaluation (§11.8, §14).
+- **G4 simule hors charge et G5 explicite le registre multi-spécialistes.** Les simulations restent sous budget et les tâches interactives sont prioritaires. Le LLM généraliste intervient en secours. G5 mesure la qualification et le rendu image à froid entre `image_resume` et le PNG reçu et vérifié, avec les artefacts déjà présents et vérifiés.
+
+La réouverture d’une session G1 restaure les faits admis. Une tâche image MCP en attente se reprend avec son `task_id` tant que le même serveur tourne. Après un redémarrage du serveur, le client utilise `image_start` et obtient un nouvel identifiant. Les caches restent disponibles et le serveur vérifie les artefacts avant de les réutiliser (§8.7).
+
+L’ordre des livraisons, les dépendances et les preuves figurent dans [product-goal-roadmap-v1.md](product-goal-roadmap-v1.md) (PR-G0 à PR-G5).
+
+## Piste séparée — Modèle du monde spatial et agent incarné
+
+La perception spatiale, les simulateurs et l’action incarnée suivent un plan dédié. PR-G6 peut commencer après PR-G0 et définit tâches, capteurs, métriques et seuils. La Phase 5 valide la prédiction sur le banc bureau et code.
+
+## Questions de conception initiales
+
+Ces questions ont guidé les qualifications successives. Les décisions et les preuves de sortie sont rassemblées dans les statuts de phase et leur [audit de clôture](phase6_status.md#audit-des-preuves-des-phases-0-à-6).
 
 - Effacement et sauvegardes : les durées et principes par défaut sont décidés (§10.2, §10.5). Avant la Phase 1, choisir les mécanismes de chiffrement, clés, suppression, marqueurs et critères de preuve ; vérifier leur fonctionnement dans le MVP, puis livrer avant la fin de la Phase 2 la preuve bout-en-bout et les tests de non-résurrection sur l'ensemble des stockages concernés. La suppression d'une donnée utilisée par un modèle entraîné doit être traitée avant la Phase 4.
 - Entraînement partagé : format d'accord explicite et portée de consentement ; méthodes validées de reconstruction, désapprentissage ou retrait d'un modèle — avant la Phase 4.

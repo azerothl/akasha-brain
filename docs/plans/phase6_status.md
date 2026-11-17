@@ -88,3 +88,27 @@ Le retour demandé depuis l’interface a été exercé dans une session distinc
 | 6 | Gains attribués pour la route et la compétence, arbitrage mémoire, promotions bornées et signées, refus R2/R3 sur le banc, reprise du suivi desktop et retours signés au niveau de phase 3. [Repli intégré](../../bench/results/phase6-integrated-v1.json) · [Lanceur desktop](../../bench/results/phase6-desktop-restart-v1.json) |
 
 La qualification porte sur le MVP local Windows bureau et code, sur le matériel et les scénarios mesurés.
+
+## Interfaces et capacités livrées après la qualification du banc
+
+La conversation Windows transmet les demandes libres au planificateur et au registre des capacités. Elle peut examiner un projet Python ou npm, comparer des documents et lire une sélection du code pour produire un résumé détaillé. Sur Documentalist, l’analyse en lecture seule a consulté 49 sources et vérifié 12 références. Les 163 empreintes comparées et l’état Git étaient identiques après le rejeu. [Résumé du code](../../bench/results/documentalist-code-summary-v1.json)
+
+Le serveur MCP local expose le plan, le lancement et le résultat Notes. Pour un projet configuré, il prépare une proposition dans Windows Sandbox et restitue le diff vérifié. Le parcours projet a exercé l’approbation dans l’interface Windows avant application. [Notes via MCP](../../bench/results/windows-interface-mcp-notes-v1.json) · [Projet via MCP](../../bench/results/mcp-real-project-v1.json)
+
+Une capacité manquante déclenche une découverte des fournisseurs déclarés et un relevé technique. RapidOCR est qualifié sur des images synthétiques avant la reprise de la lecture demandée. SD-Turbo utilise l’archive CPU et les poids épinglés après les accords correspondants, puis une qualification synthétique et un nouveau bac pour la demande. [Reprise RapidOCR](../../bench/results/conversation-capability-recovery-v1.json) · [CLI Windows et Linux](../../bench/results/image-windows-linux-v1.json)
+
+### Génération d’images headless via MCP
+
+Le client suit `image_start` par `image_status` et récupère le PNG avec `image_result`. Lorsqu’un artefact manque, l’opérateur donne l’accord dans la CLI interactive, puis `image_resume` reprend la description avec le même identifiant de tâche. Les identifiants image et les PNG restent accessibles pendant la durée de vie du serveur.
+
+| Parcours MCP | Windows Sandbox | Ubuntu WSL2 avec Bubblewrap |
+| --- | ---: | ---: |
+| Moteur déjà qualifié, jusqu’au PNG reçu et vérifié | 50,224 s | 29,683 s |
+| Cache vide, deux accords et qualification inclus | 100,923 s | 63,877 s |
+| Après les deux accords, de la reprise au PNG | 95,664 s | 57,611 s |
+
+Les rejeux à cache vide ont refusé le moteur, puis accepté le moteur et refusé les poids, puis accepté les poids. Les réponses d’accord ont été simulées dans la CLI. Le transport des artefacts a utilisé une source locale contenant les fichiers épinglés déjà approuvés. Chaque rejeu a vérifié deux reçus distincts, une seule demande initiale et la reprise du même `task_id`.
+
+Les rendus et les qualifications ont été exécutés dans les bacs réels sans fenêtre, hors ligne et avec les entrées en lecture seule. Le client a obtenu `passed`, décodé le PNG 512 × 512 et recalculé son SHA-256. Les empreintes correspondent à celles du selfie déjà mesuré sur chaque OS. Les preuves confirment l’arrêt des bacs. [MCP avec qualification en cache](../../bench/results/image-mcp-headless-v1.json) · [MCP à cache vide](../../bench/results/image-mcp-cold-cache-v1.json)
+
+La suite applicative Windows et les contrats ont passé 264 tests au jalon MCP image. Les tests ciblés MCP et image Linux en ont passé 10. Les trois échecs des versions fautives figées de Notes et Tâches ont été reproduits sur le commit parent. Le périmètre Linux mesuré porte sur les images en CLI et MCP sous Ubuntu WSL2. [Validation du jalon MCP](../../bench/results/image-mcp-headless-v1.json)

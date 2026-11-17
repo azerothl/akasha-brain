@@ -1,7 +1,7 @@
 # Akasha Brain — Spécification d’architecture
 
-**Statut :** proposition de conception, v0.17\
-**Date :** 2026-11-16\
+**Statut :** proposition de conception, v0.19\
+**Date :** 2026-11-17\
 **Portée :** architecture fonctionnelle et technique, sans framework ni fournisseur imposé
 
 > **Révision v0.2 (2026-11-13) :** premier terrain arrêté (bureau & code local), compléments issus d'une recherche sourcée sur l'orchestration, les contrats, le routage local, la mémoire, les modèles du monde bureau et l'évaluation/sécurité. Voir §2.5, §6.1, §8.4, §9.7, §10.1, §11.6, §13.5, §19 révisé, les [notes de recherche](../research/research-notes.md) et le [plan de développement](../plans/development-plan.md). Les seuils chiffrés restent à mesurer en Phase 0/1 ; aucun chiffre de la littérature n'est repris comme seuil universel (§2.4).
@@ -36,6 +36,10 @@
 
 > **Révision v0.17 (2026-11-16)** — Le banc Tâches évalue une porte de décision facultative qui produit `ready`, `abstain` ou `blocked` en une passe. Le candidat épinglé est `akasha-model==0.3.0` (MIT, Path A déterministe sans torch), avec les décisions typées `Choice`, `Score` et `Noul`. Le routage déterministe est actif par défaut. L’autorisation hors modèle et les approbations humaines s’appliquent dans les deux configurations (§8.6, §17, §19).
 
+> **Révision v0.18 (2026-11-17)** — Raccordement de la conversation au planificateur et au registre, récupération de capacités déclarées, contrat d’exécution image commun à Windows et Linux et accès MCP local. La qualification et l’export PNG sont vérifiés dans un bac headless. Les téléchargements du moteur et des poids demandent chacun un accord hors modèle (§6.3, §8.7, §11.8).
+
+> **Révision v0.19 (2026-11-17)** — But produit figé. Agent local multi-spécialistes à domaines croissants avec abstention. Session portant des projets. Vault hybride (keystore OS pour les secrets, vault applicatif pour les handles). Cible produit = agent universel local. Piste spatiale séparée. Feuille de route post-MVP dans [product-goal-roadmap-v1.md](../plans/product-goal-roadmap-v1.md) (§2.1, §2.3, §2.4, §2.5, §17, §19).
+
 ## 1. Résumé
 
 Akasha Brain est un système agentique composé de capacités spécialisées et hétérogènes. Une capacité peut être un petit modèle de langage, un modèle de vision ou d’audio, un modèle du monde, un outil déterministe, un moteur symbolique, une compétence procédurale, une mémoire ou un adaptateur d’environnement.
@@ -52,9 +56,13 @@ Une erreur ne signifie pas automatiquement qu’il manque un modèle. Elle peut 
 
 ### 2.1 Vision
 
-L’analogie du cerveau décrit le système souhaité : des parties spécialisées reliées par des voies qui apprennent à fonctionner ensemble. C’est une analogie d’architecture, pas une prétention à reproduire la biologie.
+Akasha Brain est un agent local multi-spécialistes. Il reçoit une demande dans une session, la décompose, l’oriente vers des capacités déclarées et vérifie le résultat dans l’environnement. Il élargit ses domaines par composition et apprentissage mesuré. Lorsqu’une capacité manque, il cherche une voie de reprise autorisée, suspend la tâche si un accord est nécessaire ou rend une issue motivée selon le §11.8.
+
+L’analogie du cerveau décrit l’architecture. Des parties spécialisées sont reliées par des voies qui apprennent à fonctionner ensemble. Ce n’est pas une prétention à reproduire la biologie ni à garantir une intelligence générale.
 
 Une nouvelle capacité peut être un solveur, un contrôleur, une représentation spatiale, un adaptateur, une mémoire procédurale ou une conversion de format, pas nécessairement un réseau neuronal. Une nouvelle liaison peut rendre utilisable une compétence déjà présente.
+
+L’unité d’interaction est la **session**. Une session porte zéro ou plusieurs projets et a une mémoire de session distincte de la mémoire globale. Dès G1, les écritures de session excluent les secrets selon le §10.6. G2 ajoute un **vault hybride**. Le keystore OS détient les secrets et la mémoire opérationnelle les référence par des handles dont le vault applicatif conserve les métadonnées. Hors charge interactive, le système peut simuler des cas synthétiques admissibles sous budget, sans retarder une tâche utilisateur.
 
 ### 2.2 Principes
 
@@ -74,29 +82,38 @@ Une nouvelle capacité peut être un solveur, un contrôleur, une représentatio
 Le système doit :
 
 - comprendre une demande et en préserver l’intention, les contraintes et la définition de réussite;
+- isoler le travail dans une session qui peut porter des projets;
 - décomposer un objectif en sous-tâches composables;
 - router ces sous-tâches vers des capacités adéquates;
 - exécuter des workflows séquentiels, conditionnels, parallèles et itératifs bornés;
-- relier texte, code, vision, audio, calcul, mémoire et actions;
+- relier texte, code, vision, audio, image, calcul, mémoire et actions;
 - observer un environnement, prédire l’effet d’actions candidates et vérifier leurs effets;
+- s’abstenir ou signaler une capacité manquante plutôt que forcer une réponse;
 - réutiliser des workflows et compétences validés;
-- détecter les lacunes récurrentes et proposer des changements;
+- détecter les lacunes récurrentes et proposer des changements sous garde-fous;
 - évaluer, versionner, surveiller et annuler les évolutions;
+- conserver le contexte de session et une mémoire globale sous rétention;
+- sceller les secrets dans le vault hybride et n’exposer que des handles en mémoire opérationnelle;
+- simuler hors charge des cas synthétiques admissibles sans préempter une tâche interactive;
 - prendre en compte latence, coût, ressources, risque et confidentialité.
 
 ### 2.4 Hors périmètre de la première version
 
 - Entraîner tous les modèles à partir de zéro.
-- Garantir une intelligence générale ou une auto-amélioration illimitée.
+- Garantir une intelligence générale, une couverture de toute demande, ou une auto-amélioration illimitée.
 - Exiger que chaque capacité soit un réseau neuronal.
 - Laisser un nœud de travail modifier directement le graphe actif, les permissions ou le code de production.
+- Improviser une capacité ou une permission hors registre et hors classes de risque.
 - Supposer qu’un seul modèle du monde couvre tous les environnements et toutes les échelles.
 - Définir des seuils universels de réussite ou de latence sans premier cas d’usage.
 - Décider maintenant entre hébergement local, cloud ou hybride pour les terrains ultérieurs (le banc d'essai initial est défini au §2.5 ; les autres restent ouverts).
+- Livrer la piste spatiale incarnée dans le même calendrier que l’agent universel local (§17).
 
-### 2.5 Décision v0.5 — banc d'essai initial
+### 2.5 Décision v0.5 — banc d'essai initial (révisée v0.19)
 
-Le premier terrain implémenté est le **bureau & code local** (poste Windows d'abord), exécuté en environnement isolé, comme banc d'essai pour valider les contrats, la composition du graphe, les actions et l'évaluation reproductible. Il ne constitue ni la cible produit finale ni un substitut au modèle du monde spatial. La vision de fond reste un agent capable de percevoir un environnement spatial, d'en suivre l'état et d'agir dans cet environnement, d'abord en simulation puis selon des garanties adaptées au risque. Le bureau & code sert à éprouver les fondations avec des résultats vérifiables : tests du dépôt, état final des fichiers et des applications, rollback par git ou snapshot. Les décisions détaillées figurent au §19. En résumé :
+Le premier terrain implémenté est le **bureau & code local** (poste Windows d'abord), exécuté en environnement isolé, comme banc d'essai pour valider les contrats, la composition du graphe, les actions et l'évaluation reproductible. Il ne constitue pas la cible produit finale.
+
+La **cible produit** est un agent universel local à domaines croissants, avec abstention honnête hors couverture. La perception spatiale et l’action incarnée forment une **piste de recherche séparée**, sans calendrier partagé avec les livraisons produit post-MVP (§17). Le bureau & code sert à éprouver les fondations avec des résultats vérifiables : tests du dépôt, état final des fichiers et des applications, rollback par git ou snapshot. Les décisions détaillées figurent au §19. En résumé :
 
 - hébergement mono-poste local par défaut, modèles locaux ou distants selon le manifeste ;
 - Rbitnet prioritaire pour les modèles GGUF compatibles ; d'autres moteurs sont accessibles par adaptateur et le gestionnaire de ressources coordonne leur mémoire (§6.2) ;
@@ -328,6 +345,16 @@ Les appels actifs détiennent une référence sur leur modèle et leurs ressourc
 
 **Fonctions avancées optionnelles.** Chargement partiel, placement hybride, maintien au chaud, transfert ou rétrogradation RAM/VRAM sans redémarrage et métriques détaillées ne sont exigés que si le backend les annonce et si leur utilité est démontrée. Les évaluer par scénario avant de modifier Rbitnet ; un moteur neuf n'est pas un prérequis. Les contraintes de compatibilité, la mesure par périphérique et la couverture des autres modalités restent des travaux de Phase 0/1.
 
+### 6.3 Exécution image commune à Windows et Linux
+
+L’implémentation de `image.generate` utilise stable-diffusion.cpp CPU `master-955-b7a74e6` et les poids SD-Turbo Q4_0 épinglés. La découverte, les accords par artefact, la qualification et la validation du PNG sont communs aux deux OS. Le protocole `ImageBackend` expose `identity`, `execute` et `verifies`. Le backend fournit une preuve de confinement et les octets exportés au contrôleur commun.
+
+Windows utilise Windows Sandbox sans client graphique, avec un montage en lecture seule et les canaux réseau, presse-papiers, audio, vidéo, imprimantes et vGPU désactivés. Le contrôleur associe l’instance Sandbox au système de calcul HCS et récupère le PNG par `hcsdiag.exe`. Linux utilise Bubblewrap sous un compte non privilégié, avec espaces de noms privés, réseau isolé, entrées en lecture seule et espace de travail temporaire privé. La qualification Linux publiée a été réalisée sous Ubuntu WSL2.
+
+L’admission réserve 8 192 Mio pour l’inférence CPU. Le contrôleur vérifie le confinement, la fin du bac et une sortie PNG bornée à 2 Mio. La validation commune contrôle le décodage, les dimensions 512 × 512 et le caractère non uniforme de l’image, puis normalise en RGB et retire les métadonnées. La preuve comporte la taille et le SHA-256 du PNG normalisé, ainsi que l’empreinte du flux reçu.
+
+Le cache est associé à `capability-recovery.sqlite`. Une qualification synthétique est réutilisée tant que l’identité du candidat et sa preuve correspondent. Une nouvelle qualification est suivie de l’exécution de la demande dans un bac neuf. Les archives Windows et Linux ont leurs propres tailles et empreintes, et les poids sont communs. La source, la licence et les SHA-256 sont épinglés dans le catalogue d’artefacts. Chaque téléchargement R3 recueille un accord spécifique avant la requête et produit un reçu à usage unique. [Parcours CLI](../../README.md#générer-une-image-sans-fenêtre-en-cli) · [Preuves MCP](../../bench/results/image-mcp-headless-v1.json)
+
 ## 7. Familles spécialisées possibles
 
 Le registre peut grandir progressivement; toutes ces familles ne sont pas requises dans le premier prototype.
@@ -375,7 +402,7 @@ Un grand modèle généraliste n'est pas une étape normale de la cascade. Il ne
 
 Le routage appris est une **activité journalisée** à l'intérieur du workflow, pas une étape du workflow déterministe lui-même : le planificateur/routeur structurel reste pur et reproductible, le choix appris est enregistré dans la trace avec ses entrées. Investir d'abord dans la capacité de l'orchestrateur/planificateur ; les sous-agents restent étroits, sans raisonnement étendu par défaut, et leur contribution est mesurée (§12).
 
-Côté runtime, un graphe explicite état/nœuds/liens compilé et validé (orphelins rejetés), un checkpointer durable (SQLite en mono-poste Phase 1), des interruptions sérialisables pour l'approbation humaine, une politique de retry bornée **restreinte aux erreurs transitoires** et des timeouts par nœud satisfont les Phases 0-3. Les clés d'idempotence `(goal_id, node, version, input_hash)` protègent écritures de fichiers et exécutions de code. Aucun moteur externe ne fournit le registre de contrats, les permissions ni l'évolution Akasha : ils se construisent au-dessus (§6, §13).
+Côté runtime, un graphe explicite état/nœuds/liens compilé et validé (orphelins rejetés), un checkpointer durable (SQLite en mono-poste Phase 1), des interruptions sérialisables pour l'approbation humaine, une politique de retry bornée **restreinte aux erreurs transitoires** et des timeouts par nœud satisfont les Phases 0-3. Chaque parcours déclare la durée de vie de ses états de reprise (§8.5, §8.7). Les clés d'idempotence `(goal_id, node, version, input_hash)` protègent écritures de fichiers et exécutions de code. Aucun moteur externe ne fournit le registre de contrats, les permissions ni l'évolution Akasha : ils se construisent au-dessus (§6, §13).
 
 Côté traces, mapper la trace Akasha sur les spans OpenTelemetry GenAI (un span par invocation de nœud) via une couche d'adaptation épinglée : ces conventions sont en statut Development et ne doivent pas devenir le contrat public. Ne jamais logger par défaut prompts, secrets ou contenus bureau/code bruts.
 
@@ -383,7 +410,7 @@ Côté traces, mapper la trace Akasha sur les spans OpenTelemetry GenAI (un span
 
 **Lease exclusif par environnement.** Chaque adaptateur mono-instance (bureau, dépôt actif) délivre un lease exclusif par objectif. Une action à effet de bord acquiert le lease juste avant l'effet et le libère après observation ; un objectif en attente d'approbation ne détient aucun lease. Les objectifs concurrents sur un même adaptateur sont sérialisés en file d'attente, jamais entrelacés. Le parallélisme ne reste possible que sur des ressources disjointes (§8.2) ; en Phase 0-1, un seul objectif touche l'environnement à la fois. Le besoin de focus ou de clavier est déclaré au manifeste (`focus_required`) et sérialisé comme le lease ; les prises de focus sont comptées dans la trace. L'utilisateur peut préempter un objectif par un contrôle indépendant des modèles (§9.6) : pause journalisée, reprise au prochain point sûr.
 
-**Approbations en attente.** Une demande d'approbation est un enregistrement sérialisable — objectif, nœud, descripteur d'action, classe de risque (§13.6), aperçu du diff ou de l'effet, échéance — persisté au checkpointer (§8.4), jamais dans le journal d'audit ; il est soumis aux durées de conservation et à l'effacement des contenus (§10). Le workflow est suspendu sans détenir de lease. À l'échéance : pause typée `approval_expired` (famille délai, §14), l'action n'est pas exécutée et n'est jamais auto-approuvée ; une reprise émet une nouvelle demande avec une nouvelle échéance. La notification est locale (toast, journal) ; tout canal sortant de notification serait lui-même R3 et reste désactivé par défaut (§13.7).
+**Approbations en attente.** Pour un parcours à reprise durable, le checkpointer (§8.4) enregistre la demande d’approbation avec son objectif, son nœud, son descripteur d’action, sa classe de risque (§13.6), l’aperçu du diff ou de l’effet et son échéance. Cet enregistrement suit les règles de conservation et d’effacement (§10). Le journal d’audit reçoit les métadonnées minimales de décision. Le workflow en attente libère son lease. L’expiration produit `approval_expired` (§14) et toute reprise exige une nouvelle demande avec une nouvelle échéance. Les notifications restent locales par défaut (§13.7). Pour l’image via MCP, l’attente de tâche vit dans le processus serveur et la CLI recueille les accords de téléchargement (§8.7).
 
 **Décision signée (interprétation du §11.6).** Sur mono-poste, « signée » désigne une entrée append-only du journal d'audit : horodatage, catégorie d'acteur, classe d'action, décision, descripteur d'action expurgé si nécessaire, version de politique et de capacité exécutée, digest de l'entrée précédente. Elle n'inclut ni prompt, contenu utilisateur, identifiant direct, artefact, ni digest du contenu utilisateur. Une signature cryptographique par keystore OS peut être ajoutée sans changer le format ; aucune infrastructure PKI en Phase 0-1.
 
@@ -402,6 +429,16 @@ Le contrat est indépendant du paquet. La version, l’empreinte, la licence et 
 Le pilote du MVP couvre le Path A de `akasha-model==0.3.0` (MIT) sur le banc Tâches CPU. Après accord de téléchargement (§13.5.1), le bac vérifie l’empreinte de la roue et l’installe hors ligne. L’option `--gate-request` active le pilote pour évaluer la proposition produite par le routeur.
 
 L’hôte conserve la responsabilité des autorisations (§13), des classes de risque (§13.6), des approbations humaines, des `RemoteInferenceGrant` (§8.4) et des permissions du GoalSpec. Après un verdict `ready`, il revérifie le GoalSpec et la décision du registre avant l’exécution. Une promotion exige les preuves du §11.6, dont un gain attribué face au routage déterministe et les contrôles de non-régression des autres familles. Le pilote a obtenu 12/12 comme la référence sur la matrice et a augmenté le temps du rejeu apparié. Le routage déterministe est donc actif par défaut. [Résultats du pilote](../plans/phase4_status.md#porte-de-décision-tâches-avec-akasha-model-030)
+
+### 8.7 Accès MCP local
+
+Le serveur stdio `scripts/akasha-mcp.py` expose les outils Notes, la préparation de projet lorsque `--project` est configuré et la génération d’images. Notes et les propositions relisent leurs rapports durables. Le registre persistant des images conserve la qualification et les décisions techniques. Le processus MCP conserve en mémoire la demande, l’état d’attente, le résultat et l’identifiant de la tâche image.
+
+Le parcours image expose `image_start(prompt)`, `image_status(task_id)`, `image_resume(task_id)` et `image_result(task_id)`. Le serveur fait passer une tâche par `waiting`, `running`, puis `passed`, `failed` ou `awaiting_download_approval`. L’attente décrit l’artefact manquant et ses références de provenance. L’opérateur utilise la CLI interactive `image_cli --prepare` avec le même cache pour donner chaque accord. `image_resume` revérifie le cache et reprend la description conservée avec le même identifiant. Si un artefact manque toujours, la tâche reste en attente de son accord. La réussite restitue le verdict structuré et le PNG dans un contenu MCP `image/png`.
+
+Après un redémarrage du serveur, l’ancien `task_id` est inconnu. Le client soumet de nouveau la demande avec `image_start` et reçoit un nouvel identifiant. Le serveur vérifie les artefacts présents et réutilise la qualification compatible. Tout téléchargement nécessaire suit l’accord par artefact. La réouverture d’une session G1 restaure le contexte durable admis de la conversation (§10.6).
+
+`--runs` choisit le stockage des essais Notes et des propositions de projet. `--image-runs` choisit le registre et le cache des images. Les tâches MCP passent par la file desktop partagée du serveur pour sérialiser l’accès au bac. Les réservations d’inférence coordonnent le moteur d’image avec les autres modèles locaux. [Configuration et outils](../../README.md#utiliser-akasha-brain-depuis-un-agent)
 
 ## 9. Système spatial et modèle du monde
 
@@ -445,7 +482,7 @@ Sur le banc d'essai bureau/code, l'état est discret et largement observable (ar
 - **5c Prédiction d'exécution de code** subordonnée à l'interpréteur et aux tests réels, qui restent l'oracle exact (§9.5).
 - **5d Vérificateur de transition** comme garde supplémentaire avant envoi, suppression ou commit — jamais comme gate unique : un score probabiliste ne remplace ni le vérificateur déterministe ni l'approbation humaine (§11.5, §13).
 
-Différés **sur ce banc d'essai** : reconstruction 3D métrique, profondeur/pose, contrôle continu, entraînement d'un encodeur visuel général from scratch. Ces sujets ne sont pas exclus de la cible de fond ; ils demanderont un plan dédié aux environnements spatiaux et à l'action. Métriques du banc : succès vérifié par l'état final, exactitude du delta d'état par horizon, gain de sélection d'action à politique figée, faux-acceptés du vérificateur, écart prévu/observé par variable, latence/coût par décision, taux de rollback réussi. Le prédicteur du banc s'entraîne sur les transitions (état, action, état) collectées en Phases 1-3 ; elles ne suffisent pas à valider un modèle spatial général.
+Différés **sur ce banc d'essai** : reconstruction 3D métrique, profondeur/pose, contrôle continu, entraînement d'un encodeur visuel général from scratch. Ces sujets appartiennent à la piste spatiale séparée (§17) ; ils demanderont un plan dédié aux environnements spatiaux et à l'action. Métriques du banc : succès vérifié par l'état final, exactitude du delta d'état par horizon, gain de sélection d'action à politique figée, faux-acceptés du vérificateur, écart prévu/observé par variable, latence/coût par décision, taux de rollback réussi. Le prédicteur du banc s'entraîne sur les transitions (état, action, état) collectées en Phases 1-3 ; elles ne suffisent pas à valider un modèle spatial général.
 
 ## 10. Mémoire et compétences
 
@@ -509,6 +546,12 @@ L'utilisateur peut donner **avant réutilisation** un accord explicite pour un p
 
 **Restauration.** Conserver hors de la version à restaurer un registre minimal et protégé de marqueurs de suppression, distinct du journal d'audit, aussi longtemps qu'une sauvegarde susceptible de réintroduire les données existe. Avant toute exposition ou utilisation d'une restauration, appliquer les marqueurs et les échéances ; si ce registre est absent ou invérifiable, refuser la restauration ou son exposition jusqu'à résolution. Aucun contenu brut ni empreinte de contenu utilisateur ne figure dans le journal d'audit immuable. Le choix du chiffrement, le stockage et la récupération des clés, le mécanisme de suppression dans les sauvegardes et les preuves associées restent à spécifier et tester en Phases 0 à 2 ; ces exigences décrivent le MVP à construire, pas des capacités déjà implémentées.
 
+### 10.6 Sessions et protection des secrets dès G1
+
+Avant toute écriture durable de session, un contrôle hors modèle vérifie les champs et les valeurs selon un schéma fermé. Il admet les identifiants internes, les références de projets autorisés, les métadonnées de rétention et les faits structurés dont l’admissibilité est établie. Les demandes et réponses en texte libre, les pièces jointes et les valeurs dont l’admissibilité reste indéterminée demeurent en mémoire volatile. Les fichiers de session, mémoires, traces, journaux et sauvegardes contrôlés excluent les secrets et leurs empreintes, y compris dans les dérivés et les diagnostics de refus. Les liens vers la mémoire globale suivent les mêmes contrôles et la politique de réutilisation du §10.4.
+
+G1 permet de rouvrir les faits admis d’une session après redémarrage, sous réserve des échéances et de l’effacement (§10.2, §10.5). Son critère de sortie vérifie l’isolation entre deux sessions ouvertes sur un même projet et l’absence d’un secret synthétique et de son empreinte dans les copies contrôlées, avant et après redémarrage. G2 ajoute le scellage dans le keystore OS, le stockage des métadonnées de handle dans le vault applicatif et la résolution par une action autorisée et journalisée.
+
 ## 11. Boucle d’auto-évolution
 
 ### 11.1 Cycle de changement
@@ -558,6 +601,14 @@ La promotion suit des paliers explicites : **replay (0 %) → observation/shadow
 - **Évaluation :** construire un graphe candidat versionné dans un environnement isolé ; vérifier ses contrats et préconditions ; exécuter replay, observation et exposition limitée dans le banc avant activation (§11.6). La suite de tests, ses vérificateurs et ses références sont fixés en dehors du candidat ; celui-ci ne peut ni les modifier ni choisir seul une condition qui le ferait réussir. Les tâches de développement et validation servent à la comparaison ; la variante de transfert reste réservée à une évaluation indépendante et doit être renouvelée si des usages répétés risquent de la contaminer.
 - **Décision :** les critères critiques de sécurité, de permissions et de correction ne sont jamais compensés par une économie de ressources. Privilégier une fiabilité supérieure démontrée ; à fiabilité démontrée comparable, préférer une latence ou une consommation plus faible, dans les budgets fixés. Seuils, méthode statistique et niveau de preuve sont définis après les mesures de Phase 0/1 ; trois essais sont du profilage, pas une preuve de gain ou d'équivalence. Données insuffisantes, échec d'un contrôle ou résultat ambigu : le candidat n'est pas activé.
 - **Activation et retour :** la politique, hors modèle de travail, peut promouvoir automatiquement la version candidate validée pour le banc R0/R1. La décision, les versions, les évaluations et le motif sont journalisés sans contenu utilisateur brut ; une exécution déjà commencée garde sa version. Sur régression ou demande utilisateur, retour sûr à une version antérieure et suivi de l'état. Aucun recours distant ou grand modèle n'est déclenché hors de la politique et du grant applicables.
+
+### 11.8 Récupération des capacités déclarées
+
+La conversation transmet les demandes libres au planificateur et au registre. Lorsqu’une capacité manque, le contrôleur recherche les artefacts des fournisseurs déclarés et consigne la lacune dans `capability-recovery.sqlite`. Les fournisseurs intégrés couvrent la lecture d’image avec RapidOCR et la génération locale d’images avec SD-Turbo. Une capacité dépourvue d’adaptateur compatible reste en attente avec un motif.
+
+RapidOCR est qualifié sur des images synthétiques avant la lecture demandée. Le parcours image suit les accords, l’identité et la qualification du §6.3. Le contrôleur reprend la demande après activation, réutilise les preuves compatibles et retire l’activation si le contrôle de sortie échoue. La reprise emploie les implémentations déclarées et les autorisations vérifiées hors modèle. Les candidats de workflow continuent de suivre les paliers du §11.7. [Reprise RapidOCR](../../bench/results/conversation-capability-recovery-v1.json) · [Reprise image à cache vide](../../bench/results/image-mcp-cold-cache-v1.json)
+
+G3 ordonne les démarches possibles pour une demande. Le planificateur vérifie d’abord les préconditions et les permissions, puis cherche un chemin déclaré et une reprise locale autorisée. Si cette reprise exige un accord, la tâche attend la décision dans le parcours prévu (§8.5, §8.7). Une fois le prérequis vérifié, elle reprend la demande initiale. Si aucun chemin déclaré ni reprise locale ne convient, G3 évalue les voies A–D admissibles sur un graphe candidat isolé. Une proposition de niveau E exige un `GapReport` et l’accord correspondant (§11.2, §11.4). Le runtime applique les règles de promotion et d’autorisation (§11.6, §13). Le §14 définit les issues utilisateur.
 
 ## 12. Évaluation
 
@@ -666,6 +717,8 @@ Egress direct depuis le bac refusé par défaut (§13.5). L'exception générale
 
 Le runtime doit typer les erreurs, interrompre les workflows dont un contrat essentiel échoue, n’utiliser que des fallbacks déclarés, préserver les états partiels, éviter de répéter les effets de bord, borner les boucles, retourner une réponse partielle incertaine et distinguer échec du nœud, du lien, du plan, du modèle du monde ou de l’environnement. Le résultat utilisateur sépare action planifiée, exécutée et confirmée.
 
+Après le diagnostic de G3, `missing` signale qu’aucune capacité admissible ne couvre le besoin. `abstain` clôt une demande pour laquelle les preuves restent insuffisantes pour agir dans le périmètre autorisé. `needs_clarification` demande une information susceptible de changer le plan. L’accord requis est un état suspendu du parcours, avec reprise après vérification du prérequis. Les refus d’autorisation conservent leur code de permission. Une proposition de construction décrit le candidat et ses conditions d’évaluation. Le verdict interne `abstain` de la porte du §8.6 est traduit en demande de clarification dans ce pilote.
+
 ## 15. Exigences non fonctionnelles
 
 Les valeurs numériques seront établies après le choix d’environnement et matériel.
@@ -727,11 +780,17 @@ Rapports de lacunes récurrentes, intégration ou fine-tuning candidat, droits d
 
 Apprentissage des routes spécialisées, compétences, nœuds et politiques de mémoire; attribution des gains, détection de dérive et niveaux d’autonomie adaptés aux preuves. Le recours au grand modèle généraliste demeure un secours ponctuel et ne devient pas la norme apprise.
 
-### Cible de fond — modèle du monde spatial et agent incarné
+### Post-MVP produit — agent universel local
 
-Après validation des fondations sur le banc, un plan ultérieur devra traiter la perception spatiale, la représentation des états dynamiques, la prédiction conditionnée par les actions et l'interaction avec des environnements simulés puis réels selon des garanties adaptées au risque. Cette cible de fond n'est pas couverte par la Phase 5 et ne reçoit pas ici de calendrier.
+Après les phases 0 à 6, le produit vise l’agent universel local décrit au §2.1. L’ordre opérationnel (sessions, vault hybride, remplissage de lacunes, rêve hors charge, registre multi-spécialistes) figure dans [product-goal-roadmap-v1.md](../plans/product-goal-roadmap-v1.md). Les domaines s’élargissent par capacités déclarées et preuves. Hors couverture, le système s’abstient ou propose une construction. Il ne garantit pas toute demande.
 
-Ces phases réduisent les risques; elles ne définissent pas de calendrier. Le détail opérationnel (entrée, sortie, validation, risques, rollback par phase) figure dans le [plan de développement](../plans/development-plan.md). Le bureau & code reste un banc d'essai, tandis que le modèle du monde spatial et l'action dans un environnement restent la cible de fond.
+G1 applique la protection des secrets avant la persistance de session. G2 ajoute le vault et G3 s’appuie sur les reprises locales déjà qualifiées. Pour la mesure à froid du spécialiste image en G5, le chronomètre part de `image_resume`, avec les artefacts déjà vérifiés et une qualification à effectuer, et s’arrête au PNG reçu et vérifié. Le temps complet, accords compris, reste une mesure du parcours à cache vide. [Relevé à cache vide](../../bench/results/image-mcp-cold-cache-v1.json)
+
+### Piste séparée — modèle du monde spatial et agent incarné
+
+Un plan distinct traitera la perception spatiale, les états dynamiques, la prédiction conditionnée par les actions et l’interaction avec des environnements simulés puis réels selon des garanties adaptées au risque. Cette piste n’est pas couverte par la Phase 5. Elle ne partage pas le calendrier produit post-MVP.
+
+Ces phases réduisent les risques. Elles ne définissent pas de calendrier. Le détail opérationnel (entrée, sortie, validation, risques, rollback par phase) figure dans le [plan de développement](../plans/development-plan.md). Le bureau & code reste un banc d’essai. La cible produit est l’agent universel local (§2.1). La piste spatiale reste séparée.
 
 ## 18. Critères d’acceptation de l’architecture
 
@@ -746,11 +805,11 @@ Ces phases réduisent les risques; elles ne définissent pas de calendrier. Le d
 - Confidentialité et droits d’usage sont documentés.
 - Environnement de départ et autonomie sont décidés avant les actions réelles.
 
-## 19. Décisions — état v0.17
+## 19. Décisions — état v0.19
 
-Décisions enregistrées pour le prototype et son banc d'essai (bureau & code local) :
+Décisions enregistrées pour le prototype, le banc d'essai et le but produit :
 
-1. **Banc d'essai initial :** bureau & code local, poste Windows d'abord, en environnement isolé. La référence est une application de notes créée exprès, qui annonce une sauvegarde sans la persister ; le parcours code corrige le bug et le parcours bureau vérifie la persistance après réouverture. Une application de gestion de tâches dont le filtre « À faire » affiche aussi les tâches terminées sert de variante indépendante pour mesurer le transfert (§12.3). Le banc valide les fondations ; la cible de fond demeure un agent spatial capable d'agir dans un environnement (§2.5, §2.6, §9.7, §17).
+1. **Banc d'essai initial :** bureau & code local, poste Windows d'abord, en environnement isolé. La référence est une application de notes créée exprès, qui annonce une sauvegarde sans la persister ; le parcours code corrige le bug et le parcours bureau vérifie la persistance après réouverture. Une application de gestion de tâches dont le filtre « À faire » affiche aussi les tâches terminées sert de variante indépendante pour mesurer le transfert (§12.3). Le banc valide les fondations. La cible produit est l’agent universel local (§2.1, §2.5, §17). La piste spatiale est séparée.
 2. **Hébergement, inférence et recours aux grands modèles :** mono-poste local par défaut ; Rbitnet prioritaire pour les GGUF compatibles, autres moteurs par adaptateur pour les formats, architectures ou modalités non couverts (§6.2). La route nominale privilégie les petits modèles spécialisés, outils et solveurs. Un grand modèle généraliste est réservé à un secours ponctuel après abstention ou insuffisance documentée des capacités spécialisées. Tout appel distant requiert un `RemoteInferenceGrant` préalablement approuvé et limité au fournisseur/endpoint, à la finalité, aux catégories de données, à une expiration et à un budget ; chaque invocation est contrôlée et journalisée en métadonnées minimales, hors contenu. Un grant n'autorise que les appels couverts et n'autorise pas l'entraînement partagé. Le speculative decoding avec grand vérificateur est hors MVP. La compatibilité effective, la qualité et le budget mémoire sont mesurés en Phase 0/1.
 3. **Autorisations MVP :** autonomie dans la copie du banc jetable sous conditions de confinement et de restauration vérifiées, y compris les suppressions R1 ; tests de projet réel dans une copie isolée ; diff exact soumis à validation avant application au projet, suppressions et déplacements explicitement approuvés au cas par cas ; accord avant chaque téléchargement de dépendance ; bureau réel exclu. Les permissions sont appliquées hors modèle (§13.5.1-13.7).
 4. **Modèles :** version exacte, digest, quantization et évaluation liée exigés au manifeste (§6.1). Licences et provenance des jeux d'entraînement restent à documenter par modèle.
@@ -770,6 +829,8 @@ Décisions enregistrées pour le prototype et son banc d'essai (bureau & code lo
 18. **Interface MVP :** application desktop avec conversation, progression, résultats et graphe consultable de façon interactive ; inspection, historique, pause/reprise de l'évolution et retour arrière, sans édition manuelle du graphe (§2.6).
 19. **Matériel MVP :** parcours et évolution utilisables en CPU seul ; deuxième campagne sur la machine équipée de la RTX 4080 SUPER 16 Go, en activant le GPU là où les moteurs le prennent en charge. Configuration minimale chiffrée et limites par défaut établies après mesure (§2.6, §12.2).
 20. **Porte de décision outillée (v0.17)** — Le routage déterministe est actif par défaut. Sur le banc Tâches, le Path A de `akasha-model==0.3.0` (MIT) peut évaluer en option une proposition avec `Choice`, `Score` et `Noul` et journaliser le verdict `ready`, `abstain` ou `blocked`. L’hôte applique les autorisations et les approbations. La promotion suit les paliers et critères du §11.6 (§8.6, §17).
+21. **Exécution image et MCP (v0.18)** — Le parcours CPU emploie une logique commune de découverte, qualification et validation PNG et un backend isolé propre à Windows ou Linux. L’opérateur donne les accords du moteur et des poids séparément. Le client MCP suit puis reprend sa tâche avec le même identifiant et récupère le verdict et le PNG vérifié (§6.3, §8.7, §11.8).
+22. **But produit (v0.19)** — Agent universel local à domaines croissants avec abstention, organisé en sessions portant des projets. G1 filtre la persistance de session dès l’entrée. G2 ajoute le vault hybride avec keystore OS et handles applicatifs. La piste spatiale suit son propre plan (§2.1, §10.6, §17). [Feuille de route](../plans/product-goal-roadmap-v1.md)
 
 ## 20. Glossaire
 
