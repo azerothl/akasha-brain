@@ -17,6 +17,7 @@ from .desktop_tasks import (
     DEFAULT_EVOLUTION_BUDGET, NotesTasks, STATUSES, STEP_TITLES, checked_task_diff, latest_steps, layers,
     saved_tasks, test_counts,
 )
+from .idle_simulation import IdleSimulations
 from .model_resources import DEFAULT_VRAM_MIB
 from .notes_evolution import STAGES, EvolutionBudget, rollback, set_evolution_paused
 from .notes_repair import RbitnetPaths
@@ -167,7 +168,7 @@ class GraphView(tk.Canvas):
 
 class Desktop:
     def __init__(self, root, tasks, *, data_registry=None, data_project=None, proposal=None, dependency_requests=(),
-                 communication=None):
+                 communication=None, idle_simulations=False):
         self.root = root
         self.tasks = tasks
         self.data_registry = (data_registry or tasks.directory.parent / "project-evolution.db").resolve()
@@ -178,6 +179,7 @@ class Desktop:
         self.project_window = None
         self.dependency_requests = dependency_requests
         self.communication = communication
+        self.simulations = IdleSimulations(tasks.directory, tasks.scheduler) if idle_simulations else None
         self.records = dict(saved_tasks(tasks.directory))
         self.current = None
         self.message = None
@@ -196,6 +198,12 @@ class Desktop:
             self.poll_evolution()
         root.after_idle(self.conversation.focus)
         root.after(100, self.poll)
+        if self.simulations is not None:
+            root.after(1000, self.poll_simulations)
+
+    def poll_simulations(self):
+        self.simulations.tick()
+        self.root.after(1000, self.poll_simulations)
 
     def styles(self):
         style = ttk.Style(self.root)
@@ -642,6 +650,8 @@ def main():
     parser.add_argument("--communication", nargs=3, type=Path, metavar=("BINAIRE", "GGUF", "TOKENIZER"),
                         help="Qwen3.5-2B CPU pour interpréter les demandes libres et synthétiser les résultats Notes")
     parser.add_argument("--rapidocr", action="store_true")
+    parser.add_argument("--idle-simulations", action="store_true",
+                        help="Évaluer des cas Notes synthétiques lorsque le bureau est inactif")
     parser.add_argument("--evolution-db", type=Path, help="Registre d’évolution du banc synthétique Notes")
     parser.add_argument("--integrated-session", type=Path, help="Session de phase 6 qualifiée pour le banc Notes")
     parser.add_argument("--integrated-key", type=Path, help="Clé locale de décision de la session de phase 6")
@@ -685,7 +695,8 @@ def main():
         parser.error(str(error))
     root = tk.Tk()
     Desktop(root, app, data_registry=args.data_db, data_project=args.data_project, proposal=args.proposal,
-            dependency_requests=args.dependency_request, communication=communication)
+            dependency_requests=args.dependency_request, communication=communication,
+            idle_simulations=args.idle_simulations)
     root.mainloop()
 
 
