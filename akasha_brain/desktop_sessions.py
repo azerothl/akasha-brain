@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import sqlite3
+import tkinter as tk
 from tkinter import ttk
 
 from .conversation_sessions import SessionStore
@@ -21,15 +22,13 @@ class ConversationWorkspace:
         self.sessions = {}
         self.current = None
         self.store = None
-        self.notification = ttk.Label(parent, style="DataError.TLabel")
-        self.notification.pack(fill="x", padx=18)
+        self.notification = None
         self.body = ttk.Frame(parent, style="Data.TFrame")
         self.body.pack(fill="both", expand=True)
         try:
-            self.store = SessionStore(tasks.directory / "conversation-sessions.sqlite")
+            self.store = SessionStore(tasks.directory / "conversation-sessions.sqlite", initialize=False)
+            self.entries, record = self.store.startup()
             self.build_selector()
-            entries, record = self.store.startup()
-            self.set_entries(entries)
             if project is not None:
                 self.store.bind_project(record.id, Path(project))
                 record = self.store.open(record.id)
@@ -41,21 +40,30 @@ class ConversationWorkspace:
     def build_selector(self):
         bar = ttk.Frame(self.parent, style="Data.TFrame", padding=(18, 10, 18, 0))
         bar.pack(fill="x", before=self.body)
-        ttk.Label(bar, text="Session", style="Data.TLabel").pack(side="left", padx=(0, 8))
-        self.selector = ttk.Combobox(bar, state="readonly", width=20, postcommand=self.refresh)
+        self.selector = ttk.Menubutton(bar, text="Session")
+        self.menu = tk.Menu(self.selector, tearoff=False, postcommand=self.refresh)
+        self.selector.configure(menu=self.menu)
         self.selector.pack(side="left")
-        self.selector.bind("<<ComboboxSelected>>", self.select)
         ttk.Button(bar, text="Nouvelle session", command=self.new).pack(side="left", padx=8)
 
     def refresh(self):
-        self.set_entries(self.store.list())
-
-    def set_entries(self, entries):
-        self.entries = entries
-        self.selector.configure(values=tuple(f"Session {number}" for _, number in self.entries))
+        self.menu.delete(0, "end")
+        try:
+            self.entries = self.store.list()
+        except SESSION_ERRORS:
+            self.notify("Impossible de lire les sessions locales.")
+            return
+        for session_id, number in self.entries:
+            self.menu.add_command(label=f"Session {number}", command=lambda selected=session_id: self.select(selected))
 
     def notify(self, text=""):
-        self.notification.configure(text=text)
+        if text:
+            if self.notification is None:
+                self.notification = ttk.Label(self.parent, style="DataError.TLabel")
+            self.notification.configure(text=text)
+            self.notification.pack(fill="x", padx=18, before=self.body)
+        elif self.notification is not None:
+            self.notification.pack_forget()
 
     def show_volatile(self, project):
         host = ttk.Frame(self.body, style="Data.TFrame")
@@ -79,27 +87,22 @@ class ConversationWorkspace:
             self.current.parent.pack_forget()
         self.current = conversation
         self.current.parent.pack(fill="both", expand=True)
-        self.selector.set(record.title)
+        self.selector.configure(text=record.title)
         self.notify()
 
     def new(self):
         try:
             session_id = self.store.create()
-            self.refresh()
+            self.entries = self.store.list()
             self.show(session_id)
         except SESSION_ERRORS:
             self.notify("Impossible de créer une session locale.")
         self.focus()
 
-    def select(self, _event):
-        index = self.selector.current()
-        if index < 0:
-            return
+    def select(self, session_id):
         try:
-            self.show(self.entries[index][0])
+            self.show(session_id)
         except SESSION_ERRORS:
-            if self.current is not None and self.current.session_record is not None:
-                self.selector.set(self.current.session_record.title)
             self.notify("Impossible de rouvrir cette session.")
         self.focus()
 
