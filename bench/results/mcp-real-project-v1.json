@@ -1,0 +1,54 @@
+{
+  "protocol": "mcp-real-project-v1",
+  "status": "passed",
+  "completed_at": "2026-11-17T14:04:06.280654+00:00",
+  "fixture": {
+    "target": "value.py",
+    "test": "check.py",
+    "inputs": [
+      "context.txt"
+    ]
+  },
+  "mcp_states": [
+    "waiting",
+    "running",
+    "awaiting_approval"
+  ],
+  "mcp_apply_refused": true,
+  "outside_project_refused": true,
+  "protected_file_refused": true,
+  "readback_after_reconnect": true,
+  "validation": {
+    "status": "passed",
+    "sandbox_id": "9caa1045-89ea-4d25-bc76-63b9094a0bcb",
+    "sandbox_stopped": true,
+    "read_only_input": true,
+    "disabled_channels": [
+      "Networking",
+      "ClipboardRedirection",
+      "AudioInput",
+      "VideoInput",
+      "PrinterRedirection",
+      "VGpu"
+    ],
+    "channel_probe": 16655,
+    "guest_exit_code": 18176
+  },
+  "sandbox_wall_s": 35.607,
+  "client_wall_s": 37.152,
+  "diff_sha256": "64c7325c0d69033eeef80fe7eae7e74266d70b871e9eb8fdac9b8de31174cd0e",
+  "diff_bytes": 67,
+  "source_unchanged_until_approval": true,
+  "windows_refusal": "Accord requis. Approuvez la proposition avant l’application.",
+  "windows_application": "Diff appliqué à value.py.",
+  "companions_preserved": true,
+  "git_head_and_index_preserved": true,
+  "audit": {
+    "status": "passed",
+    "entries_verified": 2
+  },
+  "decisions": [
+    "refused",
+    "approved"
+  ]
+}

@@ -113,7 +113,7 @@ $rapport = Join-Path $env:LOCALAPPDATA "AkashaBrain\notes-$([guid]::NewGuid().To
     --python-runtime $pythonPortable --output $rapport
 ```
 
-## Donner accès à Notes à un agent
+## Utiliser Akasha Brain depuis un agent
 
 Installez le SDK MCP dans la venv du projet, puis déclarez le serveur dans votre client MCP local. Le serveur utilise les entrées et sorties standard du processus. [Configuration d’un client MCP](https://py.sdk.modelcontextprotocol.io/get-started/real-host/)
 
@@ -134,9 +134,20 @@ Adaptez les chemins absolus de cet exemple au dépôt.
 }
 ```
 
-L’agent peut appeler `notes_plan`, puis `notes_start` pour obtenir un identifiant et `notes_status` pour suivre la tâche jusqu’au verdict. Le résultat indique les tests, SQLite et, si le parcours le produit, le diff vérifié. Les appels opèrent sur le banc synthétique Notes dans Windows Sandbox. Les propositions sur un projet réel et leur approbation passent par l’interface Windows.
+L’agent peut appeler `notes_plan`, puis `notes_start` pour obtenir un identifiant et `notes_status` pour suivre la tâche jusqu’au verdict. Le résultat indique les tests, SQLite et, si le parcours le produit, le diff vérifié. Ces appels opèrent sur le banc synthétique Notes dans Windows Sandbox.
 
 Le serveur relit le dossier Python portable enregistré par l’application. Les arguments `--python-runtime`, `--rbitnet` et `--rapidocr` permettent de configurer son lancement. Les rapports MCP sont conservés sous `%LOCALAPPDATA%\AkashaBrain\agent-runs` par défaut.
+
+### Préparer un diff sur un projet réel
+
+Ajoutez `"--project", "D:/chemin/vers/le-projet"` aux `args` du serveur MCP. Ce dossier détermine le projet accessible à l’agent. Le répertoire des propositions doit se trouver en dehors de ce projet.
+
+1. Utilisez `project_inspect` avec un chemin relatif pour lire le code nécessaire.
+2. Appelez `project_prepare` avec `target`, le texte UTF-8 `replacement`, le script de test `test` et, si nécessaire, les chemins relatifs `inputs`. Le serveur teste ce remplacement dans une copie isolée dans Windows Sandbox et renvoie `proposal_id`.
+3. Appelez `project_status` avec cet identifiant. Une proposition validée renvoie `awaiting_approval`, le diff vérifié, son SHA-256, le verdict du bac et `proposal_path`.
+4. Dans **Proposition du projet**, choisissez le dossier du projet et ouvrez `proposal_path`. Examinez le diff, cochez **J’approuve ce diff pour ce projet**, puis cliquez sur **Appliquer le diff**. L’exécuteur vérifie l’accord et l’état du projet avant le remplacement.
+
+Sur un projet jetable, un client MCP a récupéré le diff vérifié dans Windows Sandbox et le même verdict après reconnexion. La fenêtre Windows a refusé l’application sans accord, puis appliqué le diff après approbation explicite. Le journal contient les deux décisions, et l’index et le commit Git du projet ont été préservés. [Relevé de validation](bench/results/mcp-real-project-v1.json)
 
 ### Validation de la conversation et du serveur MCP
 

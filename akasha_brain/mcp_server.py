@@ -1,4 +1,4 @@
-"""Accès MCP local au graphe synthétique Notes."""
+"""Accès MCP local au graphe Notes et à la préparation de projet."""
 
 import argparse
 from pathlib import Path
@@ -13,14 +13,16 @@ from mcp_types import ToolAnnotations
 
 from .desktop_settings import app_directory, configured_runtime
 from .desktop_tasks import NotesTasks, checked_task_diff, latest_steps, saved_task, test_counts
+from .mcp_project import register_project_tools
 from .notes_repair import RbitnetPaths
 from .planning import PlanningError
 
 
-def create_server(tasks: NotesTasks) -> MCPServer:
+def create_server(tasks: NotesTasks, *, project: Path | None = None) -> MCPServer:
     server = MCPServer(
         "Akasha Brain",
-        instructions="Inspectez le plan Notes, démarrez le banc synthétique puis suivez le verdict avec son identifiant.",
+        instructions=("Inspectez le plan Notes et suivez le verdict par identifiant. "
+                      "Pour un projet configuré, préparez un diff à examiner dans le desktop."),
     )
     start_lock = Lock()
     read_only = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
@@ -86,6 +88,8 @@ def create_server(tasks: NotesTasks) -> MCPServer:
                 result["error"] = (record.get("error") or {}).get("code", "execution_failed")
         return result
 
+    if project is not None:
+        register_project_tools(server, tasks, project)
     return server
 
 
@@ -93,6 +97,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--python-runtime", type=Path, help="Dossier Python portable du bac")
     parser.add_argument("--runs", type=Path, default=app_directory() / "agent-runs", help="Historique des essais MCP")
+    parser.add_argument("--project", type=Path, help="Projet unique autorisé pour la préparation MCP")
     parser.add_argument("--rbitnet", type=Path, nargs=3, metavar=("BINAIRE", "GGUF", "TOKENIZER"),
                         help="Artefacts qualifiés de la réparation CPU")
     parser.add_argument("--rapidocr", action="store_true", help="Vérifier Notes après relance")
@@ -102,7 +107,11 @@ def main() -> None:
     runtime = args.python_runtime.resolve() if args.python_runtime else configured_runtime()
     repair = RbitnetPaths(*(path.resolve() for path in args.rbitnet)) if args.rbitnet else None
     tasks = NotesTasks(args.runs.resolve(), runtime, repair, args.rapidocr)
-    create_server(tasks).run(transport="stdio")
+    try:
+        server = create_server(tasks, project=args.project)
+    except (OSError, RuntimeError, ValueError) as error:
+        parser.error(str(error))
+    server.run(transport="stdio")
 
 
 if __name__ == "__main__":
