@@ -1,8 +1,10 @@
 """De la demande en langue naturelle à un appel vérifié du registre local."""
 
 from contextlib import ExitStack
+from copy import deepcopy
 from dataclasses import dataclass
 from difflib import unified_diff
+from functools import lru_cache
 import json
 from pathlib import Path, PureWindowsPath
 import re
@@ -97,8 +99,13 @@ class ConversationReply:
 
 
 def load_conversation_catalog() -> dict[str, dict]:
+    return deepcopy(_validated_catalog(REGISTRY.read_bytes()))
+
+
+@lru_cache(maxsize=1)
+def _validated_catalog(manifests: bytes) -> dict[str, dict]:
     catalog = {}
-    for manifest in json.loads(REGISTRY.read_text(encoding="utf-8")):
+    for manifest in json.loads(manifests.decode("utf-8")):
         errors = validate(manifest, "CapabilityManifest")
         if errors:
             raise PlanningError(errors[0])
