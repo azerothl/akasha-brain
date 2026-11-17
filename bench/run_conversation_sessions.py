@@ -32,9 +32,9 @@ def desktop_style(window):
     Desktop.styles(SimpleNamespace(root=window, family=family))
 
 
-def verify_storage(root):
-    representations = (CANARY.encode(), CANARY.encode("utf-16le"), sha256(CANARY.encode()).hexdigest().encode(),
-                       sha256(CANARY.encode()).digest())
+def verify_storage(root, witness=CANARY):
+    representations = (witness.encode(), witness.encode("utf-16le"), sha256(witness.encode()).hexdigest().encode(),
+                       sha256(witness.encode()).digest())
     for path in root.rglob("*"):
         if path.is_file():
             data = path.read_bytes()

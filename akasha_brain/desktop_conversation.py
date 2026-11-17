@@ -23,7 +23,9 @@ from .conversation_planning import (
     DRIVE_PATH, PROJECT_TOOLS, PendingImage, compile_local_plan, execute_intents, explicit_media_step, infer_intent, intent_parts,
     load_conversation_catalog, references, refines_project_summary,
 )
+from .conversation_vault import SessionVault, admit_secret, clear
 from .desktop_tasks import latest_steps, test_counts
+from .desktop_vault import VaultWindow
 from .image_recovery import CAPABILITY as GENERATE_IMAGE, ImageResult
 from .memory_store import MemoryRefusal
 from .planning import PlanningError
@@ -31,6 +33,7 @@ from .project import CODE_FILE_LIMIT, inspect_code, prepare, preview_replacement
 from .project_check import ProjectCheck, inspect_project, installed_node, run_project_check
 from .project_common import ProjectError
 from .rbitnet_session import server
+from .vault_windows import KeyStoreUnavailable, SecretMissing
 
 PROMPT = Path(__file__).resolve().parents[1] / "bench" / "communication" / "qwen35-2b-fr-v2.json"
 COMMUNICATION_CHECKPOINTS = {
@@ -53,6 +56,7 @@ PROJECT_SUBJECT = re.compile(r"^(?:(?:ce|le|mon|un)\s+)?(?:projet|dossier)\b\s*"
 REPLACEMENT_EXAMPLE = 'Remplace "VALUE = 7" par "VALUE = 11" dans value.py'
 TEST_LABELS = {"script": "script Python", "unittest": "unittest", "node": "node --test", "none": "aucun test repéré"}
 SESSION_WRITE_ERRORS = (MemoryRefusal, OSError, ProjectError, sqlite3.Error, ValueError)
+VAULT_ERRORS = (*SESSION_WRITE_ERRORS, KeyStoreUnavailable, SecretMissing)
 
 
 @dataclass(frozen=True)
@@ -211,6 +215,7 @@ class ConversationPane:
         self.review_project = review_project
         self.review_prepared = review_prepared
         self.session_store, self.session_record = session if session is not None else (None, None)
+        self.vault = None
         self.project = project if session is not None else (project.resolve() if project is not None else None)
         self.summary_depth = "standard"
         self.change = self.test_file = self.project_job = self.proposal = self.project_error = None
@@ -256,6 +261,7 @@ class ConversationPane:
             self.summary_choice = ttk.Checkbutton(project_bar, text="Résumé détaillé", variable=self.summary_detail,
                                                   command=self.set_summary_depth, style="Data.TCheckbutton")
             self.summary_choice.pack(side="right", padx=12)
+            ttk.Button(project_bar, text="Secrets…", command=self.open_vault).pack(side="right")
         panel = ttk.Frame(page, style="Data.TFrame")
         panel.pack(fill="both", expand=True)
         window = self.parent.winfo_toplevel()
@@ -295,6 +301,8 @@ class ConversationPane:
         if not request:
             return
         self.entry.delete(0, "end")
+        if self.seal_request(request):
+            return
         self.add("Vous", request)
         self.action = None
         self.pending_image = None
@@ -396,6 +404,39 @@ class ConversationPane:
     def update_project_label(self):
         label = str(self.project) if self.project is not None else "Aucun projet choisi"
         self.project_label.configure(text=label)
+
+    def session_vault(self):
+        if self.session_record is None:
+            raise MemoryRefusal("storage_unavailable", "Ouvrez une session durable pour sceller une clé.")
+        if self.vault is None:
+            self.vault = SessionVault(self.tasks.directory, self.session_store)
+        return self.vault
+
+    def seal_request(self, request):
+        try:
+            value = admit_secret(request)
+        except ValueError as error:
+            self.add("Akasha", str(error))
+            return True
+        if value is None:
+            return False
+        try:
+            handle = self.session_vault().seal(self.session_record.id, value)
+        except VAULT_ERRORS:
+            self.add("Akasha", "La clé n’a pas pu être scellée pour cette session.")
+        else:
+            self.add("Akasha", f"Clé scellée · {handle}")
+        finally:
+            clear(value)
+        return True
+
+    def open_vault(self):
+        try:
+            vault = self.session_vault()
+        except VAULT_ERRORS:
+            self.add("Akasha", "Le coffre est indisponible.")
+        else:
+            VaultWindow(self.parent, vault, self.session_record.id, VAULT_ERRORS)
 
     def refresh_session(self, record):
         self.session_record = record

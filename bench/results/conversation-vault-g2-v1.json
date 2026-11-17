@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "platform": "Windows",
+  "desktop_substituted_handle": true,
+  "restarted_process_resolved": true,
+  "cross_session_and_denial_blocked": true,
+  "os_entry_erased": true,
+  "synthetic_secret_and_fingerprint_absent": true,
+  "backup_items": 1,
+  "audit": {
+    "status": "passed",
+    "entries_verified": 6
+  },
+  "timing": {
+    "memory_write_ms": 3.931,
+    "seal_ms": 29.449,
+    "seal_without_keystore_ms": 10.353,
+    "resolve_ms": 22.939,
+    "samples": 20,
+    "added_ms": 6.422,
+    "threshold_ms": 20,
+    "passed": true
+  }
+}
