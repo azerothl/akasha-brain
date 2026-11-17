@@ -1,5 +1,6 @@
 import pytest
 
+from akasha_brain import conversation_planning
 from akasha_brain.conversation_planning import (
     compare_documents, compile_local_plan, decode_intents, execute_intents, infer_intent, intent_parts,
     load_conversation_catalog,
@@ -118,3 +119,15 @@ def test_summary_refinement_reads_details_beyond_the_introduction(tmp_path):
     assert "Publication sélective [README.md · Fonctionnalités]" in detailed.output
     assert "Un index SQLite" in detailed.output and "[docs/architecture.md · Architecture]" in detailed.output
     assert "Scripts déclarés dans package.json · test" in detailed.output
+
+
+def test_catalog_cache_preserves_input_validation_and_isolation(tmp_path, monkeypatch):
+    path = tmp_path / "conversation-capabilities.json"
+    path.write_bytes(conversation_planning.REGISTRY.read_bytes())
+    monkeypatch.setattr(conversation_planning, "REGISTRY", path)
+    first = load_conversation_catalog()
+    first["file.read"]["permissions"].clear()
+    assert load_conversation_catalog()["file.read"]["permissions"]
+    path.write_bytes(b"[{}]")
+    with pytest.raises(PlanningError):
+        load_conversation_catalog()

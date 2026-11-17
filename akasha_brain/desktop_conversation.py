@@ -11,7 +11,7 @@ import sqlite3
 from tempfile import TemporaryDirectory
 from threading import Event
 import tkinter as tk
-from tkinter import filedialog, ttk
+from tkinter import filedialog, font, ttk
 from unicodedata import normalize
 from uuid import uuid4
 
@@ -56,7 +56,6 @@ CHECK_PROJECT = re.compile(
 )
 PROJECT_SUBJECT = re.compile(r"^(?:(?:ce|le|mon|un)\s+)?(?:projet|dossier)\b\s*", re.IGNORECASE)
 REPLACEMENT_EXAMPLE = 'Remplace "VALUE = 7" par "VALUE = 11" dans value.py'
-SUMMARY_LABELS = {"standard": "Aperçu", "detailed": "Détaillé"}
 TEST_LABELS = {"script": "script Python", "unittest": "unittest", "node": "node --test", "none": "aucun test repéré"}
 SESSION_WRITE_ERRORS = (MemoryRefusal, OSError, ProjectError, sqlite3.Error, ValueError)
 VAULT_ERRORS = (*SESSION_WRITE_ERRORS, KeyStoreUnavailable, SecretMissing)
@@ -262,23 +261,30 @@ class ConversationPane:
         if self.session_store is not None:
             self.session_observation = ttk.Label(page, style="DataMuted.TLabel")
             self.session_observation.pack(fill="x", pady=(0, 8))
-            self.summary_choice = ttk.Combobox(project_bar, state="readonly", width=12,
-                                               values=tuple(SUMMARY_LABELS.values()))
-            self.summary_choice.pack(side="right", padx=(6, 12))
-            self.summary_choice.bind("<<ComboboxSelected>>", self.set_summary_depth)
-            ttk.Label(project_bar, text="Résumé", style="Data.TLabel").pack(side="right")
+            self.summary_detail = tk.BooleanVar(project_bar, value=False)
+            self.summary_choice = ttk.Checkbutton(project_bar, text="Résumé détaillé", variable=self.summary_detail,
+                                                  command=self.set_summary_depth, style="Data.TCheckbutton")
+            self.summary_choice.pack(side="right", padx=12)
             ttk.Button(project_bar, text="Secrets…", command=self.open_vault).pack(side="right")
         panel = ttk.Frame(page, style="Data.TFrame")
         panel.pack(fill="both", expand=True)
+        window = self.parent.winfo_toplevel()
+        if not hasattr(window, "_akasha_transcript_fonts"):
+            window._akasha_transcript_fonts = (
+                font.Font(root=window, family="Segoe UI", size=11),
+                font.Font(root=window, family="Segoe UI", size=11, weight=font.BOLD),
+                font.Font(root=window, family="Consolas", size=10),
+            )
+        conversation_font, speaker_font, code_font = window._akasha_transcript_fonts
         self.transcript = tk.Text(panel, wrap="word", state="disabled", padx=12, pady=8, width=1, height=1,
-                                  font=("Segoe UI", 11), bg=theme.lookup("Data.Treeview", "background"),
+                                  font=conversation_font, bg=theme.lookup("Data.Treeview", "background"),
                                   fg=theme.lookup("Data.TLabel", "foreground"))
         scrollbar = ttk.Scrollbar(panel, orient="vertical", command=self.transcript.yview)
         self.transcript.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side="right", fill="y")
         self.transcript.pack(side="left", fill="both", expand=True)
-        self.transcript.tag_configure("speaker", font=("Segoe UI", 11, "bold"))
-        self.transcript.tag_configure("code", font=("Consolas", 10))
+        self.transcript.tag_configure("speaker", font=speaker_font)
+        self.transcript.tag_configure("code", font=code_font)
         controls = ttk.Frame(page, style="Data.TFrame")
         controls.pack(fill="x", pady=(10, 0))
         self.confirm = ttk.Button(controls, command=self.confirm_action)
@@ -441,25 +447,22 @@ class ConversationPane:
         self.session_record = record
         facts = {(fact.kind, fact.project_scope): fact.value for fact in record.facts}
         self.summary_depth = facts.get(("summary_depth", None), "standard")
-        self.summary_choice.set(SUMMARY_LABELS[self.summary_depth])
+        self.summary_detail.set(self.summary_depth == "detailed")
         observation = ""
         if self.project == record.active_project and record.active_project_scope:
             if mode := facts.get(("project_test", record.active_project_scope)):
                 observation = f"Dernier repérage de cette session · {TEST_LABELS[mode]}"
         self.session_observation.configure(text=observation)
 
-    def set_summary_depth(self, _event=None):
-        index = self.summary_choice.current()
-        if index < 0:
-            return
-        self.remember_session_fact("summary_depth", tuple(SUMMARY_LABELS)[index])
+    def set_summary_depth(self):
+        self.remember_session_fact("summary_depth", "detailed" if self.summary_detail.get() else "standard")
 
     def remember_session_fact(self, kind, value, *, project=None):
         try:
             self.session_store.remember(self.session_record.id, kind, value, project=project)
             self.refresh_session(self.session_store.open(self.session_record.id))
         except SESSION_WRITE_ERRORS:
-            self.summary_choice.set(SUMMARY_LABELS[self.summary_depth])
+            self.summary_detail.set(self.summary_depth == "detailed")
             self.add("Akasha", "Le contexte local n’a pas pu être enregistré.")
 
     def choose_project(self):
@@ -521,7 +524,7 @@ class ConversationPane:
                 self.refresh_session(self.session_store.open(self.session_record.id))
             except SESSION_WRITE_ERRORS:
                 self.summary_depth = "standard"
-                self.summary_choice.set(SUMMARY_LABELS[self.summary_depth])
+                self.summary_detail.set(False)
                 self.session_observation.configure(text="")
         project = self.project
         communication, catalog, summary_depth = self.communication, self.catalog, self.summary_depth
