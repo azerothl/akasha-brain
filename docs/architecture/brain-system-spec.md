@@ -1,7 +1,7 @@
 # Akasha Brain — Spécification d’architecture
 
-**Statut :** proposition de conception, v0.16  
-**Date :** 2026-11-14  
+**Statut :** proposition de conception, v0.17\
+**Date :** 2026-11-16\
 **Portée :** architecture fonctionnelle et technique, sans framework ni fournisseur imposé
 
 > **Révision v0.2 (2026-11-13) :** premier terrain arrêté (bureau & code local), compléments issus d'une recherche sourcée sur l'orchestration, les contrats, le routage local, la mémoire, les modèles du monde bureau et l'évaluation/sécurité. Voir §2.5, §6.1, §8.4, §9.7, §10.1, §11.6, §13.5, §19 révisé, les [notes de recherche](../research/research-notes.md) et le [plan de développement](../plans/development-plan.md). Les seuils chiffrés restent à mesurer en Phase 0/1 ; aucun chiffre de la littérature n'est repris comme seuil universel (§2.4).
@@ -33,6 +33,8 @@
 > **Révision v0.15 (2026-11-14) :** durées par défaut et sauvegarde locale chiffrée quotidienne définies ; accord séparé pour sauvegarder des contenus réels, effacement suivi jusqu'aux copies contrôlées et restauration empêchant leur réapparition (§10.2, §10.5, §19).
 
 > **Révision v0.16 (2026-11-14) :** autorisations du MVP précisées : autonomie dans le banc jetable sous protections vérifiées, projet réel modifié seulement après validation de la proposition, tests isolés, approbation par téléchargement et bureau réel exclu (§6.1, §13.5-13.7, §19).
+
+> **Révision v0.17 (2026-11-16)** — Le banc Tâches évalue une porte de décision facultative qui produit `ready`, `abstain` ou `blocked` en une passe. Le candidat épinglé est `akasha-model==0.3.0` (MIT, Path A déterministe sans torch), avec les décisions typées `Choice`, `Score` et `Noul`. Le routage déterministe est actif par défaut. L’autorisation hors modèle et les approbations humaines s’appliquent dans les deux configurations (§8.6, §17, §19).
 
 ## 1. Résumé
 
@@ -389,6 +391,18 @@ Côté traces, mapper la trace Akasha sur les spans OpenTelemetry GenAI (un span
 
 **Ordonnancement multi-objectifs.** File par priorité (interactif > maintenance), FIFO par défaut, repriorisation utilisateur journalisée. Un objectif démarre si ses ressources sont disponibles — lease, résidence des modèles demandés (§6.2), limites `max_concurrent` des `resource_profile` (§6.1) — sinon il attend. Préemption seulement aux points sûrs : entre nœuds, après flush des artefacts, checkpoint pris. Un effet en cours n'est jamais interrompu, sauf arrêt d'urgence indépendant des modèles (§9.6). Les budgets du GoalSpec (temps mur, coût, appels) sont vérifiés aux frontières de nœuds ; un dépassement produit l'erreur typée `budget_exceeded` (famille ressource, §14) et un résultat partiel.
 
+### 8.6 Décision v0.17 — Porte de décision outillée (akasha-model)
+
+Une porte de décision est un composant sans effet de bord qui évalue en une passe un appel ou un choix de routage. Elle produit `ready` pour une proposition admissible, `abstain` si une clarification est requise et `blocked` en cas de refus. L’hôte gère l’exécution et les leases d’environnement (§8.5). Le bac du pilote désactive le réseau. L’hôte lui fournit la roue approuvée et les signaux nécessaires à l’évaluation.
+
+Le contrat distingue trois décisions typées. `Choice` choisit parmi les outils proposés, `Score` évalue un signal gradué et `Noul` applique un seuil binaire. L’hôte fournit les signaux et les seuils. Le pilote évalue le risque à partir de la classe déclarée et contrôle l’admissibilité de la proposition.
+
+Le contrat est indépendant du paquet. La version, l’empreinte, la licence et la provenance sont épinglées (§6.1). Les seuils s’appuient sur les évaluations Akasha (§8.1, §12). Le workflow journalise la décision et ses entrées pour permettre le rejeu (§8.4). Les contrôles comptent séparément les verdicts `ready`, `abstain` et `blocked` erronés. L’abstention produit une demande de clarification typée (§14).
+
+Le pilote du MVP couvre le Path A de `akasha-model==0.3.0` (MIT) sur le banc Tâches CPU. Après accord de téléchargement (§13.5.1), le bac vérifie l’empreinte de la roue et l’installe hors ligne. L’option `--gate-request` active le pilote pour évaluer la proposition produite par le routeur.
+
+L’hôte conserve la responsabilité des autorisations (§13), des classes de risque (§13.6), des approbations humaines, des `RemoteInferenceGrant` (§8.4) et des permissions du GoalSpec. Après un verdict `ready`, il revérifie le GoalSpec et la décision du registre avant l’exécution. Une promotion exige les preuves du §11.6, dont un gain attribué face au routage déterministe et les contrôles de non-régression des autres familles. Le pilote a obtenu 12/12 comme la référence sur la matrice et a augmenté le temps du rejeu apparié. Le routage déterministe est donc actif par défaut. [Résultats du pilote](../plans/phase4_status.md#porte-de-décision-tâches-avec-akasha-model-030)
+
 ## 9. Système spatial et modèle du monde
 
 ### 9.1 Quatre fonctions distinctes
@@ -703,7 +717,7 @@ Journal d’expériences, bibliothèque de workflows validés, récupération pa
 
 ### Phase 4 — Spécialistes
 
-Rapports de lacunes récurrentes, intégration ou fine-tuning candidat, droits des données, benchmarks, déploiement contrôlé et surveillance.
+Rapports de lacunes récurrentes, intégration ou fine-tuning candidat, droits des données, benchmarks, déploiement contrôlé et surveillance. Le pilote de porte de décision évalue en option une proposition du routeur Tâches et relève les verdicts et les temps de décision (§8.6).
 
 ### Phase 5 — Prédicteur d'état/action sur le banc d'essai
 
@@ -732,7 +746,7 @@ Ces phases réduisent les risques; elles ne définissent pas de calendrier. Le d
 - Confidentialité et droits d’usage sont documentés.
 - Environnement de départ et autonomie sont décidés avant les actions réelles.
 
-## 19. Décisions — état v0.16
+## 19. Décisions — état v0.17
 
 Décisions enregistrées pour le prototype et son banc d'essai (bureau & code local) :
 
@@ -755,6 +769,7 @@ Décisions enregistrées pour le prototype et son banc d'essai (bureau & code lo
 17. **Ressources des modèles :** gestion globale RAM/VRAM tenant compte des poids, caches, allocations temporaires et marges ; chargement, utilisation et déchargement sûrs via les adaptateurs ; éviction des seuls modèles inactifs aux points sûrs (§6.2, §8.5). La migration fine entre RAM et VRAM est facultative et mesurée. L'échec d'admission est `residency_unavailable`.
 18. **Interface MVP :** application desktop avec conversation, progression, résultats et graphe consultable de façon interactive ; inspection, historique, pause/reprise de l'évolution et retour arrière, sans édition manuelle du graphe (§2.6).
 19. **Matériel MVP :** parcours et évolution utilisables en CPU seul ; deuxième campagne sur la machine équipée de la RTX 4080 SUPER 16 Go, en activant le GPU là où les moteurs le prennent en charge. Configuration minimale chiffrée et limites par défaut établies après mesure (§2.6, §12.2).
+20. **Porte de décision outillée (v0.17)** — Le routage déterministe est actif par défaut. Sur le banc Tâches, le Path A de `akasha-model==0.3.0` (MIT) peut évaluer en option une proposition avec `Choice`, `Score` et `Noul` et journaliser le verdict `ready`, `abstain` ou `blocked`. L’hôte applique les autorisations et les approbations. La promotion suit les paliers et critères du §11.6 (§8.6, §17).
 
 ## 20. Glossaire
 
@@ -776,6 +791,7 @@ Décisions enregistrées pour le prototype et son banc d'essai (bureau & code lo
 - **Journal d’audit :** journal append-only chaîné de métadonnées minimales sur les décisions, autorisations et résultats d'effacement ; il exclut les contenus utilisateur, les artefacts et les empreintes de ces contenus (§8.5, §10.2).
 - **Résidence d'un modèle :** état et emplacement observables de ses ressources, éventuellement réparties entre stockage, RAM et GPU ; un mappage n'implique pas que toutes les pages soient en RAM (§6.2).
 - **Gestionnaire de ressources :** composant Akasha qui coordonne les budgets, l'admission, l'utilisation et la libération entre adaptateurs, selon les capacités réellement exposées par chaque moteur (§6.2).
+- **Porte de décision** — Composant sans effet de bord qui évalue en une passe un appel ou un choix de routage et produit `ready`, `abstain` ou `blocked` (§8.6).
 
 ## Annexe A — Exemple de tâche
 

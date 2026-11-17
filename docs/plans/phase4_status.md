@@ -139,6 +139,12 @@ Pendant l’activation, Notes a passé les quatre tests, le vérificateur SQLite
     --rbitnet $moteur $gguf $tokenizer --output $dossierDeValidation
 ```
 
+## Clôture
+
+Les trois critères de sortie du [plan de développement](development-plan.md#phase-4--spécialistes) sont vérifiés sur le banc local. Le spécialiste v3 obtient 2/2 au premier diff et 2/2 au total sur les deux cas réservés, avec un contrat de couverture par cas. La référence obtient 0/2 au premier diff et 1/2 au total. Notes code et bureau, le parcours projet jetable et les contrôles de routage et de gabarits de communication ont passé la non-régression. Le retrait exercé dans un registre jetable a rétabli la référence, qui a corrigé « Terminées » après reprise.
+
+Le [jalon de routage et de retrait](https://github.com/azerothl/akasha-brain/commit/8ff927000d0186dc59455a3292b296c69ee0c786) clôt ce volet. Le pilote Path A ci-dessous complète la qualification de phase 4 avant la [phase 5](phase5_status.md).
+
 ## Porte de décision Tâches avec akasha-model 0.3.0
 
 La roue PyPI MIT a été téléchargée par le parcours unitaire avec empreinte approuvée. La publication PyPI lie la roue au dépôt `azerothl/akasha-model` et à la révision `d56c145e72bf871744053bb501d793a78f92fdf8`. Son SHA-256 est `c32a19ac01d26203a5a117bd67649dd442daa6695ccbc96aa983537b62cc188f`. La roue universelle est vérifiée et installée dans le répertoire temporaire du bac, avec l’entrée en lecture seule et le réseau désactivé. [Roue et attestation PyPI](https://pypi.org/project/akasha-model/#akasha_model-0.3.0-py3-none-any.whl)

@@ -1,7 +1,7 @@
 # Akasha Brain — Plan de développement
 
-**Statut :** plan v0.15, issu de la spécification v0.16  
-**Date :** 2026-11-14  
+**Statut :** plan v0.16, issu de la spécification v0.17\
+**Date :** 2026-11-16\
 **Banc d'essai initial :** bureau & code local (poste Windows d'abord, environnement isolé). La cible de fond reste le modèle du monde spatial et l'action dans un environnement.
 
 ## Objectif
@@ -40,7 +40,7 @@ La sortie du MVP doit démontrer les deux parcours sur CPU, une évolution autom
 
 - Runtime : graphe explicite compilé et validé, checkpointer durable SQLite en mono-poste, interruptions pour l'approbation humaine, retry bornée aux erreurs transitoires (spec §8.4).
 - Contrats : JSON Schema 2020-12 versionné, noyau d'outil MCP, permissions normatives séparées des hints (spec §6.1).
-- Inférence : Rbitnet prioritaire pour les modèles GGUF compatibles et évalués ; autres moteurs par adaptateur pour les formats, architectures ou modalités non couverts (spec §6.2). Un gestionnaire global coordonne les budgets et les cycles de vie selon les capacités de chaque moteur. La route nominale privilégie les petits modèles spécialisés, les outils et solveurs ; un grand modèle généraliste est uniquement un secours ponctuel, s'il est autorisé par la politique de déploiement et après insuffisance documentée des capacités spécialisées. Son invocation est visible, justifiée, journalisée et soumise aux règles de confidentialité.
+- Inférence : Rbitnet prioritaire pour les modèles GGUF compatibles et évalués ; autres moteurs par adaptateur pour les formats, architectures ou modalités non couverts (spec §6.2). Un gestionnaire global coordonne les budgets et les cycles de vie selon les capacités de chaque moteur. La route nominale privilégie les petits modèles spécialisés, les outils et solveurs ; un grand modèle généraliste est uniquement un secours ponctuel, s'il est autorisé par la politique de déploiement et après insuffisance documentée des capacités spécialisées. Son invocation est visible, justifiée, journalisée et soumise aux règles de confidentialité. Sur le banc Tâches, le routage déterministe est actif par défaut. La porte de décision facultative évalue la proposition et journalise le verdict (spec §8.6).
 - Sandbox déclaré au manifeste, egress refusé par défaut, secrets hors sandbox (spec §13.5).
 
 ## Phase 0 — Contrats et tâches représentatives
@@ -132,6 +132,7 @@ La sortie du MVP doit démontrer les deux parcours sur CPU, une évolution autom
 - Compétences comme API exécutables testées, cycle de vie complet (candidate → active → dépréciée → retirée), plafond actif et score de contribution.
 - Intégration ou fine-tuning candidat seulement avec droits, licences et provenance documentés ; donnée utilisateur exclue par défaut des entraînements partagés, accord explicite et filiation obligatoires pour l'inclure. Une demande d'effacement entraîne une reconstruction sans la donnée, un désapprentissage validé ou le retrait de la version si l'effacement ne peut pas être démontré.
 - Routage appris et cascade calibrés par famille de tâches, journalisés comme activités du workflow.
+- Pilote de porte de décision outillée sur Tâches (spec §8.6). Comparer le Path A de `akasha-model==0.3.0` (MIT) au routage déterministe sur les mêmes décisions et le même rejeu. Consigner l’accord préalable de téléchargement, la version, l’empreinte de la roue, les seuils et la latence. L’hôte applique les autorisations et les approbations. Une promotion exige un gain attribué face à la référence et les contrôles de non-régression des autres familles. [Qualification du pilote](phase4_status.md#porte-de-décision-tâches-avec-akasha-model-030)
 
 **Sortie :** gain attribué au spécialiste contre la baseline, sans régression sur les autres familles ; retirement exercé sur au moins une compétence.
 
