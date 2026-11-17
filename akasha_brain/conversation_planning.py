@@ -1,8 +1,10 @@
 """De la demande en langue naturelle à un appel vérifié du registre local."""
 
 from contextlib import ExitStack
+from copy import deepcopy
 from dataclasses import dataclass
 from difflib import unified_diff
+from functools import lru_cache
 import json
 from pathlib import Path, PureWindowsPath
 import re
@@ -91,8 +93,13 @@ class ConversationReply:
 
 
 def load_conversation_catalog() -> dict[str, dict]:
+    return deepcopy(_validated_catalog(REGISTRY.read_bytes()))
+
+
+@lru_cache(maxsize=1)
+def _validated_catalog(manifests: bytes) -> dict[str, dict]:
     catalog = {}
-    for manifest in json.loads(REGISTRY.read_text(encoding="utf-8")):
+    for manifest in json.loads(manifests.decode("utf-8")):
         errors = validate(manifest, "CapabilityManifest")
         if errors:
             raise PlanningError(errors[0])
@@ -213,7 +220,7 @@ def stop(code, message, **details):
 
 
 def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], catalog: dict,
-                       *, test: bool = False) -> ConversationPlan:
+                       *, test: bool = False, default_summary_depth: str = "standard") -> ConversationPlan:
     manifest = catalog.get(capability)
     if manifest is None:
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Cette capacité ne figure pas dans le registre local.", capability=capability)
@@ -241,7 +248,9 @@ def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], c
         wording = request
         for reference in references(request):
             wording = wording.replace(reference, " ")
-        goal["constraints"]["summary_depth"] = "detailed" if wants_detailed_summary(wording) else "overview"
+        brief = re.search(r"\b(?:aperçu|bref|brève|succincte?|résumé court|synthèse courte)\b", wording, re.I)
+        detailed = wants_detailed_summary(wording) or (default_summary_depth == "detailed" and not brief)
+        goal["constraints"]["summary_depth"] = "detailed" if detailed else "overview"
     errors = validate(goal, "GoalSpec")
     if errors:
         raise PlanningError(errors[0])
@@ -250,7 +259,8 @@ def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], c
     return ConversationPlan(goal, capability, manifest["version"], inputs)
 
 
-def plan_intent(request: str, proposed, refs: list[str], project: Path | None, catalog: dict) -> ConversationPlan:
+def plan_intent(request: str, proposed, refs: list[str], project: Path | None, catalog: dict, *,
+                default_summary_depth: str = "standard") -> ConversationPlan:
     if not isinstance(proposed, dict) or set(proposed) != {"tool", "refs", "detail"}:
         stop(ErrorCode.NEEDS_CLARIFICATION, "Pouvez-vous préciser l’action souhaitée et les éléments concernés ?")
     tool, indexes, detail = proposed["tool"], proposed["refs"], proposed["detail"]
@@ -293,7 +303,7 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
             stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Indiquez une image PNG ou JPEG.")
         if tool == "documents.compare" and any(Path(path).suffix.lower() not in DOCUMENT_FORMATS for path in paths):
             stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Il me manque un lecteur pour comparer ces formats de documents.")
-    return compile_local_plan(request, tool, paths, catalog)
+    return compile_local_plan(request, tool, paths, catalog, default_summary_depth=default_summary_depth)
 
 
 def resolve_project(name: str) -> Path:
@@ -309,7 +319,8 @@ def resolve_project(name: str) -> Path:
 
 
 def execute_intents(request: str, proposed, refs: list[str], project: Path | None,
-                    catalog: dict, *, recovery: Recovery | None = None, image_consent=None) -> list[ConversationReply | AkashaError]:
+                    catalog: dict, *, recovery: Recovery | None = None, image_consent=None,
+                    default_summary_depth: str = "standard") -> list[ConversationReply | AkashaError]:
     if recovery is not None:
         catalog = {**catalog, image_recovery.CAPABILITY: image_recovery.MANIFEST}
     steps = proposed if isinstance(proposed, list) else [proposed]
@@ -322,14 +333,14 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
         try:
             candidate = None
             try:
-                plan = plan_intent(request, step, refs, project, catalog)
+                plan = plan_intent(request, step, refs, project, catalog, default_summary_depth=default_summary_depth)
             except PlanningError as error:
                 if recovery is None or error.error.code != ErrorCode.CAPABILITY_UNAVAILABLE:
                     raise
                 manifest, candidate, events = recovery.activate(error.error, project)
                 capability = manifest["capability_id"]
                 plan = plan_intent(request, {**step, "tool": capability}, refs, project,
-                                   {**catalog, capability: manifest})
+                                   {**catalog, capability: manifest}, default_summary_depth=default_summary_depth)
             if plan.capability in PROJECT_TOOLS:
                 target = resolve_project(plan.inputs[0])
                 if plan.capability == "project.inspect":
