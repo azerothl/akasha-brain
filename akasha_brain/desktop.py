@@ -8,10 +8,10 @@ import sqlite3
 import tkinter as tk
 from tkinter import filedialog, font, ttk
 
-from .desktop_conversation import ConversationPane
 from .desktop_data import DataWindow
 from .desktop_project import ProjectWindow
 from .desktop_review import ReviewWindow
+from .desktop_sessions import ConversationWorkspace
 from .desktop_settings import app_directory, configured_runtime, remember_runtime
 from .desktop_tasks import (
     DEFAULT_EVOLUTION_BUDGET, NotesTasks, STATUSES, STEP_TITLES, checked_task_diff, latest_steps, layers,
@@ -273,7 +273,7 @@ class Desktop:
         self.execution_tab.rowconfigure(0, weight=1)
         self.tabs.add(conversation_tab, text="Conversation")
         self.tabs.add(self.execution_tab, text="Exécutions")
-        self.conversation = ConversationPane(
+        self.conversation = ConversationWorkspace(
             conversation_tab, lambda: self.launch(show_execution=False), self.open_project, self.open_review,
             self.latest_notes_report, self.tasks, project=self.data_project, review_prepared=self.review_prepared,
             communication=self.communication,

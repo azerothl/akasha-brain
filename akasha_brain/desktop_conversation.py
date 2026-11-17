@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from queue import Empty, SimpleQueue
 import re
+import sqlite3
 from tempfile import TemporaryDirectory
 from threading import Event
 import tkinter as tk
@@ -24,9 +25,11 @@ from .conversation_planning import (
 )
 from .desktop_tasks import latest_steps, test_counts
 from .image_recovery import CAPABILITY as GENERATE_IMAGE, ImageResult
+from .memory_store import MemoryRefusal
 from .planning import PlanningError
 from .project import CODE_FILE_LIMIT, inspect_code, prepare, preview_replacement, project_file
 from .project_check import ProjectCheck, inspect_project, installed_node, run_project_check
+from .project_common import ProjectError
 from .rbitnet_session import server
 
 PROMPT = Path(__file__).resolve().parents[1] / "bench" / "communication" / "qwen35-2b-fr-v2.json"
@@ -48,6 +51,9 @@ CHECK_PROJECT = re.compile(
 )
 PROJECT_SUBJECT = re.compile(r"^(?:(?:ce|le|mon|un)\s+)?(?:projet|dossier)\b\s*", re.IGNORECASE)
 REPLACEMENT_EXAMPLE = 'Remplace "VALUE = 7" par "VALUE = 11" dans value.py'
+SUMMARY_LABELS = {"standard": "Aperçu", "detailed": "Détaillé"}
+TEST_LABELS = {"script": "script Python", "unittest": "unittest", "node": "node --test", "none": "aucun test repéré"}
+SESSION_WRITE_ERRORS = (MemoryRefusal, OSError, ProjectError, sqlite3.Error, ValueError)
 
 
 @dataclass(frozen=True)
@@ -199,13 +205,15 @@ def compose_image_prompt(paths, subject: str) -> str:
 
 class ConversationPane:
     def __init__(self, parent, launch_notes, prepare_project, review_project, latest_report, tasks, *,
-                 project, review_prepared, communication=None):
+                 project, review_prepared, communication=None, session=None):
         self.parent = parent
         self.launch_notes, self.prepare_project, self.latest_report = launch_notes, prepare_project, latest_report
         self.tasks = tasks
         self.review_project = review_project
         self.review_prepared = review_prepared
-        self.project = project.resolve() if project is not None else None
+        self.session_store, self.session_record = session if session is not None else (None, None)
+        self.project = project if session is not None else (project.resolve() if project is not None else None)
+        self.summary_depth = "standard"
         self.change = self.test_file = self.project_job = self.proposal = self.project_error = None
         self.inspection = self.check_job = self.check_result = None
         self.intent_job = self.pending_intent = self.conversation_plan = self.test_plan = None
@@ -223,6 +231,8 @@ class ConversationPane:
         self.responding = False
         self.action = None
         self.build()
+        if self.session_record is not None:
+            self.refresh_session(self.session_record)
         self.add("Akasha", "Que souhaitez-vous faire ? Donnez-moi le dossier ou les fichiers concernés." if communication
                  else "Quel projet souhaitez-vous vérifier ? Donnez-moi son chemin ou choisissez son dossier.")
         self.parent.after(150, self.poll)
@@ -240,6 +250,14 @@ class ConversationPane:
         self.project_label = ttk.Label(project_bar, style="DataMuted.TLabel")
         self.project_label.pack(side="left", fill="x", expand=True)
         self.update_project_label()
+        if self.session_store is not None:
+            self.session_observation = ttk.Label(page, style="DataMuted.TLabel")
+            self.session_observation.pack(fill="x", pady=(0, 8))
+            self.summary_choice = ttk.Combobox(project_bar, state="readonly", width=12,
+                                               values=tuple(SUMMARY_LABELS.values()))
+            self.summary_choice.pack(side="right", padx=(6, 12))
+            self.summary_choice.bind("<<ComboboxSelected>>", self.set_summary_depth)
+            ttk.Label(project_bar, text="Résumé", style="Data.TLabel").pack(side="right")
         panel = ttk.Frame(page, style="Data.TFrame")
         panel.pack(fill="both", expand=True)
         self.transcript = tk.Text(panel, wrap="word", state="disabled", padx=12, pady=8, width=1, height=1,
@@ -373,15 +391,45 @@ class ConversationPane:
         label = str(self.project) if self.project is not None else "Aucun projet choisi"
         self.project_label.configure(text=label)
 
+    def refresh_session(self, record):
+        self.session_record = record
+        facts = {(fact.kind, fact.project_scope): fact.value for fact in record.facts}
+        self.summary_depth = facts.get(("summary_depth", None), "standard")
+        self.summary_choice.set(SUMMARY_LABELS[self.summary_depth])
+        observation = ""
+        if self.project == record.active_project and record.active_project_scope:
+            if mode := facts.get(("project_test", record.active_project_scope)):
+                observation = f"Dernier repérage de cette session · {TEST_LABELS[mode]}"
+        self.session_observation.configure(text=observation)
+
+    def set_summary_depth(self, _event=None):
+        index = self.summary_choice.current()
+        if index < 0:
+            return
+        self.remember_session_fact("summary_depth", tuple(SUMMARY_LABELS)[index])
+
+    def remember_session_fact(self, kind, value, *, project=None):
+        try:
+            self.session_store.remember(self.session_record.id, kind, value, project=project)
+            self.refresh_session(self.session_store.open(self.session_record.id))
+        except SESSION_WRITE_ERRORS:
+            self.summary_choice.set(SUMMARY_LABELS[self.summary_depth])
+            self.add("Akasha", "Le contexte local n’a pas pu être enregistré.")
+
     def choose_project(self):
         chosen = filedialog.askdirectory(parent=self.parent, title="Choisir un projet pour la conversation", mustexist=True)
         if chosen:
-            self.select_project(Path(chosen).resolve())
+            self.select_project(Path(chosen).resolve(), remember=True)
             self.change = self.test_file = self.action = None
             self.confirm.pack_forget()
         return bool(chosen)
 
-    def select_project(self, project):
+    def select_project(self, project, *, remember=False):
+        if remember and self.session_store is not None:
+            try:
+                self.session_store.bind_project(self.session_record.id, project)
+            except SESSION_WRITE_ERRORS:
+                self.add("Akasha", "Ce dossier reste accessible pour la conversation en cours.")
         if project != self.project:
             if self.intent_job is not None:
                 self.intent_cancel.set()
@@ -392,6 +440,11 @@ class ConversationPane:
                 self.action = None
                 self.confirm.pack_forget()
             self.update_project_label()
+        if self.session_store is not None:
+            try:
+                self.refresh_session(self.session_store.open(self.session_record.id))
+            except SESSION_WRITE_ERRORS:
+                self.session_observation.configure(text="")
 
     def show_capabilities(self, include_notes):
         message = ("Écrivez « Vérifie ce projet » avec le chemin de son dossier. Je vérifie les fichiers de "
@@ -416,8 +469,15 @@ class ConversationPane:
         if len(request) > 8000:
             self.add("Akasha", "Précisez l’objectif en 8 000 caractères maximum, avec le chemin des fichiers concernés.")
             return
+        if self.session_store is not None:
+            try:
+                self.refresh_session(self.session_store.open(self.session_record.id))
+            except SESSION_WRITE_ERRORS:
+                self.summary_depth = "standard"
+                self.summary_choice.set(SUMMARY_LABELS[self.summary_depth])
+                self.session_observation.configure(text="")
         project = self.project
-        communication, catalog = self.communication, self.catalog
+        communication, catalog, summary_depth = self.communication, self.catalog, self.summary_depth
         self.intent_cancel = cancelled = Event()
         self.intent_progress = progress = SimpleQueue()
         database = (self.tasks.directory / "capability-recovery.sqlite").resolve()
@@ -441,7 +501,8 @@ class ConversationPane:
                 profile = communication_profile(communication)
                 proposed = infer_intent(communication, profile["chat_template"], request, refs, catalog,
                                         selected=project is not None)
-            return execute_intents(request, proposed, refs, project, catalog, recovery=recovery, image_consent=consent)
+            return execute_intents(request, proposed, refs, project, catalog, recovery=recovery, image_consent=consent,
+                                   default_summary_depth=summary_depth)
 
         self.intent_job = (request, project, turn, self.tasks.scheduler.submit(plan))
         self.add("Akasha", "J’analyse votre demande.")
@@ -535,7 +596,7 @@ class ConversationPane:
                 self.add("Akasha", f"Impossible d’ouvrir le dossier {name}. Vérifiez le chemin ou choisissez le dossier.")
                 self.offer("Choisir et vérifier…", "choose_checked_project")
                 return
-            self.select_project(project)
+            self.select_project(project, remember=True)
         if self.project is None:
             self.add("Akasha", "Quel dossier souhaitez-vous vérifier ? Donnez-moi son chemin complet ou choisissez-le.")
             self.offer("Choisir et vérifier…", "choose_checked_project")
@@ -595,6 +656,9 @@ class ConversationPane:
         message = inspection.summary()
         if inspection.project == self.project:
             self.inspection, self.check_result = inspection, message
+            if self.session_record is not None and self.project in self.session_record.projects:
+                mode = inspection.test.mode if inspection.test is not None else "none"
+                self.remember_session_fact("project_test", mode, project=self.project)
             if inspection.test is not None and self.action is None and self.change is None:
                 self.offer("Lancer les tests dans le bac", "run_project_check")
         self.add("Akasha", message)

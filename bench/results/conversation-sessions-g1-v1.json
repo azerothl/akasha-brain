@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "two_sessions_same_project": true,
+  "process_restart_verified": true,
+  "structured_facts_restored": true,
+  "synthetic_secret_absent": true,
+  "timing": {
+    "baseline_ms": 9.242,
+    "threshold_ms": 18.484,
+    "samples": 20,
+    "remembered_facts": 2,
+    "median_ms": 17.22,
+    "passed": true
+  }
+}
