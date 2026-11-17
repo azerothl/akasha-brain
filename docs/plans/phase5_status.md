@@ -2,6 +2,25 @@
 
 La branche locale `codex/phase-5` inclut le commit `51ee863`, qui publie la porte Path A sur `codex/phase-4`. Le routage déterministe reste le réglage par défaut. Les [critères de sortie de la phase 4](phase4_status.md#clôture) ont été vérifiés.
 
+## Premier état du code et prédiction de remplacement
+
+Le [relevé de transition de la phase 3](../../bench/results/project-delete-transition-v1.json) confirme la préservation d’un fichier dans les scénarios de refus. Le premier pilote de phase 5 applique ce principe au remplacement de fichier sur un dépôt jetable. `CodeState@1.0.0` contient un horodatage, la provenance, la taille et l’empreinte des fichiers sélectionnés, le commit Git courant, l’empreinte des entrées de l’index et le statut de l’arbre de travail.
+
+Le banc prépare la proposition et exécute son test Python dans Windows Sandbox. Il confirme que cette préparation laisse le dépôt de départ intact. Avant l’appel d’application, il enregistre une prévision fondée sur l’accord fourni et sur l’empreinte de la source. Après l’appel, il compare le verdict, la taille et l’empreinte des trois fichiers, le commit et l’index Git. Le statut de l’arbre de travail est également observé dans la trace. Le vérificateur et les accords du parcours projet gardent leur rôle.
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_phase5_code_transition --runtime $pythonPortable `
+    --output $dossierDeValidation
+```
+
+| Situation | Verdict observé | Variables conformes |
+| --- | --- | ---: |
+| Accord absent | `approval_required`, fichiers préservés | 9/9 |
+| Source modifiée après préparation | `project_changed`, modification externe préservée | 9/9 |
+| Remplacement approuvé sur la source de départ | `applied`, seul le fichier visé a changé | 9/9 |
+
+La validation de la proposition a réussi et le bac s’est arrêté. Le commit et l’index Git sont identiques avant et après chaque appel. Le dernier statut Git indique uniquement la modification de `value.py` dans l’arbre de travail. Un contrôle local a confirmé qu’une valeur observée modifiée produit un écart sur la variable correspondante. [Relevé du pilote CodeState](../../bench/results/phase5-code-transition-v1.json)
+
 ## Premier DesktopState sur Notes
 
 `DesktopState@1.0.0` relève le PID et la présence du processus, le titre et la visibilité de la fenêtre dans UI Automation, le propriétaire du premier plan Win32 et le propriétaire du focus UIA. Il précise la provenance de chaque groupe de champs et l’intervalle UTC de capture mesuré par l’hôte. Les valeurs des widgets et la capture d’écran sont déclarées non observées.
@@ -106,3 +125,7 @@ L’essai désactivé retrouve le verdict de référence sur ce cas. Le processu
 .\.venv\Scripts\python.exe -m bench.run_phase5_notes_monitor --runtime $pythonPortable `
     --output $dossierDeValidation
 ```
+
+## Clôture sur le banc
+
+À politique figée, le lot Notes passe de 4/5 à 5/5 états finaux vérifiés, avec un changement de choix sur un cas. La garde de suppression obtient zéro faux accepté sur douze cas invalides et le contrôle Notes fautif détecte l’absence de persistance. Les relevés suivent neuf variables par transition Notes et le pilote CodeState confirme 27 variables sur trois décisions de remplacement, avec un test réel de la proposition dans le bac. Le suivi Notes déclenche les deux alertes prévues et la désactivation restitue le choix de référence. [Critères de sortie](development-plan.md#phase-5--prédicteur-détataction-sur-le-banc-bureau--code)

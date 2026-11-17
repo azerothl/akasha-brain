@@ -1,0 +1,422 @@
+{
+  "status": "passed",
+  "protocol": "phase5-code-transition-v1",
+  "scope": "disposable",
+  "prior_phase3_sha256": "e02bd718f0ed449ad6a3d1b0a65e9698248b080a192ffa35953a11e2f451c3c7",
+  "sandbox_validation": {
+    "status": "passed",
+    "sandbox_id": "469b9a6d-a770-4334-a665-9bd42ace9253",
+    "sandbox_stopped": true,
+    "read_only_input": true,
+    "disabled_channels": [
+      "Networking",
+      "ClipboardRedirection",
+      "AudioInput",
+      "VideoInput",
+      "PrinterRedirection",
+      "VGpu"
+    ],
+    "channel_probe": 16655,
+    "guest_exit_code": 18176
+  },
+  "preparation_preserved_project": true,
+  "runs": {
+    "approval_missing": {
+      "before": {
+        "type": "CodeState",
+        "version": "1.0.0",
+        "observed_at": "2026-11-16T20:17:56.939156+00:00",
+        "provenance": {
+          "files": "host_file_bytes",
+          "git": "local_git"
+        },
+        "files": {
+          "value.py": {
+            "sha256": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65",
+            "size_bytes": 10
+          },
+          "check.py": {
+            "sha256": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "size_bytes": 43
+          },
+          "companion.txt": {
+            "sha256": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "size_bytes": 15
+          }
+        },
+        "git": {
+          "head": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+          "index_scope_sha256": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067",
+          "worktree_status": []
+        }
+      },
+      "prediction": {
+        "version": "1.0.0",
+        "from_observed_at": "2026-11-16T20:17:56.939156+00:00",
+        "action": {
+          "kind": "replace",
+          "file": "value.py",
+          "expected_sha256": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65",
+          "approved": false
+        },
+        "outcome": "approval_required",
+        "files": {
+          "value.py": {
+            "sha256": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65",
+            "size_bytes": 10
+          },
+          "check.py": {
+            "sha256": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "size_bytes": 43
+          },
+          "companion.txt": {
+            "sha256": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "size_bytes": 15
+          }
+        },
+        "git": {
+          "head": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+          "index_scope_sha256": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067"
+        }
+      },
+      "observed": {
+        "type": "CodeState",
+        "version": "1.0.0",
+        "observed_at": "2026-11-16T20:17:57.098386+00:00",
+        "provenance": {
+          "files": "host_file_bytes",
+          "git": "local_git"
+        },
+        "files": {
+          "value.py": {
+            "sha256": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65",
+            "size_bytes": 10
+          },
+          "check.py": {
+            "sha256": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "size_bytes": 43
+          },
+          "companion.txt": {
+            "sha256": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "size_bytes": 15
+          }
+        },
+        "git": {
+          "head": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+          "index_scope_sha256": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067",
+          "worktree_status": []
+        }
+      },
+      "observed_outcome": "approval_required",
+      "comparison": {
+        "status": "passed",
+        "variables": {
+          "outcome": {
+            "predicted": "approval_required",
+            "observed": "approval_required"
+          },
+          "files/value.py/sha256": {
+            "predicted": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65",
+            "observed": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65"
+          },
+          "files/value.py/size_bytes": {
+            "predicted": 10,
+            "observed": 10
+          },
+          "files/check.py/sha256": {
+            "predicted": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "observed": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f"
+          },
+          "files/check.py/size_bytes": {
+            "predicted": 43,
+            "observed": 43
+          },
+          "files/companion.txt/sha256": {
+            "predicted": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "observed": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1"
+          },
+          "files/companion.txt/size_bytes": {
+            "predicted": 15,
+            "observed": 15
+          },
+          "git/head": {
+            "predicted": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+            "observed": "ee3ebf2ad2c424f20885e48e742f80667cded7d4"
+          },
+          "git/index_scope_sha256": {
+            "predicted": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067",
+            "observed": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067"
+          }
+        },
+        "mismatches": []
+      }
+    },
+    "stale_source": {
+      "before": {
+        "type": "CodeState",
+        "version": "1.0.0",
+        "observed_at": "2026-11-16T20:17:57.254635+00:00",
+        "provenance": {
+          "files": "host_file_bytes",
+          "git": "local_git"
+        },
+        "files": {
+          "value.py": {
+            "sha256": "5efe1b3a3461403f31ca93e6e873d0ca93c8c5ad627f0bb2b1c3f533b70c74cf",
+            "size_bytes": 11
+          },
+          "check.py": {
+            "sha256": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "size_bytes": 43
+          },
+          "companion.txt": {
+            "sha256": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "size_bytes": 15
+          }
+        },
+        "git": {
+          "head": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+          "index_scope_sha256": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067",
+          "worktree_status": [
+            " M value.py"
+          ]
+        }
+      },
+      "prediction": {
+        "version": "1.0.0",
+        "from_observed_at": "2026-11-16T20:17:57.254635+00:00",
+        "action": {
+          "kind": "replace",
+          "file": "value.py",
+          "expected_sha256": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65",
+          "approved": true
+        },
+        "outcome": "project_changed",
+        "files": {
+          "value.py": {
+            "sha256": "5efe1b3a3461403f31ca93e6e873d0ca93c8c5ad627f0bb2b1c3f533b70c74cf",
+            "size_bytes": 11
+          },
+          "check.py": {
+            "sha256": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "size_bytes": 43
+          },
+          "companion.txt": {
+            "sha256": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "size_bytes": 15
+          }
+        },
+        "git": {
+          "head": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+          "index_scope_sha256": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067"
+        }
+      },
+      "observed": {
+        "type": "CodeState",
+        "version": "1.0.0",
+        "observed_at": "2026-11-16T20:17:57.395458+00:00",
+        "provenance": {
+          "files": "host_file_bytes",
+          "git": "local_git"
+        },
+        "files": {
+          "value.py": {
+            "sha256": "5efe1b3a3461403f31ca93e6e873d0ca93c8c5ad627f0bb2b1c3f533b70c74cf",
+            "size_bytes": 11
+          },
+          "check.py": {
+            "sha256": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "size_bytes": 43
+          },
+          "companion.txt": {
+            "sha256": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "size_bytes": 15
+          }
+        },
+        "git": {
+          "head": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+          "index_scope_sha256": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067",
+          "worktree_status": [
+            " M value.py"
+          ]
+        }
+      },
+      "observed_outcome": "project_changed",
+      "comparison": {
+        "status": "passed",
+        "variables": {
+          "outcome": {
+            "predicted": "project_changed",
+            "observed": "project_changed"
+          },
+          "files/value.py/sha256": {
+            "predicted": "5efe1b3a3461403f31ca93e6e873d0ca93c8c5ad627f0bb2b1c3f533b70c74cf",
+            "observed": "5efe1b3a3461403f31ca93e6e873d0ca93c8c5ad627f0bb2b1c3f533b70c74cf"
+          },
+          "files/value.py/size_bytes": {
+            "predicted": 11,
+            "observed": 11
+          },
+          "files/check.py/sha256": {
+            "predicted": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "observed": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f"
+          },
+          "files/check.py/size_bytes": {
+            "predicted": 43,
+            "observed": 43
+          },
+          "files/companion.txt/sha256": {
+            "predicted": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "observed": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1"
+          },
+          "files/companion.txt/size_bytes": {
+            "predicted": 15,
+            "observed": 15
+          },
+          "git/head": {
+            "predicted": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+            "observed": "ee3ebf2ad2c424f20885e48e742f80667cded7d4"
+          },
+          "git/index_scope_sha256": {
+            "predicted": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067",
+            "observed": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067"
+          }
+        },
+        "mismatches": []
+      }
+    },
+    "approved_replace": {
+      "before": {
+        "type": "CodeState",
+        "version": "1.0.0",
+        "observed_at": "2026-11-16T20:17:57.529601+00:00",
+        "provenance": {
+          "files": "host_file_bytes",
+          "git": "local_git"
+        },
+        "files": {
+          "value.py": {
+            "sha256": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65",
+            "size_bytes": 10
+          },
+          "check.py": {
+            "sha256": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "size_bytes": 43
+          },
+          "companion.txt": {
+            "sha256": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "size_bytes": 15
+          }
+        },
+        "git": {
+          "head": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+          "index_scope_sha256": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067",
+          "worktree_status": []
+        }
+      },
+      "prediction": {
+        "version": "1.0.0",
+        "from_observed_at": "2026-11-16T20:17:57.529601+00:00",
+        "action": {
+          "kind": "replace",
+          "file": "value.py",
+          "expected_sha256": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65",
+          "approved": true
+        },
+        "outcome": "applied",
+        "files": {
+          "value.py": {
+            "sha256": "09cbf5ae13a643a9b023da1035c60c5018731d5d9633a86d61b19b4e3f3aa7eb",
+            "size_bytes": 11
+          },
+          "check.py": {
+            "sha256": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "size_bytes": 43
+          },
+          "companion.txt": {
+            "sha256": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "size_bytes": 15
+          }
+        },
+        "git": {
+          "head": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+          "index_scope_sha256": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067"
+        }
+      },
+      "observed": {
+        "type": "CodeState",
+        "version": "1.0.0",
+        "observed_at": "2026-11-16T20:17:57.745744+00:00",
+        "provenance": {
+          "files": "host_file_bytes",
+          "git": "local_git"
+        },
+        "files": {
+          "value.py": {
+            "sha256": "09cbf5ae13a643a9b023da1035c60c5018731d5d9633a86d61b19b4e3f3aa7eb",
+            "size_bytes": 11
+          },
+          "check.py": {
+            "sha256": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "size_bytes": 43
+          },
+          "companion.txt": {
+            "sha256": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "size_bytes": 15
+          }
+        },
+        "git": {
+          "head": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+          "index_scope_sha256": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067",
+          "worktree_status": [
+            " M value.py"
+          ]
+        }
+      },
+      "observed_outcome": "applied",
+      "comparison": {
+        "status": "passed",
+        "variables": {
+          "outcome": {
+            "predicted": "applied",
+            "observed": "applied"
+          },
+          "files/value.py/sha256": {
+            "predicted": "09cbf5ae13a643a9b023da1035c60c5018731d5d9633a86d61b19b4e3f3aa7eb",
+            "observed": "09cbf5ae13a643a9b023da1035c60c5018731d5d9633a86d61b19b4e3f3aa7eb"
+          },
+          "files/value.py/size_bytes": {
+            "predicted": 11,
+            "observed": 11
+          },
+          "files/check.py/sha256": {
+            "predicted": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f",
+            "observed": "6ebb95f70c906b163bc52c511cf8bf53900434466459892137b5116d1777a75f"
+          },
+          "files/check.py/size_bytes": {
+            "predicted": 43,
+            "observed": 43
+          },
+          "files/companion.txt/sha256": {
+            "predicted": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1",
+            "observed": "1b71648ccafcc063a9c74955ac399e1d0c635cb4aaa4b98bf1467838d29525c1"
+          },
+          "files/companion.txt/size_bytes": {
+            "predicted": 15,
+            "observed": 15
+          },
+          "git/head": {
+            "predicted": "ee3ebf2ad2c424f20885e48e742f80667cded7d4",
+            "observed": "ee3ebf2ad2c424f20885e48e742f80667cded7d4"
+          },
+          "git/index_scope_sha256": {
+            "predicted": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067",
+            "observed": "3c4444d8360579241e994bac437932b8f07d846f6f1774287d42f0c9600f8067"
+          }
+        },
+        "mismatches": []
+      }
+    }
+  },
+  "matched_variables": 27
+}
