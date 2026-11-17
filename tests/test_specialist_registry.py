@@ -16,13 +16,15 @@ def test_registered_modalities_and_contracts_are_distinct():
         ("image.generate", "image", "verified-png.v1"): "image-sd-turbo",
         ("tasks.sql.v3", "sql", "tasks-sql-filter.v3"): "tasks-sql-v3",
         ("notes.repair_rbitnet", "code", "unified-diff.v1"): "code-rbitnet",
+        ("notes.restore_reference", "solver", "verified-reference-copy.v1"): "notes-reference-solver",
         ("notes.verify", "verification", "verified-state.v1"): "notes-sqlite-verifier",
     }
     for signature, identity in expected.items():
         specialist = select_specialist(*signature)
         assert specialist.id == identity and specialist.evidence(signature[0])["engine"] == specialist.engine
     assert not any(item.fallback for item in active_specialists())
-    for invalid in (("image.generate", "code", "verified-png.v1"), ("image.ocr", "ocr", "unified-diff.v1")):
+    for invalid in (("image.generate", "code", "verified-png.v1"), ("image.ocr", "ocr", "unified-diff.v1"),
+                    ("notes.restore_reference", "solver", "unified-diff.v1")):
         with pytest.raises(PlanningError) as rejected:
             select_specialist(*invalid)
         assert rejected.value.error.code == ErrorCode.CAPABILITY_ENGINE_UNSUPPORTED

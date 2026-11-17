@@ -30,6 +30,7 @@ STATUSES = {"waiting": "En attente", "running": "En cours", "passed": "Réussi",
 def notes_specialists(plan: dict) -> dict:
     bindings = {
         "notes.repair_rbitnet": ("code", "unified-diff.v1", "rbitnet", 8192),
+        "notes.restore_reference": ("solver", "verified-reference-copy.v1", "powershell", 0),
         "notes.verify": ("verification", "verified-state.v1", "python-sqlite", 0),
         "notes.verify_desktop": ("ocr", "ocr-text.v1", "rapidocr-onnxruntime", 4096),
     }

@@ -72,7 +72,11 @@ def test_desktop_launch_exposes_stage_transitions_and_persists_history(tmp_path,
         progress(report)
         ready.set()
         assert release.wait(5)
-        return {"status": "passed", "trace": [{"id": "localize", "status": "passed"}]}
+        return {"status": "passed", "trace": [
+            {"id": "localize", "status": "passed"},
+            {"id": "prepare_reference", "capability_id": "notes.restore_reference", "status": "passed",
+             "result": {"reference_sha256_verified_in_guest": True}},
+        ]}
 
     monkeypatch.setattr(desktop_tasks, "run_notes", run_notes)
     folder, initial = runner.start()
@@ -88,6 +92,8 @@ def test_desktop_launch_exposes_stage_transitions_and_persists_history(tmp_path,
     assert not runner.busy
     _, finished = runner.updates.get_nowait()
     assert finished["status"] == "passed"
+    solver = desktop_tasks.latest_steps(finished)["prepare_reference"]["routing"]
+    assert (solver["specialist"], solver["modality"], solver["ram_mib"]) == ("notes-reference-solver", "solver", 0)
     assert desktop_tasks.saved_tasks(runner.directory) == [(folder, finished)]
     assert initial["graph"]["goal_id"] != runner.plan["goal_id"]
 

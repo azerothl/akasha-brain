@@ -54,6 +54,15 @@
     "fallback": false
   },
   {
+    "id": "notes-reference-solver",
+    "modality": "solver",
+    "engine": "powershell",
+    "capabilities": ["notes.restore_reference"],
+    "contract": "verified-reference-copy.v1",
+    "ram_mib": 0,
+    "fallback": false
+  },
+  {
     "id": "notes-sqlite-verifier",
     "modality": "verification",
     "engine": "python-sqlite",
