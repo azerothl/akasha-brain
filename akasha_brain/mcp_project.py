@@ -45,7 +45,8 @@ def register_project_tools(server: MCPServer, tasks: NotesTasks, project: Path) 
 
     def prepare_in_sandbox(folder: Path, target: str, replacement: bytes, test: str, runtime: Path,
                            inputs: tuple[str, ...]) -> None:
-        write_report(folder, {"scope": scope, "status": "running"})
+        with lock:
+            write_report(folder, {"scope": scope, "status": "running"})
         try:
             require_project()
             with TemporaryDirectory(prefix="replacement-", dir=folder) as scratch:
@@ -63,7 +64,8 @@ def register_project_tools(server: MCPServer, tasks: NotesTasks, project: Path) 
                                                    "message": "La préparation dans Windows Sandbox a échoué."}}
         else:
             result = {key: proposal[key] for key in ("status", "validation", "wall_s")}
-        write_report(folder, {"scope": scope, **result})
+        with lock:
+            write_report(folder, {"scope": scope, **result})
 
     @server.tool(annotations=read_only, structured_output=True)
     def project_inspect(file: str, first_line: int = 1, limit: int = 80) -> dict[str, Any]:
@@ -112,7 +114,8 @@ def register_project_tools(server: MCPServer, tasks: NotesTasks, project: Path) 
             if folder.resolve() != folder or any(not (folder / name).resolve().is_relative_to(folder) for name in names):
                 raise ToolError("Identifiant de proposition inconnu.")
             try:
-                record = json.loads((folder / "report.json").read_bytes())
+                with lock:
+                    record = json.loads((folder / "report.json").read_bytes())
             except (OSError, ValueError) as error:
                 raise ToolError("Identifiant de proposition inconnu.") from error
             if record.pop("scope", None) != scope:
