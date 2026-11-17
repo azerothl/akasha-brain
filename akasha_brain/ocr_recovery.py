@@ -18,6 +18,7 @@ from .notes_sandbox import POWERSHELL, guest_exit, read_profile
 from .notes_link_promotion import digest
 from .project import fingerprints, project_file, project_input, validate_in_sandbox
 from .project_common import digest as digest_bytes, reject
+from .specialist_registry import require_specialist
 
 CAPABILITY = "image.ocr"
 IMAGE_TYPES = {".png", ".jpg", ".jpeg"}
@@ -124,6 +125,8 @@ def read_export(sandbox: str, mount: str, tag: str) -> str:
 
 
 def run(candidate: Candidate, cancelled, image: bytes | None = None) -> dict:
+    specialist = require_specialist(CAPABILITY, "ocr", "ocr-text.v1", "rapidocr-onnxruntime", ram_mib=4096)
+
     def checkpoint():
         if cancelled():
             raise InterruptedError("Demande annulée.")
@@ -161,6 +164,7 @@ def run(candidate: Candidate, cancelled, image: bytes | None = None) -> dict:
                 or tree_hash(stage / "ocr-packages") != environment["packages_sha256"]):
             raise RuntimeError("Les paquets OCR préparés diffèrent du candidat.")
         checkpoint()
-        with reserve_model("onnxruntime", 4096, inside_sandbox=True):
-            return validate_in_sandbox(stage, candidate.runtime, checkpoint=checkpoint, prepare_runtime=add_native_dlls,
-                                       export_result=read_export if image is not None else None)
+        with reserve_model("onnxruntime", specialist.ram_mib, inside_sandbox=True) as residency:
+            result = validate_in_sandbox(stage, candidate.runtime, checkpoint=checkpoint, prepare_runtime=add_native_dlls,
+                                         export_result=read_export if image is not None else None)
+        return {**result, "routing": specialist.evidence(CAPABILITY), "residency": residency}

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "communication-qwen",
+    "modality": "intent",
+    "engine": "rbitnet",
+    "capabilities": ["conversation.intent"],
+    "contract": "conversation-intent.v1",
+    "ram_mib": 8192,
+    "fallback": false
+  },
+  {
+    "id": "image-prompt-qwen",
+    "modality": "intent",
+    "engine": "rbitnet",
+    "capabilities": ["image.prompt"],
+    "contract": "image-prompt.v1",
+    "ram_mib": 8192,
+    "fallback": false
+  },
+  {
+    "id": "code-rbitnet",
+    "modality": "code",
+    "engine": "rbitnet",
+    "capabilities": ["notes.repair_rbitnet", "tasks.repair_rbitnet"],
+    "contract": "unified-diff.v1",
+    "ram_mib": 8192,
+    "fallback": false
+  },
+  {
+    "id": "vision-rapidocr",
+    "modality": "ocr",
+    "engine": "rapidocr-onnxruntime",
+    "capabilities": ["image.ocr", "notes.verify_desktop"],
+    "contract": "ocr-text.v1",
+    "ram_mib": 4096,
+    "fallback": false
+  },
+  {
+    "id": "image-sd-turbo",
+    "modality": "image",
+    "engine": "stable-diffusion.cpp",
+    "capabilities": ["image.generate"],
+    "contract": "verified-png.v1",
+    "ram_mib": 8192,
+    "fallback": false
+  },
+  {
+    "id": "tasks-sql-v3",
+    "modality": "sql",
+    "engine": "rbitnet",
+    "capabilities": ["tasks.sql.v3"],
+    "contract": "tasks-sql-filter.v3",
+    "ram_mib": 8192,
+    "fallback": false
+  },
+  {
+    "id": "notes-sqlite-verifier",
+    "modality": "verification",
+    "engine": "python-sqlite",
+    "capabilities": ["notes.verify", "tasks.verify"],
+    "contract": "verified-state.v1",
+    "ram_mib": 0,
+    "fallback": false
+  },
+  {
+    "id": "project-local-tools",
+    "modality": "file",
+    "engine": "python",
+    "capabilities": ["project.inspect", "project.summarize", "documents.compare", "file.read"],
+    "contract": "project-readonly.v1",
+    "ram_mib": 0,
+    "fallback": false
+  }
+]

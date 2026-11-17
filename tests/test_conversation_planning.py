@@ -107,6 +107,8 @@ def test_summary_refinement_reads_details_beyond_the_introduction(tmp_path):
     overview, = execute_intents(first_request, proposed, references(first_request), None, catalog)
     request = "fais moi un résumé plus complet"
     detailed, = execute_intents(request, proposed, [], tmp_path, catalog)
+    assert detailed.routing["specialist"] == "project-local-tools"
+    assert detailed.routing["ram_mib"] == 0
     assert refines_project_summary(request) and refines_project_summary("Approfondis")
     assert not refines_project_summary('Fais-moi un résumé plus complet de « autre.md »')
     assert not refines_project_summary("Envoie un résumé plus complet par courriel")

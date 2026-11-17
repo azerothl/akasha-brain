@@ -12,6 +12,7 @@ from .notes_evolution import EvolutionBudget, evolution_overview, initialize, ru
 from .notes_repair import RbitnetPaths
 from .notes_runtime import run_notes
 from .planning import compile_goal, load_catalog
+from .specialist_registry import require_specialist
 
 GOAL = Path(__file__).resolve().parents[1] / "contracts/examples/goal_notes_regression.json"
 DEFAULT_EVOLUTION_BUDGET = EvolutionBudget(480, 3, 8, 8192)
@@ -24,6 +25,22 @@ STEP_TITLES = {
     "verify_desktop": "Vérifier après relance",
 }
 STATUSES = {"waiting": "En attente", "running": "En cours", "passed": "Réussi", "failed": "Échec"}
+
+
+def notes_specialists(plan: dict) -> dict:
+    bindings = {
+        "notes.repair_rbitnet": ("code", "unified-diff.v1", "rbitnet", 8192),
+        "notes.verify": ("verification", "verified-state.v1", "python-sqlite", 0),
+        "notes.verify_desktop": ("ocr", "ocr-text.v1", "rapidocr-onnxruntime", 4096),
+    }
+    routes = {}
+    for step in plan["steps"]:
+        capability = step["capability_id"]
+        if capability in bindings:
+            modality, contract, engine, ram_mib = bindings[capability]
+            specialist = require_specialist(capability, modality, contract, engine, ram_mib=ram_mib)
+            routes[capability] = specialist.evidence(capability)
+    return routes
 
 
 def layers(plan: dict) -> list[list[dict]]:
@@ -197,6 +214,7 @@ class NotesTasks:
 
         receipt = None
         try:
+            routes = notes_specialists(record["graph"])
             if self.integrated is not None:
                 report, receipt = self.integrated.run_task(goal, self.catalog, runtime, folder / "result", self.repair,
                                                            self.evolution_budget, progress=progress)
@@ -208,6 +226,12 @@ class NotesTasks:
                                      self.evolution_db, self.evolution_budget, progress=progress,
                                      schedule_evolution=lambda work: self.scheduler.submit(work, background=True),
                                      interactive=self.scheduler.checkpoint)
+            for row in report.get("trace", []):
+                capability = row.get("capability_id")
+                outcome = row.get("result", {})
+                if capability in routes and outcome and not outcome.get("reused"):
+                    if capability != "notes.repair_rbitnet" or outcome.get("residency"):
+                        row["routing"] = routes[capability]
         except Exception as error:
             report = {"status": "failed", "error": {"message": str(error)}}
         final = {**record, **report}

@@ -1,0 +1,94 @@
+{
+  "status": "passed",
+  "windows_test_suite": {
+    "scope": ["tests", "contracts"],
+    "passed": 284
+  },
+  "ocr_windows": {
+    "status": "passed",
+    "text_verified": true,
+    "qualified_in_windows_sandbox": true,
+    "events": [
+      "missing",
+      "local_discovery",
+      "candidate",
+      "qualification",
+      "activated",
+      "resumed"
+    ],
+    "routing": {
+      "specialist": "vision-rapidocr",
+      "modality": "ocr",
+      "engine": "rapidocr-onnxruntime",
+      "contract": "ocr-text.v1",
+      "capability": "image.ocr",
+      "ram_mib": 4096,
+      "reason": "declared_modality_contract"
+    },
+    "residency": {
+      "engine": "onnxruntime",
+      "ram_reserved_mib": 4096,
+      "vram_reserved_mib": 0,
+      "inside_sandbox": true,
+      "host_ram_free_mib": 20358,
+      "device_vram_free_mib": null,
+      "lease_s": 52.65
+    },
+    "other_model_calls_blocked_in_probe": true,
+    "wall_s": 129.772
+  },
+  "image": {
+    "windows": {
+      "status": "passed",
+      "backend": "windows-sandbox",
+      "routing": {
+        "specialist": "image-sd-turbo",
+        "modality": "image",
+        "engine": "stable-diffusion.cpp",
+        "contract": "verified-png.v1",
+        "capability": "image.generate",
+        "ram_mib": 8192,
+        "reason": "declared_modality_contract"
+      },
+      "baseline_resume_s": 95.664,
+      "maximum_resume_s": 114.7968,
+      "client_resume_to_png_s": 113.521,
+      "client_end_to_end_s": 119.674,
+      "change_vs_baseline_pct": 18.67,
+      "png_sha256": "10e96116048e9d0380df4f69ae4d6da214bacc79ab29cdd3a294ac5733df6688",
+      "png_verified_at_client": true,
+      "isolated_runs_stopped": 2,
+      "separate_approval_receipts": 2,
+      "same_task_resumed": true,
+      "cache_started_empty": true,
+      "artifact_network_requests": 0
+    },
+    "linux": {
+      "status": "passed",
+      "backend": "container-rootless",
+      "routing": {
+        "specialist": "image-sd-turbo",
+        "modality": "image",
+        "engine": "stable-diffusion.cpp",
+        "contract": "verified-png.v1",
+        "capability": "image.generate",
+        "ram_mib": 8192,
+        "reason": "declared_modality_contract"
+      },
+      "baseline_resume_s": 57.611,
+      "maximum_resume_s": 69.1332,
+      "client_resume_to_png_s": 56.944,
+      "client_end_to_end_s": 63.488,
+      "change_vs_baseline_pct": -1.16,
+      "png_sha256": "be6f8d56539f4e5d83c946c571ee5da0eb5d97761675dcbeddae4f234d52e097",
+      "png_verified_at_client": true,
+      "isolated_runs_stopped": 2,
+      "separate_approval_receipts": 2,
+      "same_task_resumed": true,
+      "cache_started_empty": true,
+      "artifact_network_requests": 0
+    }
+  },
+  "reference": "image-mcp-cold-cache-v1.json",
+  "timing_boundary": "image_resume to client-verified PNG after both artifacts were verified"
+}
