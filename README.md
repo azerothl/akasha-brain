@@ -170,7 +170,11 @@ Le serveur MCP fonctionne aussi sous Linux pour ce parcours. Lancez le même scr
 
 Les identifiants et les PNG restent disponibles pendant la durée de vie du processus MCP. Le client peut conserver le fichier qu’il reçoit.
 
-Le client MCP a récupéré le selfie vérifié en **50,2 s** dans Windows Sandbox et en **29,7 s** sous Ubuntu WSL2 avec Bubblewrap. Les deux bacs étaient sans fenêtre et hors ligne. Le client a recalculé le SHA-256 des PNG et l’a comparé au verdict. Avec un cache vide, les essais sont restés en attente d’accord. [Relevé des rejeux](bench/results/image-mcp-headless-v1.json)
+Avec le moteur déjà qualifié en cache, le client MCP a récupéré le selfie vérifié en **50,2 s** dans Windows Sandbox et en **29,7 s** sous Ubuntu WSL2 avec Bubblewrap. Les deux bacs étaient sans fenêtre et hors ligne. Le client a recalculé le SHA-256 des PNG et l’a comparé au verdict. [Relevé des rejeux](bench/results/image-mcp-headless-v1.json)
+
+Dans les deux rejeux à cache vide, le refus du moteur a bloqué l’installation. L’accord pour le moteur a permis son installation, puis les poids ont attendu un accord distinct. Les réponses ont été simulées dans la CLI et les artefacts déjà approuvés ont été fournis par une source locale. Deux reçus distincts ont été vérifiés à chaque rejeu.
+
+`image_resume` a repris la demande de selfie avec le même identifiant de tâche. Le client a reçu le verdict `passed` et confirmé le SHA-256 du PNG sur chaque plateforme. Le temps total, qualification comprise, était de **100,9 s** dans Windows Sandbox et **63,9 s** sous Ubuntu WSL2. [Relevé des rejeux à cache vide](bench/results/image-mcp-cold-cache-v1.json)
 
 ### Préparer un diff sur un projet réel
 

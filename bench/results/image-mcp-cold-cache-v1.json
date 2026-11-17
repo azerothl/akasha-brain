@@ -1,0 +1,347 @@
+{
+  "status": "passed",
+  "code_commit": "ad217d6159a5bbd80afcc2219ba152ffb1c76fa8",
+  "replays": {
+    "windows": {
+      "status": "passed",
+      "system": "Windows",
+      "platform": "11",
+      "protocol_version": "2025-11-25",
+      "cache_started_empty": true,
+      "operator": "scripted terminal in disposable fixture",
+      "artifact_transport": "local replay of pinned archive and weights",
+      "artifact_network_requests": 0,
+      "engine_and_weights": [
+        "sd-master-b7a74e6-bin-win-cpu-x64.zip",
+        "sd_turbo_q4_0.gguf"
+      ],
+      "noninteractive_cli": "approval_required",
+      "cli_approvals": [
+        {
+          "exit_code": 1,
+          "prompts": [
+            {
+              "filename": "sd-master-b7a74e6-bin-win-cpu-x64.zip",
+              "sha256": "08c6b1015370f10c3ee1e689b42738d6281c910b375aefc755f3b49989e779a1",
+              "reply": "non"
+            }
+          ],
+          "result": {
+            "error": {
+              "code": "approval_required",
+              "family": "permission",
+              "message": "Téléchargement non autorisé.",
+              "details": {}
+            }
+          },
+          "wall_s": 0.002
+        },
+        {
+          "exit_code": 1,
+          "prompts": [
+            {
+              "filename": "sd-master-b7a74e6-bin-win-cpu-x64.zip",
+              "sha256": "08c6b1015370f10c3ee1e689b42738d6281c910b375aefc755f3b49989e779a1",
+              "reply": "oui"
+            },
+            {
+              "filename": "sd_turbo_q4_0.gguf",
+              "sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359",
+              "reply": "non"
+            }
+          ],
+          "result": {
+            "error": {
+              "code": "approval_required",
+              "family": "permission",
+              "message": "Téléchargement non autorisé.",
+              "details": {}
+            }
+          },
+          "wall_s": 0.074
+        },
+        {
+          "exit_code": 0,
+          "prompts": [
+            {
+              "filename": "sd_turbo_q4_0.gguf",
+              "sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359",
+              "reply": "oui"
+            }
+          ],
+          "result": {
+            "status": "ready"
+          },
+          "wall_s": 3.171
+        }
+      ],
+      "mcp_waiting_for_engine": {
+        "name": "stable-diffusion.cpp (Windows x64, CPU)",
+        "version": "master-955-b7a74e6",
+        "filename": "sd-master-b7a74e6-bin-win-cpu-x64.zip",
+        "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-955-b7a74e6/sd-master-b7a74e6-bin-win-cpu-x64.zip",
+        "size": 17540346,
+        "sha256": "08c6b1015370f10c3ee1e689b42738d6281c910b375aefc755f3b49989e779a1",
+        "license": "MIT",
+        "license_url": "https://github.com/leejet/stable-diffusion.cpp/blob/b7a74e6/LICENSE"
+      },
+      "mcp_waiting_for_weights": {
+        "name": "SD-Turbo Q4_0 (samoudi, dérivé de Stability AI)",
+        "version": "0b5ee51e9a43b33b2d32865781719a85a2248c12",
+        "filename": "sd_turbo_q4_0.gguf",
+        "url": "https://huggingface.co/samoudi/sd-turbo-gguf/resolve/0b5ee51e9a43b33b2d32865781719a85a2248c12/sd_turbo_q4_0.gguf",
+        "size": 1847909248,
+        "sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359",
+        "license": "Stability AI Community License",
+        "license_url": "https://huggingface.co/samoudi/sd-turbo-gguf/blob/0b5ee51e9a43b33b2d32865781719a85a2248c12/LICENSE.md"
+      },
+      "approval_receipts": {
+        "sd-master-b7a74e6-bin-win-cpu-x64.zip": {
+          "id": "8cecac2c-94dd-488e-9586-4b20916d7128",
+          "asset_sha256": "08c6b1015370f10c3ee1e689b42738d6281c910b375aefc755f3b49989e779a1"
+        },
+        "sd_turbo_q4_0.gguf": {
+          "id": "679dd3d5-0022-46a6-b77b-3cfa2d1e8ba2",
+          "asset_sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359"
+        }
+      },
+      "same_task_resumed": true,
+      "only_one_image_start": true,
+      "qualification": {
+        "status": "passed",
+        "sandbox_stopped": true,
+        "sandbox_id": "1d75a4e8-d875-439f-9aec-d598c4bb4eec",
+        "guest_exit_code": 0,
+        "read_only_input": true,
+        "mount_probe": 17679,
+        "channel_probe": 16671,
+        "disabled_channels": [
+          "Networking",
+          "ClipboardRedirection",
+          "AudioInput",
+          "VideoInput",
+          "PrinterRedirection",
+          "VGpu"
+        ],
+        "headless": true,
+        "export_transport": "hcs-stdout",
+        "backend": "windows-sandbox",
+        "candidate_sha256": "d8d7a56787ff0090a3e6c9fb0e8c831c9c8e7e4fb2ca0160c7d400b2a5a53cb9",
+        "png": {
+          "format": "PNG",
+          "width": 512,
+          "height": 512,
+          "bytes": 518893,
+          "sha256": "14d1a999cad76a77d8613c02b8d8110d919cee1f5a81bf150f0c9106a0c3e2cf",
+          "input_sha256": "295ed4ba80b11d7ac488f5a580269563982290e591fe0726710bcf40565acfa4"
+        }
+      },
+      "result": {
+        "task_id": "f7ab9205-1a65-4d98-aca0-17963d2ae8a5",
+        "status": "passed",
+        "verdict": {
+          "status": "passed",
+          "sandbox_stopped": true,
+          "sandbox_id": "50d2b3eb-274f-4a2b-a09c-00b170366f03",
+          "guest_exit_code": 0,
+          "read_only_input": true,
+          "mount_probe": 17679,
+          "channel_probe": 16671,
+          "disabled_channels": [
+            "Networking",
+            "ClipboardRedirection",
+            "AudioInput",
+            "VideoInput",
+            "PrinterRedirection",
+            "VGpu"
+          ],
+          "headless": true,
+          "export_transport": "hcs-stdout",
+          "backend": "windows-sandbox",
+          "candidate_sha256": "d8d7a56787ff0090a3e6c9fb0e8c831c9c8e7e4fb2ca0160c7d400b2a5a53cb9",
+          "png": {
+            "format": "PNG",
+            "width": 512,
+            "height": 512,
+            "bytes": 406506,
+            "sha256": "10e96116048e9d0380df4f69ae4d6da214bacc79ab29cdd3a294ac5733df6688",
+            "input_sha256": "a0cf37fe329942addc24d3ac5732395c2c4d6fd001e3c11fe663111066077b74"
+          }
+        },
+        "wall_s": 95.377
+      },
+      "client_png_verified": true,
+      "same_sha256_as_prior_selfie": true,
+      "client_resume_to_png_s": 95.664,
+      "client_end_to_end_s": 100.923,
+      "file": "selfie-windows.png",
+      "distinct_approval_receipts_verified": true
+    },
+    "linux": {
+      "status": "passed",
+      "system": "Linux",
+      "platform": "6.18.58.1-microsoft-standard-WSL2",
+      "protocol_version": "2025-11-25",
+      "cache_started_empty": true,
+      "operator": "scripted terminal in disposable fixture",
+      "artifact_transport": "local replay of pinned archive and weights",
+      "artifact_network_requests": 0,
+      "engine_and_weights": [
+        "sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip",
+        "sd_turbo_q4_0.gguf"
+      ],
+      "noninteractive_cli": "approval_required",
+      "cli_approvals": [
+        {
+          "exit_code": 1,
+          "prompts": [
+            {
+              "filename": "sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip",
+              "sha256": "c33577f8340dc1ac4212adac7def108ecc08e3047d8a3c2d460cc878eac0e78b",
+              "reply": "non"
+            }
+          ],
+          "result": {
+            "error": {
+              "code": "approval_required",
+              "family": "permission",
+              "message": "Téléchargement non autorisé.",
+              "details": {}
+            }
+          },
+          "wall_s": 0.009
+        },
+        {
+          "exit_code": 1,
+          "prompts": [
+            {
+              "filename": "sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip",
+              "sha256": "c33577f8340dc1ac4212adac7def108ecc08e3047d8a3c2d460cc878eac0e78b",
+              "reply": "oui"
+            },
+            {
+              "filename": "sd_turbo_q4_0.gguf",
+              "sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359",
+              "reply": "non"
+            }
+          ],
+          "result": {
+            "error": {
+              "code": "approval_required",
+              "family": "permission",
+              "message": "Téléchargement non autorisé.",
+              "details": {}
+            }
+          },
+          "wall_s": 0.063
+        },
+        {
+          "exit_code": 0,
+          "prompts": [
+            {
+              "filename": "sd_turbo_q4_0.gguf",
+              "sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359",
+              "reply": "oui"
+            }
+          ],
+          "result": {
+            "status": "ready"
+          },
+          "wall_s": 3.913
+        }
+      ],
+      "mcp_waiting_for_engine": {
+        "name": "stable-diffusion.cpp (Linux x86_64, CPU)",
+        "version": "master-955-b7a74e6",
+        "filename": "sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip",
+        "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-955-b7a74e6/sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip",
+        "size": 26122695,
+        "sha256": "c33577f8340dc1ac4212adac7def108ecc08e3047d8a3c2d460cc878eac0e78b",
+        "license": "MIT",
+        "license_url": "https://github.com/leejet/stable-diffusion.cpp/blob/b7a74e6/LICENSE"
+      },
+      "mcp_waiting_for_weights": {
+        "name": "SD-Turbo Q4_0 (samoudi, dérivé de Stability AI)",
+        "version": "0b5ee51e9a43b33b2d32865781719a85a2248c12",
+        "filename": "sd_turbo_q4_0.gguf",
+        "url": "https://huggingface.co/samoudi/sd-turbo-gguf/resolve/0b5ee51e9a43b33b2d32865781719a85a2248c12/sd_turbo_q4_0.gguf",
+        "size": 1847909248,
+        "sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359",
+        "license": "Stability AI Community License",
+        "license_url": "https://huggingface.co/samoudi/sd-turbo-gguf/blob/0b5ee51e9a43b33b2d32865781719a85a2248c12/LICENSE.md"
+      },
+      "approval_receipts": {
+        "sd_turbo_q4_0.gguf": {
+          "id": "9dcce287-dd75-4c72-bae1-7c4a2b00bca5",
+          "asset_sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359"
+        },
+        "sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip": {
+          "id": "d6a2d162-63d7-40b8-a9fd-dd03c58cb98a",
+          "asset_sha256": "c33577f8340dc1ac4212adac7def108ecc08e3047d8a3c2d460cc878eac0e78b"
+        }
+      },
+      "same_task_resumed": true,
+      "only_one_image_start": true,
+      "qualification": {
+        "status": "passed",
+        "sandbox_stopped": true,
+        "guest_exit_code": 0,
+        "read_only_input": true,
+        "isolation": {
+          "private_namespaces": true,
+          "network_off": true,
+          "read_only_input": true,
+          "private_scratch": true,
+          "no_privileges": true,
+          "headless": true
+        },
+        "backend": "container-rootless",
+        "candidate_sha256": "c5efceb8af42516f2198ce998c3ac41995d51899b3d6b9867ac8dd4341a14553",
+        "png": {
+          "format": "PNG",
+          "width": 512,
+          "height": 512,
+          "bytes": 536274,
+          "sha256": "059485efaabdd81dc5564213b47310ba03ec4188a9dc90067d7405b10d382cc1",
+          "input_sha256": "12098b82a8bd58d4bd6cfefdc13a51053d81a8d8bd516f60cd6e381facfe562d"
+        }
+      },
+      "result": {
+        "task_id": "8fd6f789-8037-4715-af59-29d7c7288d1c",
+        "status": "passed",
+        "verdict": {
+          "status": "passed",
+          "sandbox_stopped": true,
+          "guest_exit_code": 0,
+          "read_only_input": true,
+          "isolation": {
+            "private_namespaces": true,
+            "network_off": true,
+            "read_only_input": true,
+            "private_scratch": true,
+            "no_privileges": true,
+            "headless": true
+          },
+          "backend": "container-rootless",
+          "candidate_sha256": "c5efceb8af42516f2198ce998c3ac41995d51899b3d6b9867ac8dd4341a14553",
+          "png": {
+            "format": "PNG",
+            "width": 512,
+            "height": 512,
+            "bytes": 405265,
+            "sha256": "be6f8d56539f4e5d83c946c571ee5da0eb5d97761675dcbeddae4f234d52e097",
+            "input_sha256": "f15824f1c35d6e389aabc3b401883cebe3b1a5ab8ff0c00397a3c10aad43f918"
+          }
+        },
+        "wall_s": 57.577
+      },
+      "client_png_verified": true,
+      "same_sha256_as_prior_selfie": true,
+      "client_resume_to_png_s": 57.611,
+      "client_end_to_end_s": 63.877,
+      "file": "selfie-linux.png",
+      "distinct_approval_receipts_verified": true
+    }
+  },
+  "reference_report": "image-mcp-headless-v1.json"
+}
