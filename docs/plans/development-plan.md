@@ -1,20 +1,22 @@
 # Akasha Brain — Plan de développement
 
-**Statut :** plan v0.18, issu de la spécification v0.19\
-**Date :** 2026-11-17\
+**Statut :** plan v0.19, issu de la spécification v0.19\
+**Date :** 2026-11-18\
 **Banc d'essai initial :** bureau & code local (poste Windows d'abord, environnement isolé). La cible produit est l’agent universel local à domaines croissants. La piste spatiale est séparée.
 
 ## Objectif
 
 Construire progressivement le système décrit par la [spécification d'architecture](../architecture/brain-system-spec.md), en prouvant à chaque phase une capacité mesurable contre une baseline fixe, avant d'ajouter la suivante. Fondements et limites : [notes de recherche](../research/research-notes.md).
 
-## État livré au 17 novembre 2026
+## État livré au 18 novembre 2026
 
 Les phases 0 à 6 ont leurs preuves de qualification sur le banc bureau et code Windows. L’application desktop expose la conversation, les tâches et l’évolution intégrée. Les extensions livrées depuis cette qualification comprennent la planification des demandes libres, le résumé détaillé du code, l’accès agent via MCP et la récupération de capacités déclarées. [Audit et extensions livrées](phase6_status.md)
 
 Le parcours image dispose d’une exécution commune sur CPU avec deux backends headless, Windows Sandbox et Bubblewrap sous Linux. La conversation Windows, la CLI et MCP utilisent la même chaîne de découverte, d’accord par artefact, de qualification et de validation du PNG. Le serveur MCP a été vérifié avec le moteur déjà qualifié et à cache vide. Les deux rejeux à cache vide ont exercé des accords distincts et la reprise du selfie sous le même identifiant. Les réponses d’accord étaient simulées dans la CLI, avec des sources locales pour les artefacts approuvés. [Rejeux MCP](../../bench/results/image-mcp-headless-v1.json) · [Cache vide](../../bench/results/image-mcp-cold-cache-v1.json)
 
 La qualification Linux publiée couvre les images en CLI et MCP sous Ubuntu WSL2 avec un compte non privilégié. Les parcours Notes, projet et interface desktop ont été qualifiés sur Windows.
+
+Les jalons post-MVP **G1 à G6 sont clôturés sur `main`**. La révision finale `02b0447` a passé **297 tests en 2 min 17 s** sur les suites `tests` et `contracts`. [Clôture et résultats](product-goal-roadmap-v1.md#clôture-sur-main)
 
 ## Périmètre et critères du MVP
 
@@ -177,20 +179,21 @@ Différés sur ce banc : reconstruction 3D métrique, contrôle continu, génér
 
 ## Post-MVP — Agent universel local
 
-Les phases 0 à 6 ont validé les mécanismes sur le banc bureau et code. La suite produit est l’agent universel local (§2.1 de la spec).
+Les phases 0 à 6 ont validé les mécanismes sur le banc bureau et code. Les jalons G1 à G5 ont intégré les premières capacités de l’agent universel local (§2.1 de la spec).
 
-- **G1 ouvre et restaure les sessions avec une mémoire structurée.** Un contrôle hors modèle applique le schéma d’admission avant toute écriture durable de session. Le texte libre, les pièces jointes et les valeurs dont l’admissibilité reste indéterminée demeurent volatiles. Le test de sortie injecte un secret synthétique et vérifie son absence et celle de son empreinte dans les mémoires, fichiers de session, traces, journaux et sauvegardes contrôlés, y compris après redémarrage (§10.6).
-- **G2 ajoute le vault hybride.** Le keystore OS reçoit les secrets admis et le vault applicatif gère les métadonnées de handle. La résolution d’un handle exige une action autorisée et journalisée (§10.6).
-- **G3 diagnostique les lacunes puis cherche une reprise déclarée.** Une approbation requise suspend la demande. `missing` signale l’absence de capacité admissible après recherche, `abstain` clôt une demande insuffisamment étayée et une proposition de construction décrit un candidat soumis à évaluation (§11.8, §14).
-- **G4 simule hors charge et G5 explicite le registre multi-spécialistes.** Les simulations restent sous budget et les tâches interactives sont prioritaires. Le LLM généraliste intervient en secours. G5 mesure la qualification et le rendu image à froid entre `image_resume` et le PNG reçu et vérifié, avec les artefacts déjà présents et vérifiés.
+- **G1 ouvre et restaure les sessions avec une mémoire structurée.** Un contrôle hors modèle applique le schéma d’admission avant toute écriture durable de session. Le texte libre, les pièces jointes et les valeurs dont l’admissibilité reste indéterminée demeurent volatiles. Le rejeu sur deux sessions a vérifié l’isolation et l’absence du secret synthétique et de son empreinte dans les stockages contrôlés, sauvegarde chiffrée comprise, avant et après redémarrage (§10.6).
+- **G2 ajoute le vault hybride.** Le keystore OS reçoit les secrets admis et le vault applicatif gère les métadonnées de handle. Le rejeu Windows a vérifié la résolution autorisée et journalisée, le refus hors session et l’effacement dans le keystore (§10.6).
+- **G3 diagnostique les lacunes puis cherche une reprise déclarée.** Une approbation requise suspend la demande. `missing` signale l’absence de capacité admissible après recherche, `abstain` clôt une demande insuffisamment étayée et une proposition de construction décrit un candidat soumis à évaluation (§11.8, §14). Les voies A à D ont été rejouées sur leurs cas de référence.
+- **G4 simule hors charge.** Dans Windows Sandbox, le lancement de Notes avec Rbitnet CPU et RapidOCR a interrompu la simulation au prochain point sûr. Les deux exécutions ont validé le premier diff, les quatre tests et la persistance après relance. Sur l’assemblage G4–G5, le surcoût de préemption de l’ordonnanceur était de 2,09 ms au p95, pour un plafond de 3 s.
+- **G5 explicite le registre multi-spécialistes.** Les traces identifient les moteurs et leurs budgets. Le rejeu à froid entre `image_resume` et le PNG vérifié a pris 113,521 s sous Windows Sandbox et 56,944 s sous Ubuntu WSL2. Les deux mesures passent leur seuil.
 
 La réouverture d’une session G1 restaure les faits admis. Une tâche image MCP en attente se reprend avec son `task_id` tant que le même serveur tourne. Après un redémarrage du serveur, le client utilise `image_start` et obtient un nouvel identifiant. Les caches restent disponibles et le serveur vérifie les artefacts avant de les réutiliser (§8.7).
 
-L’ordre des livraisons, les dépendances et les preuves figurent dans [product-goal-roadmap-v1.md](product-goal-roadmap-v1.md) (PR-G0 à PR-G5).
+Après G1 et G6, la suite `tests` et `contracts` a passé 272 tests. Elle en a passé 275 après G2, 289 après G3 et 297 après G4 et G5. [Révisions testées et preuves par jalon](product-goal-roadmap-v1.md#clôture-sur-main)
 
 ## Piste séparée — Modèle du monde spatial et agent incarné
 
-La perception spatiale, les simulateurs et l’action incarnée suivent un plan dédié. PR-G6 peut commencer après PR-G0 et définit tâches, capteurs, métriques et seuils. La Phase 5 valide la prédiction sur le banc bureau et code.
+La perception spatiale, les simulateurs et l’action incarnée suivent un plan dédié. Le jalon documentaire G6 a été relu et fusionné sur `main`. Le plan fixe les critères d’entrée depuis la Phase 5, les scénarios, les observations et les seuils d’évaluation pour la piste de recherche. [Plan de recherche spatial](spatial-world-model-plan-v0.md)
 
 ## Questions de conception initiales
 

@@ -1,7 +1,7 @@
 # But produit et feuille de route post-MVP
 
-- **Statut** — Décisions figées, PR-G0 appliquée dans la spec et le plan.
-- **Date** — 2026-11-17.
+- **Statut** — G0 publié et G1 à G6 clôturés sur `main`.
+- **Dernière mise à jour** — 2026-11-18.
 - **Prérequis** — Phases 0 à 6 qualifiées sur le banc bureau et code.
 - **Spec liée** — v0.19, §2, §8 à §11, §13, §14, §17 et §19. [Spécification](../architecture/brain-system-spec.md)
 
@@ -9,7 +9,7 @@
 
 Le but produit passe d’un MVP « deux parcours + évolution bornée sur banc » à un agent de demandes utilisateur qui compose des spécialistes, comble les lacunes sous garde-fous, mémorise par session et globalement, simule hors charge, et isole les secrets dans un vault.
 
-La spec v0.19 et le plan de développement v0.18 portent ce but. Les PR de code (G1+) attendent un go explicite.
+La spec v0.19 et le plan de développement v0.19 portent ce but. Les révisions fusionnées et leurs résultats figurent dans la section de clôture. [Plan de développement](development-plan.md)
 
 ## Jugement sur la formulation proposée
 
@@ -29,7 +29,7 @@ La spec v0.19 et le plan de développement v0.18 portent ce but. Les PR de code 
 
 - Sessions utilisateur avec mémoire de session distincte de la mémoire globale.
 - Filtre de persistance des sessions dès G1, puis vault hybride et références par handle en G2.
-- « Rêver » hors charge pour simuler de nouveaux cas. L’évolution de fond existe déjà. La génération de scénarios synthétiques hors tâche utilisateur n’est pas encore un produit nommé.
+- Les simulations hors charge de G4 génèrent et évaluent des cas synthétiques Notes. Leurs résultats sont journalisés.
 
 ### Oublié dans la formulation (à garder)
 
@@ -53,7 +53,7 @@ Akasha Brain est un agent local multi-spécialistes. Il décompose une demande d
 
 ## Graphe de dépendances des PR
 
-Toutes les PR partent de `main` sauf indication. Les PR marquées revue opérateur bloquent le merge jusqu’à relecture humaine.
+Le graphe indique les dépendances des livraisons. Les PR soumises à revue opérateur requièrent une relecture humaine avant leur fusion.
 
 ```mermaid
 flowchart LR
@@ -66,7 +66,31 @@ flowchart LR
     G0 --> G6["G6 · Plan spatial"]
 ```
 
-PR-G4 et PR-G5 peuvent avancer en parallèle après PR-G3. PR-G6 dépend uniquement de PR-G0 et suit le calendrier de la recherche spatiale.
+G4 et G5 ont avancé en parallèle à partir de G3. G6 dépend uniquement de G0 et suit le calendrier de la recherche spatiale.
+
+## Clôture sur main
+
+Les six jalons ont été fusionnés sur `main`. La dernière validation porte sur `02b0447`. Les révisions et les dates ci-dessous correspondent aux fusions, en heure de Paris.
+
+| Jalon | Date | Fusion sur `main` | Preuve |
+| --- | --- | --- | --- |
+| G1 — Sessions | 17 novembre 2026 | `8f61606` · [PR #2](https://github.com/azerothl/akasha-brain/pull/2) | [Isolation, redémarrage, sauvegarde et latence](../../bench/results/conversation-sessions-g1-v1.json) |
+| G2 — Coffre | 17 novembre 2026 | `fbe8e2e` · [PR #3](https://github.com/azerothl/akasha-brain/pull/3) | [Résolution, refus et effacement](../../bench/results/conversation-vault-g2-v1.json) |
+| G3 — Reprise des lacunes | 18 novembre 2026 | `b290c1b` · [PR #4](https://github.com/azerothl/akasha-brain/pull/4) | [Voies A à D, RapidOCR et image MCP](../../bench/results/gap-resolution-g3-v1.json) |
+| G4 — Simulation hors charge | 18 novembre 2026 | `ae71510` · [PR #5](https://github.com/azerothl/akasha-brain/pull/5) | [Simulation et préemption](../../bench/results/idle-simulation-g4-v1.json) |
+| G5 — Routage des spécialistes | 18 novembre 2026 | `02b0447` · [PR #6](https://github.com/azerothl/akasha-brain/pull/6) | [Routage et rejeux sur Windows et Linux](../../bench/results/specialist-routing-g5-v1.json) |
+| G6 — Plan spatial | 17 novembre 2026 | `1eb8cb6` · [PR #1](https://github.com/azerothl/akasha-brain/pull/1) | [Plan de recherche relu](spatial-world-model-plan-v0.md) |
+
+### Non-régression sur main
+
+Les suites `tests` et `contracts` ont été exécutées sous Windows après chaque lot de fusion.
+
+| Lot validé | Révision | Tests réussis | Temps de la suite |
+| --- | --- | ---: | ---: |
+| G1 et G6 | `1eb8cb6` | 272 | 29,68 s |
+| + G2 | `fbe8e2e` | 275 | 26,94 s |
+| + G3 | `b290c1b` | 289 | 34,15 s |
+| + G4 et G5 | `02b0447` | **297** | **137,49 s** |
 
 ## PR-G0 — But produit dans la spec et le plan
 
@@ -75,96 +99,66 @@ PR-G4 et PR-G5 peuvent avancer en parallèle après PR-G3. PR-G6 dépend uniquem
 - [x] Un changement : figer le but produit et retirer l’ambiguïté « n’importe quelle demande »
 - [x] Résultat visible : §2.1 et le plan citent sessions, vault handles, lacunes typées, rêve hors charge, multi-spécialistes
 - [x] Vérification unit : n/a docs
-- [ ] Vérification live : relecture opérateur des quatre décisions (en attente)
+- [x] Publication du cadrage demandée par l’opérateur et vérifiée dans `main` à la révision `44fa9f4`.
 - [x] Vérification perf : n/a
-- [ ] Revue opérateur avant merge : oui (en attente)
 
 ## PR-G1 — Sessions et mémoire de session
 
-- [ ] Dépend de : PR-G0
-- [ ] Fichiers (cible) : nouveaux types sous `akasha_brain/` (session store), `desktop_conversation.py`, contrats éventuels `SessionSpec`, tests dédiés
-- [ ] Créer, lister et rouvrir les sessions avec leurs projets autorisés, leurs faits structurés admis et une référence facultative à la mémoire globale.
-- [ ] Appliquer l’admission avant toute écriture durable de session. Le contrôle hors modèle accepte un schéma fermé et des valeurs dont l’admissibilité est établie. Le texte libre, les pièces jointes et les valeurs dont l’admissibilité reste indéterminée demeurent volatiles (§10.6 de la spec).
-- [ ] Le bouton « Nouvelle session » ouvre un contexte isolé. Au redémarrage, la conversation retrouve ses faits admis et leurs échéances. Après redémarrage du serveur MCP, une tâche image est soumise de nouveau avec `image_start` et reçoit un nouvel identifiant (§8.7 de la spec).
-- [ ] Vérifier la création, l’isolation, la réouverture, les échéances et le refus d’une écriture hors schéma ou d’une valeur inadmissible.
-- [ ] Ouvrir deux sessions desktop sur le même projet avec des faits distincts. Saisir un secret synthétique, redémarrer et vérifier que chaque session retrouve ses propres faits. Vérifier avant et après redémarrage que le secret et son empreinte sont absents des fichiers de session, des mémoires, des traces, des journaux et des sauvegardes contrôlés.
-- [ ] Vérification perf : ouverture d’une session avec N souvenirs. Mesurer d’abord le baseline trunk (latence p50 ouverture conversation). Échec si p50 > 2× baseline ou > 500 ms sur le profil qualifié, le premier seuil atteint
-- [ ] Revue opérateur avant merge : oui (interaction)
+- [x] Dépendance G0 et livraison du stockage et de l’interface des sessions. Les sessions se créent, se listent et se rouvrent avec leurs projets autorisés, leurs faits structurés et leur référence facultative à la mémoire globale.
+- [x] Admission avant toute écriture durable de session. Le contrôle hors modèle applique un schéma fermé. Le texte libre, les pièces jointes et les valeurs dont l’admissibilité reste indéterminée demeurent volatiles (§10.6).
+- [x] Tests de création, d’isolation, de réouverture, d’échéances et de refus d’une écriture hors schéma. Deux sessions ouvertes sur le même projet ont retrouvé leurs propres faits. Le contrôle a trouvé zéro occurrence du secret synthétique et de son empreinte avant et après redémarrage, y compris lors de la restauration de la sauvegarde chiffrée. [Rejeu G1](../../bench/results/conversation-sessions-g1-v1.json)
+- [x] Après redémarrage du serveur MCP, `image_start` a attribué un nouvel identifiant et réutilisé la qualification compatible (§8.7). [Rejeu de redémarrage](../../bench/results/gap-resolution-g3-v1.json)
+- [x] Ouverture avec deux faits admis mesurée sur 20 paires. La médiane est de 19,738 ms pour une référence de 14,301 ms et un plafond de 28,602 ms, soit le minimum de deux fois la référence et 500 ms.
+- [x] Revue de l’interaction et accord de fusion confirmés par l’opérateur dans la conversation.
 
-Types fondateurs à figer avant la logique :
+### Types livrés
 
 - `SessionId`
 - `SessionMemoryRecord` (faits de session, filiation, échéance)
-- `GlobalMemoryRef` (référence, pas duplication du contenu sensible)
+- `GlobalMemoryRef` (référence à la mémoire globale par identifiant)
 
 ## PR-G2 — Vault et substitution par handle
 
-- [ ] Dépend de : PR-G1
-- [ ] Fichiers (cible) : module vault, `memory_*`, conversation ingest, schémas Retention / consent si besoin, tests de non-fuite
-- [ ] Étendre le contrôle d’entrée de G1. Sceller le secret admis dans le keystore OS et conserver les métadonnées de handle dans le vault applicatif. La résolution exige une action autorisée et journalisée.
-- [ ] Résultat visible : coller une clé API dans la conversation. La mémoire de session montre un handle. Le fichier mémoire et le journal d’audit ne contiennent ni secret ni empreinte du secret.
-- [ ] Vérification unit : classify → seal → resolve refus / resolve ok / erase
-- [ ] Vérification live : secret injecté, grep des stores session/global/audit/backup contrôlés = zéro occurrence
-- [ ] Vérification perf : seal + resolve p50. Baseline trunk d’un write mémoire. Échec si seal ajoute > 20 ms p50 hors I/O keystore sur le profil qualifié
-- [ ] Revue opérateur avant merge : oui
+- [x] Dépendance G1 et livraison du coffre et de son intégration à la conversation. Le keystore Windows scelle le secret admis. Le coffre applicatif conserve les métadonnées du handle. La résolution est autorisée et journalisée.
+- [x] Tests de classification, de scellage, de refus, de résolution autorisée et d’effacement. Le rejeu Windows a affiché un handle après saisie, l’a résolu après redémarrage et a vérifié le refus hors session ainsi que l’effacement dans le keystore. Le contrôle des stockages de session, de mémoire globale, d’audit et de sauvegarde a trouvé zéro occurrence du secret synthétique et de son empreinte. [Rejeu G2](../../bench/results/conversation-vault-g2-v1.json)
+- [x] Surcoût médian du scellage de 6,422 ms hors accès au keystore pour un plafond de 20 ms, avec une référence d’écriture mémoire de 3,931 ms. Résolution médiane de 22,939 ms.
+- [x] Revue et accord de fusion confirmés par l’opérateur dans la conversation.
 
 ## PR-G3 — Remplir une lacune sans improvisation
 
-- [ ] Dépend de : PR-G1 et PR-G2
-- [ ] Fichiers (cible) : `conversation_planning.py`, `capability_recovery.py`, GapReport / évolution existante, registre de capacités
-- [ ] Vérifier préconditions et permissions, puis chercher un chemin déclaré et une reprise locale autorisée. Si un prérequis exige un accord, suspendre la tâche dans le parcours prévu et reprendre la demande après vérification de l’artefact. Pour une lacune persistante, évaluer les voies A–D sur un graphe candidat isolé. Une proposition E exige un `GapReport` et l’accord correspondant.
-- [ ] Afficher `missing` lorsqu’aucune capacité admissible ne couvre le besoin après diagnostic. Afficher `abstain` lorsque les preuves restent insuffisantes pour agir. Une clarification, une attente d’accord, un refus de permission et une proposition de construction ont leurs issues propres (§11.8 et §14 de la spec).
-- [ ] Tester la priorité de la reprise autorisée, l’attente par artefact, l’abstention finale, le refus des actions R2/R3 sans autorisation et l’intégrité du graphe actif.
-- [ ] Rejouer une demande couverte, l’OCR avec qualification en cache, le selfie à cache vide avec deux accords et un cas sans candidat qui aboutit à `missing`.
-- [ ] Vérification perf : planification d’une demande `missing` < 2 s p50 hors chargement modèle sur profil qualifié. Baseline = `project.inspect` planifié aujourd’hui
-- [ ] Revue opérateur avant merge : oui
+- [x] Dépendances G1 et G2 et livraison du planificateur et de la récupération. Les préconditions et permissions encadrent la recherche locale. La reprise après accord vérifie l’artefact. Les voies A à D ont été rejouées sur leurs cas de référence. La compétence « lire puis comparer » a été consignée au stade candidat. Une proposition E exige un `GapReport` et l’accord correspondant.
+- [x] Issues distinctes pour `missing`, `abstain`, la clarification, l’attente d’accord, le refus de permission et la proposition de construction (§11.8 et §14). Les tests couvrent la priorité de la reprise autorisée, l’attente par artefact, l’abstention, les refus R2/R3 et l’intégrité du graphe actif.
+- [x] Rejeux de la demande couverte, de RapidOCR avec qualification en cache, du selfie à cache vide avec deux accords simulés et du PDF sans candidat. La lecture RapidOCR a pris 119,363 s en incluant la qualification et 63,378 s en réutilisant le cache. [Rejeu G3](../../bench/results/gap-resolution-g3-v1.json)
+- [x] Cas PDF `missing` en 3,192 ms de médiane hors chargement du modèle, pour un plafond de 2 s. La référence de planification `project.inspect` est de 0,116 ms.
+- [x] Revue et accord de fusion confirmés par l’opérateur dans la conversation.
 
 G3 réutilise `GapReport`, la récupération OCR et image et les niveaux d’évolution du §11.2. Le selfie à cache vide fournit la preuve de référence pour les accords et la reprise avec le même `task_id`. [Relevé MCP à cache vide](../../bench/results/image-mcp-cold-cache-v1.json)
 
 ## PR-G4 — Rêve hors charge (simulation synthétique)
 
-- [ ] Dépend de : PR-G3
-- [ ] Fichiers (cible) : budgets d’évolution existants, générateur de cas synthétiques, file desktop, tests d’arrêt sous charge interactive
-- [ ] Un changement : quand CPU/RAM libres selon budget, lancer des simulations sur banc synthétique admissible. Produire des candidats évalués. Ne pas toucher contenus réels sans accord. Préempter dès tâche utilisateur.
-- [ ] Résultat visible : session idle documentée. Au moins un essai synthétique journalisé. Une tâche Notes interactive coupe ou retarde le rêve au prochain point sûr
-- [ ] Vérification unit : admission budget, préemption, exclusion transfert réservé
-- [ ] Vérification live : idle → un dream run. Puis lancer Notes. Le dream cède. Verdict Notes inchangé sur référence
-- [ ] Vérification perf : pendant dream, latence de reprise d’une tâche interactive. Baseline trunk sans dream. Échec si délai au point sûr > 3 s p95 au-delà du baseline
-- [ ] Revue opérateur avant merge : non sauf changement UI de contrôle rêve
+- [x] Dépendance G3 et livraison de la simulation activable avec `--idle-simulations`. L’admission vérifie les budgets CPU et RAM. La file donne la priorité aux tâches interactives au prochain point sûr.
+- [x] Tests d’admission, de préemption et d’exclusion du transfert réservé. Le rejeu a journalisé 16 cas synthétiques, avec 10 réussites pour la référence et 12 pour le candidat.
+- [x] Dans Windows Sandbox, la simulation a cédé au lancement de Notes. Les deux exécutions du parcours fixe ont passé les quatre tests et SQLite. Le surcoût au p95 de l’ordonnanceur était de 1,416 ms pour un plafond de 3 s. [Rejeu G4](../../bench/results/idle-simulation-g4-v1.json)
+- [x] Sur l’assemblage G4–G5, les deux exécutions Notes avec Rbitnet CPU et RapidOCR ont produit le même premier diff vérifié et les mêmes verdicts après relance. Temps total de 145,024 s en référence et de 145,896 s avec préemption. Sur 20 mesures de l’ordonnanceur, surcoût de 2,09 ms au p95. [Rejeu apparié G4–G5](../../bench/results/specialist-routing-g5-v1.json)
+- [x] Fusion autorisée par l’opérateur après la validation de G3.
 
 ## PR-G5 — Registre multi-spécialistes explicite
 
-- [ ] Dépend de : PR-G3
-- [ ] Fichiers (cible) : `capabilities.json` / manifests, adaptateurs image/OCR/code déjà présents, doc §7
-- [ ] Un changement : chaque spécialiste (LLM, OCR, image, SQL, solveur) déclare modality, moteur, contrat, budget. Le routeur ne choisit un LLM généraliste qu’en secours documenté.
-- [ ] Résultat visible : une demande image ne charge pas le spécialiste code. Trace montre le nœud choisi et le motif
-- [ ] Vérification unit : admissibilité par modality, refus hors contrat
-- [ ] Vérification live : une demande OCR et une demande image. Traces distinctes. Pas de chargement croisé inutile
-- [ ] Mesurer la reprise à froid du spécialiste image sur le même profil, avec moteur et poids déjà vérifiés et une qualification à effectuer. Chronométrer de `image_resume` au PNG reçu et vérifié par SHA-256. La référence est `client_resume_to_png_s`, soit 95,664 s sous Windows Sandbox et 57,611 s sous Ubuntu WSL2. Un dépassement de 1,2× la référence du profil échoue au contrôle. Le parcours complet avec accords est consigné séparément dans `client_end_to_end_s`. [Relevé de référence](../../bench/results/image-mcp-cold-cache-v1.json)
-- [ ] Revue opérateur avant merge : non
+- [x] Dépendance G3 et livraison du registre par modalité, moteur, contrat et budget. Les tests couvrent l’admissibilité et le refus hors contrat. Une éventuelle voie généraliste exige un secours déclaré et autorisé. [Registre](../../akasha_brain/specialists.json)
+- [x] Traces distinctes pour RapidOCR et SD-Turbo. Le rejeu image a sélectionné SD-Turbo et le parcours Notes a identifié séparément le spécialiste de code, la vérification SQLite et RapidOCR. Le solveur fixe a vérifié la copie dans le bac avec une réservation modèle de 0 Mio.
+- [x] Reprise image à froid avec les artefacts vérifiés et une qualification à effectuer. De `image_resume` au PNG reçu et vérifié par SHA-256, Windows Sandbox a pris 113,521 s pour une référence de 95,664 s et un plafond de 114,797 s. Ubuntu WSL2 a pris 56,944 s pour une référence de 57,611 s et un plafond de 69,133 s. Les plafonds correspondent à 1,2 fois la référence. Le parcours complet avec accords est consigné séparément dans `client_end_to_end_s`. [Rejeux G5](../../bench/results/specialist-routing-g5-v1.json) · [Référence à cache vide](../../bench/results/image-mcp-cold-cache-v1.json)
+- [x] Fusion autorisée par l’opérateur après la validation de G3.
 
 ## PR-G6 — Plan de recherche spatial
 
-- [ ] Dépend de : PR-G0
-- [ ] Fichiers : `docs/plans/spatial-world-model-plan-v0.md` seulement
-- [ ] Un changement : plan de recherche avec tâches, simulateur, métriques, seuils. Pas de code produit
-- [ ] Résultat visible : document avec critères d’entrée depuis le banc bureau/code
-- [ ] Vérification unit : n/a
-- [ ] Vérification live : relecture opérateur
-- [ ] Vérification perf : n/a
-- [ ] Revue opérateur avant merge : oui
+- [x] Dépendance G0 et livraison du plan de recherche. Le document fixe les critères d’entrée depuis le banc bureau et code, cinq cas, le simulateur de référence, les observations, les métriques et les seuils. [Plan spatial](spatial-world-model-plan-v0.md)
+- [x] Validation documentaire par relecture opérateur. Après les fusions de G1 et G6, les suites `tests` et `contracts` ont passé 272 tests.
 
-## Ordre d’atterrissage
+## Ordre d’atterrissage suivi
 
-1. PR-G0
-2. PR-G1
-3. PR-G2
-4. PR-G3
-5. PR-G4 et PR-G5 en parallèle
+La chaîne produit a suivi G0, G1, G2, G3, G4 puis G5. G6 a été intégré entre G1 et G2 sur la piste spatiale.
 
-PR-G6 peut démarrer dès la clôture de PR-G0, selon le calendrier de la piste spatiale.
-
-Ensemble review-gated : PR-G0, PR-G1, PR-G2, PR-G3, PR-G6.
+La revue opérateur s’appliquait à G0, G1, G2, G3 et G6, ainsi qu’à G4 si le contrôle de la simulation changeait dans l’interface. La publication du cadrage G0 et les fusions G1, G2, G3 et G6 ont été autorisées dans la conversation. L’accord pour G4 et G5 était conditionné à la réussite des tests après G3.
 
 ## Ce qui reste non prouvé
 
@@ -182,4 +176,4 @@ Conserver et nommer comme extensions produit déjà qualifiées :
 - recovery de capacités (OCR)
 - résumé de projet / Documentalist
 
-PR-G3 s’appuie sur recovery. PR-G5 s’appuie sur image et OCR. Ne pas les reconstruire.
+G3 réutilise la récupération des capacités déclarées. G5 réutilise les adaptateurs image et OCR.
