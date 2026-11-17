@@ -26,6 +26,7 @@ from .conversation_planning import (
 from .conversation_vault import SessionVault, admit_secret, clear
 from .desktop_tasks import latest_steps, test_counts
 from .desktop_vault import VaultWindow
+from .gap_resolution import GapReview, LABELS as GAP_LABELS
 from .image_recovery import CAPABILITY as GENERATE_IMAGE, ImageResult
 from .memory_store import MemoryRefusal
 from .planning import PlanningError
@@ -224,6 +225,7 @@ class ConversationPane:
         self.intent_cancel = Event()
         self.intent_progress = SimpleQueue()
         self.pending_image = None
+        self.pending_gap = None
         self.previews = []
         self.intent_error = None
         self.conversation_steps = ()
@@ -306,6 +308,7 @@ class ConversationPane:
         self.add("Vous", request)
         self.action = None
         self.pending_image = None
+        self.pending_gap = None
         self.confirm.pack_forget()
         followup = self.project is not None and self.last_summary_project == self.project and refines_project_summary(request)
         self.last_summary_project = None
@@ -478,6 +481,7 @@ class ConversationPane:
             if self.intent_job is not None:
                 self.intent_cancel.set()
             self.project = project
+            self.pending_gap = None
             self.inspection = self.check_result = self.test_plan = None
             self.last_summary_project = None
             if self.action == "run_project_check":
@@ -581,11 +585,14 @@ class ConversationPane:
         for reply in replies:
             if isinstance(reply, AkashaError):
                 self.intent_error = reply
+                if review_id := reply.details.get("construction_review_id"):
+                    self.pending_gap = GapReview(review_id)
+                    self.offer("Préparer la proposition", "prepare_gap_proposal")
                 if reply.code == ErrorCode.NEEDS_CLARIFICATION and not self.conversation_steps and turn < 2:
                     self.pending_intent = (request, turn + 1)
                     if reply.details.get("needs_project"):
                         self.offer("Choisir le dossier…", "choose_intent_project")
-                self.add("Akasha", reply.message)
+                self.add(GAP_LABELS.get(reply.details.get("outcome"), "Akasha"), reply.message)
                 continue
             plan, output = reply.plan, reply.output
             if plan.capability in PROJECT_TOOLS:
@@ -602,6 +609,8 @@ class ConversationPane:
             elif isinstance(output, ImageResult):
                 self.show_generated_image(output)
             elif plan.capability == "documents.compare":
+                if reply.diagnostic is not None:
+                    self.add("Akasha", "J’ai vérifié un autre chemin de comparaison sur des documents synthétiques.")
                 self.add("Akasha", f"Modifications entre {plan.inputs[0]} et {plan.inputs[1]}.")
                 self.add("Comparaison", output, tag="code")
             elif plan.capability == "file.read":
@@ -788,6 +797,8 @@ class ConversationPane:
             request, pending = self.pending_image
             self.pending_image = None
             self.request_intent(request, image_consent=pending)
+        elif action == "prepare_gap_proposal" and self.pending_gap is not None:
+            self.prepare_gap_proposal()
         elif action == "save_generated_image":
             path = filedialog.asksaveasfilename(parent=self.parent, defaultextension=".png",
                                                filetypes=(("Image PNG", "*.png"),), initialfile="akasha-image.png")
@@ -822,6 +833,18 @@ class ConversationPane:
             self.start_replacement()
         elif action == "review_prepared":
             self.review_prepared(self.proposal.project, self.proposal.proposal)
+
+    def prepare_gap_proposal(self):
+        review, self.pending_gap = self.pending_gap, None
+        state = Recovery((self.tasks.directory / "capability-recovery.sqlite").resolve(), self.tasks.runtime,
+                         lambda _: None, lambda: False)
+        try:
+            proposal = state.prepare_integration(review, approved=True)
+        except (OSError, RuntimeError, sqlite3.Error, ValueError):
+            self.add("Akasha", "La proposition est indisponible. Relancez la demande de transcription.")
+            return
+        details = [proposal["expected"], *proposal["evaluation"], *proposal["required_evidence"]]
+        self.add("Proposition de spécialiste", "\n".join(details))
 
     def task_update(self, folder, report):
         if folder not in self.watched or report.get("status") not in ("passed", "failed"):

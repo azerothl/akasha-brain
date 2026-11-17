@@ -12,9 +12,11 @@ from contracts.akasha_contracts.validate import validate
 
 from . import image_assets, image_recovery, ocr_recovery
 from .experience import transaction
+from .gap_resolution import AUDIO_FORMATS, GapReview, TRANSCRIPTION, transcription_proposal
 from .image_windows import verifies_windows as verified
 from .notes_evolution import lease
 from .planning import PlanningError
+from .project_approval import new_request, require_fresh
 from .project_common import ProjectError
 
 PROVIDERS = {ocr_recovery.CAPABILITY: ocr_recovery}
@@ -37,13 +39,15 @@ class Recovery:
         )""")
 
     def record(self, capability: str, status: str, events: list[str], *, reason=None, fingerprint=None,
-               proof=None, retire: bool = False):
+               proof=None, retire: bool = False, diagnostic=None):
         data = {"capability": capability, "status": status, "events": events,
                 "updated_at": datetime.now(timezone.utc).isoformat()}
         if reason is not None:
             data["reason"] = reason
         if fingerprint is not None:
             data["candidate_sha256"] = fingerprint
+        if diagnostic is not None:
+            data["diagnostic"] = diagnostic
         with transaction(self.database) as db:
             self.prepare_db(db)
             db.execute("INSERT OR REPLACE INTO gap_reports VALUES (?, ?)", (capability, json.dumps(data)))
@@ -63,6 +67,48 @@ class Recovery:
     def checkpoint(self):
         if self.cancelled():
             raise InterruptedError("Demande annulée.")
+
+    def integration_review(self, project: Path, context: str) -> GapReview | None:
+        self.checkpoint()
+        if context not in AUDIO_FORMATS:
+            raise ValueError("Contexte de proposition inconnu.")
+        if self.database.resolve().is_relative_to(project):
+            raise PlanningError(AkashaError(ErrorCode.PERMISSION_DENIED, "Le registre de reprise doit être hors du projet."))
+        with transaction(self.database) as db:
+            db.execute("BEGIN IMMEDIATE")
+            db.execute("""CREATE TABLE IF NOT EXISTS integration_contexts (
+                family TEXT NOT NULL, context TEXT NOT NULL, PRIMARY KEY(family, context)
+            )""")
+            db.execute("INSERT OR IGNORE INTO integration_contexts VALUES (?, ?)", (TRANSCRIPTION, context))
+            if db.execute("SELECT COUNT(*) FROM integration_contexts WHERE family = ?", (TRANSCRIPTION,)).fetchone()[0] < 2:
+                return None
+            request = new_request()
+            db.execute("""CREATE TABLE IF NOT EXISTS integration_requests (
+                id TEXT PRIMARY KEY, expires_at TEXT NOT NULL, consumed INTEGER NOT NULL
+            )""")
+            db.execute("DELETE FROM integration_requests WHERE expires_at <= ?", (request["issued_at"],))
+            db.execute("INSERT INTO integration_requests VALUES (?, ?, 0)", (request["id"], request["expires_at"]))
+        self.record(TRANSCRIPTION, "awaiting_approval", ["missing", "local_discovery", "recurrent_gap"])
+        return GapReview(request["id"])
+
+    def prepare_integration(self, review: GapReview, *, approved: bool) -> dict:
+        if approved is not True:
+            raise PlanningError(AkashaError(ErrorCode.APPROVAL_REQUIRED, "Accord requis pour préparer la proposition."))
+        self.checkpoint()
+        with transaction(self.database) as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT expires_at, consumed FROM integration_requests WHERE id = ?",
+                             (review.request_id,)).fetchone()
+            if row is None or row[1]:
+                raise PlanningError(AkashaError(ErrorCode.APPROVAL_REQUIRED, "La demande d’accord n’est plus disponible."))
+            require_fresh(datetime.fromisoformat(row[0]))
+            contexts = tuple(row[0] for row in db.execute(
+                "SELECT context FROM integration_contexts WHERE family = ? ORDER BY context", (TRANSCRIPTION,)))
+            db.execute("UPDATE integration_requests SET consumed = 1 WHERE id = ?", (review.request_id,))
+        proposal = transcription_proposal(contexts)
+        self.record(TRANSCRIPTION, "construction_proposed", ["missing", "recurrent_gap", "operator_approved"],
+                    diagnostic=proposal)
+        return proposal
 
     def generate_image(self, prompt: str, project: Path | None,
                        consent: tuple[image_assets.DownloadReview, str] | None):
@@ -132,10 +178,10 @@ class Recovery:
         events = ["missing", "local_discovery"]
         if provider is None:
             message = missing.message + " J’ai vérifié les intégrations locales et consigné la lacune."
-            self.record(capability, "waiting", events, reason="no_compatible_adapter")
+            self.record(capability, "missing", events, reason="no_compatible_adapter")
             raise PlanningError(AkashaError(
                 missing.code, message,
-                {**missing.details, "recovery": "waiting"},
+                {**missing.details, "recovery": "missing"},
             ))
 
         with lease(self.database, cycle=True):
@@ -177,6 +223,7 @@ class Recovery:
                 raise PlanningError(AkashaError(ErrorCode.CONTRACT_POSTCONDITION_FAILED,
                     "La qualification OCR n’a pas fourni de preuve de confinement et de réussite."))
             events.append("activated")
+            proof = {**proof, "adaptation": {"level": "D", "capability": capability, "passed": True}}
             self.record(capability, "activated", events, fingerprint=candidate.fingerprint, proof=proof)
             self.progress("Capacité RapidOCR validée. Je reprends votre demande dans un nouveau bac.")
             return provider.MANIFEST, candidate, events
