@@ -1,0 +1,120 @@
+{
+  "status": "passed",
+  "windows_desktop_before_backend_extraction": {
+    "status": "passed",
+    "wall_s": {
+      "proposal": 84.953
+    },
+    "qualification": {
+      "status": "passed",
+      "sandbox_id": "fc0168e7-6f54-499b-ae61-27cd6beb4d34",
+      "sandbox_stopped": true,
+      "read_only_input": true,
+      "disabled_channels": [
+        "Networking",
+        "ClipboardRedirection",
+        "AudioInput",
+        "VideoInput",
+        "PrinterRedirection",
+        "VGpu"
+      ],
+      "channel_probe": 16655,
+      "guest_exit_code": 18176
+    },
+    "replay": {
+      "capability": "image.generate",
+      "status": "resumed",
+      "events": [
+        "reused",
+        "resumed"
+      ],
+      "updated_at": "2026-11-17T16:27:20.910144+01:00",
+      "candidate_sha256": "6cc304341a0ebe138eae0db9e7f6476be7f1056ab64eaa33963c8217d18afd1c"
+    },
+    "verified_artifacts": {
+      "sd-master-b7a74e6-bin-win-cpu-x64.zip": "08c6b1015370f10c3ee1e689b42738d6281c910b375aefc755f3b49989e779a1",
+      "sd_turbo_q4_0.gguf": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359"
+    },
+    "download_decisions": "separate_human_approvals",
+    "tests_automated": 258
+  },
+  "linux_cli": {
+    "status": "passed",
+    "output": "selfie.png",
+    "validation": {
+      "status": "passed",
+      "sandbox_stopped": true,
+      "guest_exit_code": 0,
+      "read_only_input": true,
+      "isolation": {
+        "private_namespaces": true,
+        "network_off": true,
+        "read_only_input": true,
+        "private_scratch": true,
+        "no_privileges": true,
+        "headless": true
+      },
+      "backend": "container-rootless",
+      "candidate_sha256": "c5efceb8af42516f2198ce998c3ac41995d51899b3d6b9867ac8dd4341a14553",
+      "png": {
+        "format": "PNG",
+        "width": 512,
+        "height": 512,
+        "bytes": 405265,
+        "sha256": "be6f8d56539f4e5d83c946c571ee5da0eb5d97761675dcbeddae4f234d52e097",
+        "input_sha256": "f15824f1c35d6e389aabc3b401883cebe3b1a5ab8ff0c00397a3c10aad43f918"
+      }
+    },
+    "qualification": {
+      "status": "passed",
+      "sandbox_stopped": true,
+      "guest_exit_code": 0,
+      "read_only_input": true,
+      "isolation": {
+        "private_namespaces": true,
+        "network_off": true,
+        "read_only_input": true,
+        "private_scratch": true,
+        "no_privileges": true,
+        "headless": true
+      },
+      "backend": "container-rootless",
+      "candidate_sha256": "c5efceb8af42516f2198ce998c3ac41995d51899b3d6b9867ac8dd4341a14553",
+      "png": {
+        "format": "PNG",
+        "width": 512,
+        "height": 512,
+        "bytes": 536274,
+        "sha256": "059485efaabdd81dc5564213b47310ba03ec4188a9dc90067d7405b10d382cc1",
+        "input_sha256": "12098b82a8bd58d4bd6cfefdc13a51053d81a8d8bd516f60cd6e381facfe562d"
+      }
+    },
+    "wall_s": 66.634,
+    "environment": "Ubuntu 24.04 sous WSL2, UID non privilégié, Bubblewrap",
+    "download": {
+      "approval_required_checked_before_download": true,
+      "approved_archive": {
+        "name": "stable-diffusion.cpp (Linux x86_64, CPU)",
+        "version": "master-955-b7a74e6",
+        "filename": "sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip",
+        "source": "https://github.com/leejet/stable-diffusion.cpp/releases/tag/master-955-b7a74e6",
+        "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-955-b7a74e6/sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip",
+        "sha256": "c33577f8340dc1ac4212adac7def108ecc08e3047d8a3c2d460cc878eac0e78b",
+        "size": 26122695,
+        "license": "MIT",
+        "license_url": "https://github.com/leejet/stable-diffusion.cpp/blob/b7a74e6/LICENSE",
+        "redirect_hosts": [
+          "github.com",
+          "release-assets.githubusercontent.com",
+          "objects.githubusercontent.com"
+        ]
+      },
+      "reused_model": true
+    },
+    "existing_output_refused": true,
+    "tests": {
+      "windows": 260,
+      "linux_image_and_recovery": 7
+    }
+  }
+}

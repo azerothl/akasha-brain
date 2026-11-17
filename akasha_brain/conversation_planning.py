@@ -13,6 +13,7 @@ from contracts.akasha_contracts.authz import authorize
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 from contracts.akasha_contracts.validate import validate
 
+from . import image_assets, image_recovery
 from .capability_recovery import Recovery
 from .ocr_recovery import CAPABILITY as OCR_CAPABILITY, IMAGE_TYPES, MANIFEST as OCR_MANIFEST
 from .planning import PlanningError
@@ -77,10 +78,16 @@ class ConversationPlan:
 
 
 @dataclass(frozen=True)
+class PendingImage:
+    review: image_assets.DownloadReview
+    prompt: str
+
+
+@dataclass(frozen=True)
 class ConversationReply:
     plan: ConversationPlan
-    project: Path
-    output: ProjectCheck | dict | str
+    project: Path | None
+    output: ProjectCheck | PendingImage | image_recovery.ImageResult | dict | str
 
 
 def load_conversation_catalog() -> dict[str, dict]:
@@ -154,8 +161,14 @@ def explicit_media_step(part: str, refs: list[str]) -> dict | None:
         if targets or match.group("ocr"):
             return {"tool": OCR_CAPABILITY, "refs": targets, "detail": ""}
     if IMAGE_REQUEST.match(part):
-        return {"tool": "image.generate", "refs": [], "detail": ""}
+        return {"tool": image_recovery.CAPABILITY, "refs": [], "detail": image_subject(part)}
     return None
+
+
+def image_subject(request: str) -> str:
+    match = IMAGE_REQUEST.match(request)
+    source = request[match.end():] if match else request
+    return re.sub(r"^\s*(?:d[’']|de\s+|du\s+)", "", source, flags=re.I).strip(" ?!.")
 
 
 def infer_intent(paths, template: str, request: str, refs: list[str], catalog: dict, *, selected: bool) -> list[dict]:
@@ -204,21 +217,23 @@ def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], c
     manifest = catalog.get(capability)
     if manifest is None:
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Cette capacité ne figure pas dans le registre local.", capability=capability)
-    if capability == OCR_CAPABILITY and manifest != OCR_MANIFEST:
-        stop(ErrorCode.PERMISSION_DENIED, "Le manifeste OCR diffère de l’adaptateur autorisé.")
+    image = capability == image_recovery.CAPABILITY
+    restricted = {OCR_CAPABILITY: OCR_MANIFEST, image_recovery.CAPABILITY: image_recovery.MANIFEST}
+    if capability in restricted and manifest != restricted[capability]:
+        stop(ErrorCode.PERMISSION_DENIED, "Le manifeste diffère de l’adaptateur autorisé.")
     permissions = manifest["permissions"]
-    confined = test or capability == OCR_CAPABILITY
+    confined = test or capability in restricted
     expected = ({"tier": "windows-sandbox", "network_egress": False}, "local-temporary", "R1") if confined else (
         {}, "none", "R0")
     if (manifest.get("sandbox", {}), manifest.get("side_effects"), manifest["risk_class"]) != expected or (
-        permissions.get("reads") != ["selected-project"] or
+        permissions.get("reads") != ([] if image else ["selected-project"]) or
         permissions.get("network") or (not confined and (permissions.get("writes") or permissions.get("execute")))
         or (confined and permissions.get("writes") != ["sandbox-scratch"])
     ):
         stop(ErrorCode.PERMISSION_DENIED, "Les permissions de la capacité dépassent le périmètre de ce plan.")
     goal = {"goal_id": str(uuid4()), "user_intent": request, "inputs": list(inputs),
             "constraints": {"allowed_actions": [capability], "environment_id": "windows-sandbox" if confined else "local"},
-            "success_conditions": [{"predicate": "test_suite_passes" if test else "file_exists", "on": "CodeState",
+            "success_conditions": [{"predicate": "test_suite_passes" if test or image else "file_exists", "on": "CodeState",
                                     "args": {"inputs": list(inputs)}}], "risk_class": manifest["risk_class"]}
     if test:
         goal["approval_requirements"] = ["confirm-sandbox-test"]
@@ -246,6 +261,8 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
         what = " ".join(detail.split())[:180]
         if re.search(r"\bimage\.ocr\b", what):
             tool = OCR_CAPABILITY
+        elif re.search(r"\bimage\.generate\b", what) and image_recovery.CAPABILITY in catalog:
+            tool = image_recovery.CAPABILITY
         else:
             hint = {"capability": "image.generate"} if re.search(r"\bimage\.generate\b", what) else {}
             stop(ErrorCode.CAPABILITY_UNAVAILABLE, f"Il me manque un outil local pour cette demande{f' ({what})' if what else ''}.", **hint)
@@ -253,12 +270,11 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
         question = " ".join(detail.split())[:180]
         message = question if question.endswith("?") else "Quel résultat souhaitez-vous obtenir, et sur quels éléments ?"
         stop(ErrorCode.NEEDS_CLARIFICATION, message)
-    if tool == "image.generate":
-        stop(ErrorCode.CAPABILITY_UNAVAILABLE, "La génération d’images n’est pas disponible dans le registre local.",
-             capability=tool)
-    if tool not in (*PROJECT_TOOLS, "documents.compare", "file.read", OCR_CAPABILITY):
+    if tool not in (*PROJECT_TOOLS, "documents.compare", "file.read", OCR_CAPABILITY, image_recovery.CAPABILITY):
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "L’outil proposé est indisponible depuis la conversation.", capability=tool)
     paths = tuple(refs[index - 1] for index in indexes)
+    if tool == image_recovery.CAPABILITY and paths:
+        stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Décrivez une image à générer à partir de texte.")
     if tool in PROJECT_TOOLS:
         if not paths:
             explicit = tuple(ref for ref in refs if PureWindowsPath(ref).is_absolute())
@@ -293,7 +309,9 @@ def resolve_project(name: str) -> Path:
 
 
 def execute_intents(request: str, proposed, refs: list[str], project: Path | None,
-                    catalog: dict, *, recovery: Recovery | None = None) -> list[ConversationReply | AkashaError]:
+                    catalog: dict, *, recovery: Recovery | None = None, image_consent=None) -> list[ConversationReply | AkashaError]:
+    if recovery is not None:
+        catalog = {**catalog, image_recovery.CAPABILITY: image_recovery.MANIFEST}
     steps = proposed if isinstance(proposed, list) else [proposed]
     if not steps:
         stop(ErrorCode.NEEDS_CLARIFICATION, "Quels résultats souhaitez-vous obtenir ?")
@@ -326,6 +344,17 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
                 if candidate is None:
                     stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "L’OCR requiert une capacité qualifiée par le registre local.")
                 output = recovery.resume(plan.capability, candidate, events, project, plan.inputs[0])
+            elif plan.capability == image_recovery.CAPABILITY:
+                if recovery is None:
+                    stop(ErrorCode.CAPABILITY_UNAVAILABLE, "La récupération du moteur n’est pas disponible.")
+                prompt = image_subject(request)
+                if step["tool"] == image_recovery.CAPABILITY and step["detail"]:
+                    prompt = step["detail"]
+                if not 1 <= len(prompt) <= 1500 or any(ord(char) < 32 and char not in "\n\t" for char in prompt):
+                    stop(ErrorCode.NEEDS_CLARIFICATION, "Décrivez l’image souhaitée en 1 500 caractères au maximum.")
+                output = recovery.generate_image(prompt, project, image_consent)
+                if isinstance(output, image_assets.DownloadReview):
+                    output = PendingImage(output, prompt)
             else:
                 output = inspect_code(project, list(plan.inputs))
         except (PlanningError, ProjectError) as error:

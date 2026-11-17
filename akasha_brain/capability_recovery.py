@@ -3,44 +3,23 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from importlib.metadata import PackageNotFoundError, version
 import json
 from pathlib import Path
-import shutil
 import subprocess
 
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 from contracts.akasha_contracts.validate import validate
 
-from . import ocr_recovery
+from . import image_assets, image_recovery, ocr_recovery
 from .experience import transaction
+from .image_windows import verifies_windows as verified
 from .notes_evolution import lease
-from .notes_sandbox import CHANNELS
 from .planning import PlanningError
 from .project_common import ProjectError
 
 PROVIDERS = {ocr_recovery.CAPABILITY: ocr_recovery}
-KNOWN_GAPS = {"image.generate", *PROVIDERS}
+KNOWN_GAPS = set(PROVIDERS)
 SANDBOX_ERRORS = (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired, PlanningError)
-
-
-def verified(proof: dict) -> bool:
-    return (proof.get("status") == "passed" and proof.get("sandbox_stopped") is True
-            and proof.get("read_only_input") is True and proof.get("guest_exit_code") == 0x4700
-            and proof.get("channel_probe") in (0x410F, 0x411F)
-            and list(CHANNELS) == proof.get("disabled_channels"))
-
-
-def installed_image_engines() -> list[str]:
-    engines = [label for command, label in (("sd-cli.exe", "Stable Diffusion CLI"), ("comfy.exe", "Comfy CLI"))
-               if shutil.which(command)]
-    try:
-        version("diffusers")
-    except PackageNotFoundError:
-        pass
-    else:
-        engines.append("Diffusers")
-    return engines
 
 
 @dataclass(frozen=True)
@@ -49,6 +28,7 @@ class Recovery:
     runtime: Path | None
     progress: Callable[[str], None]
     cancelled: Callable[[], bool]
+    image_prompt: Callable[[str], str] | None = None
 
     def prepare_db(self, db):
         db.execute("CREATE TABLE IF NOT EXISTS gap_reports (capability TEXT PRIMARY KEY, report TEXT NOT NULL)")
@@ -57,15 +37,13 @@ class Recovery:
         )""")
 
     def record(self, capability: str, status: str, events: list[str], *, reason=None, fingerprint=None,
-               proof=None, retire: bool = False, engines=None):
+               proof=None, retire: bool = False):
         data = {"capability": capability, "status": status, "events": events,
                 "updated_at": datetime.now(timezone.utc).isoformat()}
         if reason is not None:
             data["reason"] = reason
         if fingerprint is not None:
             data["candidate_sha256"] = fingerprint
-        if engines is not None:
-            data["engines_found"] = engines
         with transaction(self.database) as db:
             self.prepare_db(db)
             db.execute("INSERT OR REPLACE INTO gap_reports VALUES (?, ?)", (capability, json.dumps(data)))
@@ -86,6 +64,63 @@ class Recovery:
         if self.cancelled():
             raise InterruptedError("Demande annulée.")
 
+    def generate_image(self, prompt: str, project: Path | None,
+                       consent: tuple[image_assets.DownloadReview, str] | None):
+        cache = self.database.parent / "image-engine"
+        if project is not None and (self.database.is_relative_to(project) or cache.resolve().is_relative_to(project)):
+            raise PlanningError(AkashaError(ErrorCode.PERMISSION_DENIED,
+                "Le cache du moteur doit être stocké hors du projet sélectionné."))
+        events = ["missing", "local_discovery"]
+        capability = image_recovery.CAPABILITY
+        with lease(self.database, cycle=True):
+            self.checkpoint()
+            if consent is not None:
+                approval, receipt = consent
+                if approval.directory != cache.resolve():
+                    raise PlanningError(AkashaError(ErrorCode.PERMISSION_DENIED, "Accord lié à un autre cache."))
+                self.progress(f"Je télécharge {approval.artifact.name} et je vérifie son empreinte.")
+                image_assets.download(approval, receipt, self.checkpoint)
+                events.append("artifact_verified")
+            candidate = image_recovery.discover(cache, self.runtime)
+            if isinstance(candidate, image_assets.DownloadReview):
+                self.record(capability, "waiting", events + ["approval_requested"], reason=candidate.artifact.filename)
+                return candidate
+            active = self.stored(capability)
+            if active is None or active[0] != candidate.fingerprint or not image_recovery.verifies(candidate, active[1]):
+                self.record(capability, "qualifying", events + ["candidate", "qualification"], retire=True,
+                            fingerprint=candidate.fingerprint)
+                self.progress(f"Je qualifie SD-Turbo sur une image de référence dans {candidate.backend.label}, hors ligne.")
+                try:
+                    qualification = image_recovery.run(candidate, image_recovery.QUALIFICATION, self.checkpoint)
+                    self.checkpoint()
+                    if not image_recovery.verifies(candidate, qualification.proof):
+                        raise RuntimeError("La preuve de génération qualifiée est incomplète.")
+                except SANDBOX_ERRORS:
+                    self.record(capability, "failed", events + ["candidate", "qualification"], reason="qualification_failed")
+                    raise
+                events.extend(("candidate", "qualification", "activated"))
+                self.record(capability, "activated", events, fingerprint=candidate.fingerprint,
+                            proof=qualification.proof)
+                self.progress("SD-Turbo est qualifié. Je reprends votre demande dans un nouveau bac.")
+            else:
+                events = ["reused"]
+                self.progress(f"Je réutilise SD-Turbo hors ligne dans {candidate.backend.label}.")
+            try:
+                if self.image_prompt is not None:
+                    prompt = self.image_prompt(prompt)
+                    self.checkpoint()
+                result = image_recovery.run(candidate, prompt, self.checkpoint)
+                self.checkpoint()
+                if not image_recovery.verifies(candidate, result.proof):
+                    raise ProjectError(AkashaError(ErrorCode.CONTRACT_POSTCONDITION_FAILED,
+                                       "Le PNG ne porte pas de preuve d’exécution isolée valide."))
+            except ProjectError as error:
+                if error.error.code == ErrorCode.CONTRACT_POSTCONDITION_FAILED:
+                    self.record(capability, "failed", events + ["rolled_back"], reason="execution_failed", retire=True)
+                raise
+            self.record(capability, "resumed", events + ["resumed"], fingerprint=candidate.fingerprint)
+            return result
+
     def activate(self, missing: AkashaError, project: Path | None) -> tuple[dict, ocr_recovery.Candidate, list[str]]:
         self.checkpoint()
         if project is not None and self.database.is_relative_to(project):
@@ -97,17 +132,7 @@ class Recovery:
         events = ["missing", "local_discovery"]
         if provider is None:
             message = missing.message + " J’ai vérifié les intégrations locales et consigné la lacune."
-            engines = None
-            reason = "no_compatible_adapter"
-            if capability == "image.generate":
-                engines = installed_image_engines()
-                if engines:
-                    message = "J’ai repéré " + ", ".join(engines) + ". Une intégration de génération reste à qualifier."
-                else:
-                    reason = "no_supported_image_engine_detected"
-                    message = ("J’ai recherché les moteurs d’images locaux connus (Stable Diffusion CLI, Comfy CLI et Diffusers). "
-                               "La génération est en attente d’un moteur compatible.")
-            self.record(capability, "waiting", events, reason=reason, engines=engines)
+            self.record(capability, "waiting", events, reason="no_compatible_adapter")
             raise PlanningError(AkashaError(
                 missing.code, message,
                 {**missing.details, "recovery": "waiting"},

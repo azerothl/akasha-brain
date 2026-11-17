@@ -181,10 +181,16 @@ def expected_files(manifest: dict) -> tuple[dict, list]:
 
 
 def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None, node: bool = False,
-                        prepare_runtime=None, export_result=None) -> dict:
+                        prepare_runtime=None, export_result=None, sandbox_memory_mib: int | None = None) -> dict:
     if active_sandboxes():
         reject(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Une session Windows Sandbox est déjà active.")
     profile = read_profile()
+    if sandbox_memory_mib is not None:
+        from xml.etree import ElementTree
+
+        configuration = ElementTree.fromstring(profile)
+        configuration.find("MemoryInMB").text = str(sandbox_memory_mib)
+        profile = ElementTree.tostring(configuration, encoding="unicode")
     tag = secrets.token_hex(4)
     mount_path = fr"C:\AkashaGuidedInput-{tag}"
     scripts = ("probe_notes_isolation.ps1", "probe_guest_channels.ps1", "validate_project.ps1")

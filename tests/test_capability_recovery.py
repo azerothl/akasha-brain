@@ -2,11 +2,13 @@ import json
 import sqlite3
 from types import SimpleNamespace
 
+import pytest
+
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
-from akasha_brain import capability_recovery, ocr_recovery
+from akasha_brain import capability_recovery, image_assets, image_recovery, ocr_recovery
 from akasha_brain.capability_recovery import Recovery
-from akasha_brain.conversation_planning import execute_intents, explicit_media_step, load_conversation_catalog, references
+from akasha_brain.conversation_planning import PendingImage, execute_intents, explicit_media_step, load_conversation_catalog, references
 from akasha_brain.notes_sandbox import CHANNELS
 
 
@@ -64,12 +66,14 @@ def test_discover_qualify_resume_and_reuse_same_capability(tmp_path, monkeypatch
     assert report(reopened, "image.ocr")["events"] == ["reused", "rolled_back"]
 
 
-def test_missing_generator_is_investigated_without_activating_a_different_tool(tmp_path, monkeypatch):
-    monkeypatch.setattr(capability_recovery, "installed_image_engines", lambda: [])
+def test_missing_generator_prepares_an_exact_download_without_contacting_its_source(tmp_path, monkeypatch):
+    monkeypatch.setattr(image_recovery, "discover", lambda folder, runtime: image_assets.review_download(folder, image_assets.ENGINE))
+    monkeypatch.setattr(image_assets, "download", lambda *args: pytest.fail("download without consent"))
     state = Recovery(tmp_path / "registry.sqlite", None, lambda text: None, lambda: False)
-    error = ask(state, "est ce que tu peux me générer une image d'un chat devant un miroir ?", None)
-    assert error.code == ErrorCode.CAPABILITY_UNAVAILABLE and error.details["recovery"] == "waiting"
-    assert report(state, "image.generate")["reason"] == "no_supported_image_engine_detected"
+    result = ask(state, "est ce que tu peux me générer une image d'un chat devant un miroir ?", None)
+    assert isinstance(result.output, PendingImage)
+    assert result.output.prompt == "un chat devant un miroir" and result.output.review.artifact == image_assets.ENGINE
+    assert report(state, "image.generate")["events"] == ["missing", "local_discovery", "approval_requested"]
     assert state.stored("image.ocr") is None
     assert explicit_media_step("Explique comment générer une image", []) is None
     assert explicit_media_step("Lis le texte de guide.md", ["guide.md"]) is None

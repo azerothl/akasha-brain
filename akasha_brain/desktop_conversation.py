@@ -1,5 +1,6 @@
 """Conversation locale du desktop et passage explicite à un parcours évalué."""
 
+import base64
 from dataclasses import dataclass
 from hashlib import sha256
 import json
@@ -18,10 +19,11 @@ from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
 from .capability_recovery import Recovery
 from .conversation_planning import (
-    DRIVE_PATH, PROJECT_TOOLS, compile_local_plan, execute_intents, explicit_media_step, infer_intent, intent_parts,
+    DRIVE_PATH, PROJECT_TOOLS, PendingImage, compile_local_plan, execute_intents, explicit_media_step, infer_intent, intent_parts,
     load_conversation_catalog, references, refines_project_summary,
 )
 from .desktop_tasks import latest_steps, test_counts
+from .image_recovery import CAPABILITY as GENERATE_IMAGE, ImageResult
 from .planning import PlanningError
 from .project import CODE_FILE_LIMIT, inspect_code, prepare, preview_replacement, project_file
 from .project_check import ProjectCheck, inspect_project, installed_node, run_project_check
@@ -175,6 +177,26 @@ def communicate(paths, facts: tuple[int, int, str]) -> str | None:
     return text
 
 
+def compose_image_prompt(paths, subject: str) -> str:
+    try:
+        profile = communication_profile(paths)
+        with TemporaryDirectory(prefix="akasha-image-prompt-") as work:
+            with server(paths, Path(work), template=profile["chat_template"]) as model:
+                reply, _ = model.chat([
+                    {"role": "system", "content": "Translate the visual description to natural English for a text-to-image model. "
+                     "Keep all subjects, objects, actions, composition and style. Return the description only."},
+                    {"role": "user", "content": subject},
+                ], seed=3927, max_tokens=320, stop=profile["settings"]["stop"], timeout=90)
+        prompt = (reply["choices"][0]["message"].get("content") or "").strip()
+        if 1 <= len(prompt) <= 1500 and "<" not in prompt and "\n" not in prompt:
+            if re.search(r"\bselfie\b", subject, re.I) and re.search(r"\b(?:miroir|mirror)\b", subject, re.I):
+                return prompt.rstrip(".") + ", smartphone visible in the mirror"
+            return prompt
+    except (OSError, RuntimeError, ValueError, KeyError, PlanningError):
+        pass
+    return subject
+
+
 class ConversationPane:
     def __init__(self, parent, launch_notes, prepare_project, review_project, latest_report, tasks, *,
                  project, review_prepared, communication=None):
@@ -189,6 +211,8 @@ class ConversationPane:
         self.intent_job = self.pending_intent = self.conversation_plan = self.test_plan = None
         self.intent_cancel = Event()
         self.intent_progress = SimpleQueue()
+        self.pending_image = None
+        self.previews = []
         self.intent_error = None
         self.conversation_steps = ()
         self.last_summary_project = None
@@ -249,6 +273,7 @@ class ConversationPane:
         self.entry.delete(0, "end")
         self.add("Vous", request)
         self.action = None
+        self.pending_image = None
         self.confirm.pack_forget()
         followup = self.project is not None and self.last_summary_project == self.project and refines_project_summary(request)
         self.last_summary_project = None
@@ -381,7 +406,7 @@ class ConversationPane:
         if self.project is None:
             self.offer("Choisir un projet…", "choose_project")
 
-    def request_intent(self, request, *, turn=0, refine_summary=False):
+    def request_intent(self, request, *, turn=0, refine_summary=False, image_consent=None):
         if self.intent_job is not None:
             self.add("Akasha", "J’analyse déjà une demande. Son résultat apparaîtra ici.")
             return
@@ -396,13 +421,19 @@ class ConversationPane:
         self.intent_cancel = cancelled = Event()
         self.intent_progress = progress = SimpleQueue()
         database = (self.tasks.directory / "capability-recovery.sqlite").resolve()
-        recovery = Recovery(database, self.tasks.runtime, progress.put, cancelled.is_set)
+        translation = (lambda subject: compose_image_prompt(communication, subject)) if communication is not None else None
+        recovery = Recovery(database, self.tasks.runtime, progress.put, cancelled.is_set, image_prompt=translation)
         if project is not None and database.is_relative_to(project):
             recovery = None
 
         def plan():
             refs = references(request)
-            if refine_summary:
+            consent = None
+            if image_consent is not None:
+                pending = image_consent
+                proposed = {"tool": GENERATE_IMAGE, "refs": [], "detail": pending.prompt}
+                consent = (pending.review, pending.review.approval_sha256)
+            elif refine_summary:
                 proposed = {"tool": "project.summarize", "refs": [], "detail": ""}
             elif len(intent_parts(request)) == 1 and (media := explicit_media_step(request, refs)):
                 proposed = media
@@ -410,7 +441,7 @@ class ConversationPane:
                 profile = communication_profile(communication)
                 proposed = infer_intent(communication, profile["chat_template"], request, refs, catalog,
                                         selected=project is not None)
-            return execute_intents(request, proposed, refs, project, catalog, recovery=recovery)
+            return execute_intents(request, proposed, refs, project, catalog, recovery=recovery, image_consent=consent)
 
         self.intent_job = (request, project, turn, self.tasks.scheduler.submit(plan))
         self.add("Akasha", "J’analyse votre demande.")
@@ -456,6 +487,15 @@ class ConversationPane:
                 self.select_project(reply.project)
             if isinstance(output, ProjectCheck):
                 self.show_inspection(output)
+            elif isinstance(output, PendingImage):
+                self.pending_image = request, output
+                asset = output.review.artifact
+                self.add("Akasha", f"Accord requis pour télécharger {asset.name} ({asset.size / 1_000_000:.2f} Mo).\n"
+                         f"Version {asset.version}\nSource {asset.source}\n"
+                         f"Licence {asset.license}\n{asset.license_url}\nSHA-256 {asset.sha256}")
+                self.offer("Autoriser ce téléchargement", "download_image_artifact")
+            elif isinstance(output, ImageResult):
+                self.show_generated_image(output)
             elif plan.capability == "documents.compare":
                 self.add("Akasha", f"Modifications entre {plan.inputs[0]} et {plan.inputs[1]}.")
                 self.add("Comparaison", output, tag="code")
@@ -465,6 +505,18 @@ class ConversationPane:
                 self.add("Akasha", output)
                 if reply is replies[-1] and plan.capability == "project.summarize":
                     self.last_summary_project = reply.project
+
+    def show_generated_image(self, result):
+        preview = tk.PhotoImage(master=self.transcript, data=base64.b64encode(result.png), format="png")
+        self.previews.append(preview)
+        self.add("Akasha", "Voici l’image générée dans Windows Sandbox.")
+        self.transcript.configure(state="normal")
+        self.transcript.image_create("end", image=preview)
+        self.transcript.insert("end", "\n\n")
+        self.transcript.see("end")
+        self.transcript.configure(state="disabled")
+        self.offer("Enregistrer l’image…", "save_generated_image")
+        self.generated_image = result
 
     def check_project(self, name):
         if self.check_job is not None:
@@ -624,7 +676,19 @@ class ConversationPane:
         action = self.action
         self.action = None
         self.confirm.pack_forget()
-        if action == "notes":
+        if action == "download_image_artifact" and self.pending_image is not None:
+            request, pending = self.pending_image
+            self.pending_image = None
+            self.request_intent(request, image_consent=pending)
+        elif action == "save_generated_image":
+            path = filedialog.asksaveasfilename(parent=self.parent, defaultextension=".png",
+                                               filetypes=(("Image PNG", "*.png"),), initialfile="akasha-image.png")
+            if path:
+                try:
+                    Path(path).write_bytes(self.generated_image.png)
+                except OSError as error:
+                    self.add("Akasha", f"L’image n’a pas pu être enregistrée. {error}")
+        elif action == "notes":
             folder = self.launch_notes()
             if folder is None:
                 self.add("Akasha", "Le banc Notes n’a pas démarré. Consultez l’état dans la fenêtre principale.")

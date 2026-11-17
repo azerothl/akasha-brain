@@ -22,7 +22,7 @@ conda create --name akasha-brain-win --override-channels -c defaults `
     'vs2015_runtime=14.40.33807=h98bb1dd_1'
 conda activate akasha-brain-win
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install 'jsonschema==4.26.0' 'pytest==9.2.0' 'Pygments==2.21.0'
+.\.venv\Scripts\python.exe -m pip install 'jsonschema==4.26.0' 'pytest==9.2.0' 'Pygments==2.21.0' 'pillow==13.0.0'
 .\.venv\Scripts\python.exe -m pip check
 ```
 
@@ -69,9 +69,25 @@ Activez les demandes libres avec `-Communication @($moteur, $ggufCommunication, 
 
 Après un résumé, écrivez « Fais-moi un résumé plus complet » pour approfondir le même projet. La vue détaillée consulte la documentation et les manifestes. Elle lit aussi une sélection des sources JavaScript ou TypeScript pour relier les écrans, les routes et leurs appels aux fichiers et lignes concernés. Cette analyse statique se fait en lecture seule.
 
-Une capacité manquante déclenche une recherche locale et un relevé technique dans `runs/capability-recovery.sqlite`. Pour essayer la reprise automatique, choisissez un dossier contenant un PNG ou JPEG et écrivez « Lis le texte de capture.png ». Si les artefacts RapidOCR sont installés, Akasha valide l’adaptateur sur deux images synthétiques dans Windows Sandbox, puis reprend la demande dans un autre bac. Le texte restitué est limité à 96 octets par lecture. Akasha réutilise la qualification tant que les artefacts correspondent, et retire l’activation si le contrôle échoue à l’usage. Le registre conserve les décisions techniques et la preuve de qualification. Pour la génération d’images, la recherche couvre les moteurs connus accessibles localement et signale les prérequis encore manquants.
+Une capacité manquante déclenche une recherche locale et un relevé technique dans `runs/capability-recovery.sqlite`. Pour essayer la reprise automatique, choisissez un dossier contenant un PNG ou JPEG et écrivez « Lis le texte de capture.png ». Si les artefacts RapidOCR sont installés, Akasha valide l’adaptateur sur deux images synthétiques dans Windows Sandbox, puis reprend la demande dans un autre bac. Le texte restitué est limité à 96 octets par lecture. Akasha réutilise la qualification tant que les artefacts correspondent, et retire l’activation si le contrôle échoue à l’usage. Le registre conserve les décisions techniques et la preuve de qualification.
 
 Depuis l’interface Windows, la qualification RapidOCR sur CPU et la première lecture ont pris **121,125 s**. Après redémarrage, Akasha a réutilisé la qualification et lu une deuxième image en **67,484 s**. Les entrées sont restées intactes et les 256 tests automatisés ont réussi. [Relevé de validation](bench/results/conversation-capability-recovery-v1.json)
+
+Pour générer une image, écrivez « Génère une image d’un chat faisant un selfie devant un miroir ». Akasha cherche l’archive CPU et les poids épinglés dans son cache et dans le dossier Téléchargements. Il affiche la source, la licence, la taille et l’empreinte de chaque fichier manquant. **Autoriser ce téléchargement** vaut pour le fichier affiché. Une fois les deux SHA-256 vérifiés, Akasha qualifie SD-Turbo sur une image synthétique, puis reprend votre demande dans un bac neuf de 8 Gio, hors ligne. Gardez la fenêtre Windows Sandbox visible pour que le cadre de l’aperçu puisse être capturé. L’aperçu 512 × 512 est affiché dans la conversation et peut être enregistré en PNG. Si le modèle de communication local est configuré, Akasha l’utilise pour traduire la description en anglais. [Moteur CPU](https://github.com/leejet/stable-diffusion.cpp/releases/tag/master-955-b7a74e6) · [Poids et licence](https://huggingface.co/samoudi/sd-turbo-gguf)
+
+### Générer une image sans fenêtre sous Linux
+
+Utilisez Linux x86_64 compatible avec le binaire Ubuntu 24.04 du catalogue, un compte non privilégié, Python 3 système et Bubblewrap avec les espaces de noms utilisateur activés. Dans une venv, installez `jsonschema==4.26.0`, `Pygments==2.21.0` et `Pillow==13.0.0`.
+
+```bash
+python -m akasha_brain.image_cli \
+  --prompt "A cat taking a mirror selfie with a smartphone visible in its paw" \
+  --output selfie.png
+```
+
+La CLI indique la taille, la source, la licence et l’empreinte de chaque artefact manquant et attend un accord distinct dans le terminal. Les poids déjà présents et vérifiés sont réutilisés. `--runs` permet de choisir le dossier du registre et du cache `image-engine`. Le backend Linux vérifie le confinement avant de démarrer le moteur, avec les entrées en lecture seule et un espace temporaire privé. Le PNG sort par un flux borné. Akasha le vérifie, retire ses métadonnées et renvoie sa taille et son SHA-256 dans le relevé JSON. Le fichier de destination doit être nouveau.
+
+Le rejeu du selfie a pris **85 s** depuis la conversation Windows avec la qualification en cache, avant l’extraction du backend commun. Sous Ubuntu WSL2, la CLI a refusé le téléchargement sans accord, vérifié l’archive Linux après accord, qualifié le moteur et exporté le PNG en **66,6 s** au total. Le fichier a conservé la même empreinte après copie. La suite Windows a passé 260 tests et les contrôles ciblés Linux en ont passé 7. [Relevé Windows et Linux](bench/results/image-windows-linux-v1.json)
 
 Sur Documentalist (`4538575`), le résumé détaillé a lu 49 sources JavaScript et TypeScript. La relance a pris **0,328 s** et produit 12 références vérifiées, dont le filtrage de la recherche, l’instantané de publication et l’écriture chiffrée dans SQLite. Les 163 empreintes comparées et l’état Git sont identiques avant et après l’essai en lecture seule. [Relevé de validation](bench/results/documentalist-code-summary-v1.json)
 
