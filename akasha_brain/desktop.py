@@ -203,6 +203,8 @@ class Desktop:
         style.configure("TButton", font=(self.family, 10), padding=(12, 7), foreground=TEXT, background=PANEL,
                         bordercolor=BORDER, lightcolor=PANEL, darkcolor=PANEL, focuscolor=ACCENT)
         style.map("TButton", background=[("active", BORDER)], foreground=[("disabled", MUTED)])
+        style.configure("TMenubutton", **style.configure("TButton"))
+        style.map("TMenubutton", background=[("active", BORDER)], foreground=[("disabled", MUTED)])
         style.configure("Launch.TButton", background=ACCENT, foreground=BASE, font=(self.family, 10, "bold"),
                         bordercolor=ACCENT, lightcolor=ACCENT, darkcolor=ACCENT)
         style.map("Launch.TButton", background=[("disabled", BORDER), ("active", "#AFEDD6")],
