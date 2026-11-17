@@ -55,9 +55,19 @@ Get-ChildItem -LiteralPath (Join-Path $pythonHome 'Lib') |
 & (Join-Path $pythonPortable 'python.exe') -c 'import sqlite3, tkinter; print(sqlite3.sqlite_version, tkinter.TkVersion)'
 ```
 
-## Lancer Notes
+## Ouvrir Akasha Brain depuis Windows
 
-Fermez toute session Windows Sandbox ouverte avant de démarrer. Lancez le desktop depuis la racine du dépôt et cliquez sur **Lancer Notes**. La référence fixe doit afficher **Réussi · 3/3 étapes**, avec les quatre tests et le contrôle SQLite. L’historique est enregistré sous `%LOCALAPPDATA%\AkashaBrain\runs` par défaut. Passez `--runs` pour choisir un autre dossier.
+Depuis la racine du dépôt, créez une fois le raccourci et enregistrez le chemin du Python portable.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-windows.ps1 -PythonRuntime $pythonPortable
+```
+
+Ouvrez ensuite **Akasha Brain** dans le menu Démarrer. Dans **Conversation**, écrivez « Lance le banc Notes » et confirmez le lancement. La réponse arrive dans la conversation à la fin du test. L’onglet **Exécutions** affiche le graphe, le détail des étapes et l’historique. **Préparer un projet** et **Proposition du projet** donnent accès à la préparation isolée et à l’approbation de modifications sur un dépôt choisi.
+
+Terminez la session Windows Sandbox éventuellement ouverte avant de lancer une tâche. La référence fixe doit afficher **Réussi · 3/3 étapes**, avec les quatre tests et le contrôle SQLite. L’historique du desktop est enregistré sous `%LOCALAPPDATA%\AkashaBrain\runs` par défaut.
+
+Le desktop est aussi accessible depuis PowerShell. Passez `--runs` pour choisir le dossier de l’historique.
 
 ```powershell
 .\.venv\Scripts\python.exe -m akasha_brain.desktop --python-runtime $pythonPortable
@@ -80,6 +90,8 @@ $tokenizer = 'C:\chemin\vers\tokenizer.json'
     --rbitnet $moteur $gguf $tokenizer --rapidocr
 ```
 
+Pour retrouver ce parcours dans le menu Démarrer, recréez le raccourci avec `& .\scripts\install-windows.ps1 -Rbitnet @($moteur, $gguf, $tokenizer)`.
+
 Le parcours complet doit afficher **Réussi · 4/4 étapes**. Le graphe présente le premier diff vérifié, les quatre tests et SQLite. La dernière étape relance l’application Notes dans le même bac puis vérifie la note avec RapidOCR et SQLite. Si le lanceur signale des entrées différentes du protocole bureau figé, comparez Git, Python portable, les modèles ONNX et les DLL Visual C++ de `System32` au [manifeste RapidOCR v2](akasha_brain/protocols/notes-desktop-ocr-v2.json). Le [profil matériel qualifié](docs/plans/phase1_status.md#configuration-qualifiée) indique les ressources observées.
 
 En ligne de commande, vous pouvez inspecter le plan Notes puis exécuter la référence fixe. Le rapport `report.json` est conservé dans le nouveau dossier de sortie.
@@ -90,6 +102,35 @@ $rapport = Join-Path $env:LOCALAPPDATA "AkashaBrain\notes-$([guid]::NewGuid().To
 .\.venv\Scripts\python.exe -m akasha_brain run contracts/examples/goal_notes_regression.json `
     --python-runtime $pythonPortable --output $rapport
 ```
+
+## Donner accès à Notes à un agent
+
+Installez le SDK MCP dans la venv du projet, puis déclarez le serveur dans votre client MCP local. Le serveur utilise les entrées et sorties standard du processus. [Configuration d’un client MCP](https://py.sdk.modelcontextprotocol.io/get-started/real-host/)
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install 'mcp==2.0.1'
+```
+
+Adaptez les chemins absolus de cet exemple au dépôt.
+
+```json
+{
+  "mcpServers": {
+    "akasha-brain": {
+      "command": "D:/dev/akasha-brain/.venv/Scripts/python.exe",
+      "args": ["D:/dev/akasha-brain/scripts/akasha-mcp.py"]
+    }
+  }
+}
+```
+
+L’agent peut appeler `notes_plan`, puis `notes_start` pour obtenir un identifiant et `notes_status` pour suivre la tâche jusqu’au verdict. Le résultat indique les tests, SQLite et, si le parcours le produit, le diff vérifié. Les appels opèrent sur le banc synthétique Notes dans Windows Sandbox. Les propositions sur un projet réel et leur approbation passent par l’interface Windows.
+
+Le serveur relit le dossier Python portable enregistré par l’application. Les arguments `--python-runtime`, `--rbitnet` et `--rapidocr` permettent de configurer son lancement. Les rapports MCP sont conservés sous `%LOCALAPPDATA%\AkashaBrain\agent-runs` par défaut.
+
+### Validation de la conversation et du serveur MCP
+
+Le 17 novembre 2026, le parcours lancé depuis la conversation a renvoyé quatre tests réussis et un verdict SQLite positif en **46,916 s**. Un client MCP local a lancé le parcours Rbitnet CPU et RapidOCR et a reçu le verdict `passed` en **138,147 s**, avec quatre tests réussis et la persistance confirmée après relance. Les 797 octets du diff renvoyé correspondent au premier diff appliqué et vérifié dans le bac. Les deux Windows Sandbox ont été arrêtés. [Relevé des deux essais](bench/results/windows-interface-mcp-notes-v1.json)
 
 ## Validation de Notes depuis un checkout propre
 

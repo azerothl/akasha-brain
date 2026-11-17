@@ -1,0 +1,182 @@
+{
+  "protocol": "windows-interface-mcp-notes-v1",
+  "status": "passed",
+  "desktop": {
+    "entrypoint": "desktop_conversation",
+    "windows_shortcut_target_verified": true,
+    "startup_tab": "Conversation",
+    "confirmation_before_start": true,
+    "verdict_received_in_conversation": true,
+    "status": "passed",
+    "started_at": "2026-11-17T08:09:22.224753+00:00",
+    "sandbox_id": "4d479cc5-90aa-429c-8ceb-8d4f4879f272",
+    "sandbox_stopped": true,
+    "wall_s": 46.916,
+    "steps": [
+      {
+        "id": "localize",
+        "status": "passed",
+        "authorization": "allowed"
+      },
+      {
+        "id": "prepare_reference",
+        "status": "passed",
+        "authorization": "allowed"
+      },
+      {
+        "id": "verify",
+        "status": "passed",
+        "authorization": "allowed"
+      }
+    ],
+    "tests": [
+      {
+        "name": "test_saved_note_survives_restart",
+        "status": "passed"
+      },
+      {
+        "name": "test_two_notes_with_accents_multiline_survive_restart",
+        "status": "passed"
+      },
+      {
+        "name": "test_save_acknowledged_in_session",
+        "status": "passed"
+      },
+      {
+        "name": "test_select_redisplays_content",
+        "status": "passed"
+      }
+    ],
+    "sqlite_verifier_exit": 0,
+    "isolation": {
+      "declared_disabled_channels": [
+        "Networking",
+        "ClipboardRedirection",
+        "AudioInput",
+        "VideoInput",
+        "PrinterRedirection",
+        "VGpu"
+      ],
+      "guest_read_input": true,
+      "guest_write_to_input_denied": true,
+      "guest_create_in_input_denied": true,
+      "guest_scratch_write": true,
+      "guest_no_default_route": true,
+      "guest_no_camera": true,
+      "guest_no_audio_capture": true,
+      "guest_no_redirected_printer": true,
+      "host_sources_unchanged": true,
+      "host_staging_unchanged": true
+    },
+    "authorization_controls": {
+      "missing_confinement": "permission_denied",
+      "out_of_scope": "permission_denied"
+    }
+  },
+  "mcp": {
+    "client": "MCP Python SDK 2.0.1",
+    "transport": "stdio",
+    "tools": [
+      "notes_plan",
+      "notes_start",
+      "notes_status"
+    ],
+    "unknown_task_refused": true,
+    "concurrent_start_refused": true,
+    "task_id": "a0af6eaf-bd2b-4af8-9009-85e36c4bd5ea",
+    "returned_verdict": "passed",
+    "status": "passed",
+    "started_at": "2026-11-17T08:12:46.373056+00:00",
+    "sandbox_id": "b5a74810-3a91-4ecf-8b45-dc9c84e9aa8b",
+    "sandbox_stopped": true,
+    "wall_s": 138.147,
+    "steps": [
+      {
+        "id": "localize",
+        "status": "passed",
+        "authorization": "allowed"
+      },
+      {
+        "id": "generate_diff",
+        "status": "passed",
+        "authorization": "allowed"
+      },
+      {
+        "id": "verify",
+        "status": "passed",
+        "authorization": "allowed"
+      },
+      {
+        "id": "verify_desktop",
+        "status": "passed",
+        "authorization": "allowed"
+      }
+    ],
+    "tests": [
+      {
+        "name": "test_saved_note_survives_restart",
+        "status": "passed"
+      },
+      {
+        "name": "test_two_notes_with_accents_multiline_survive_restart",
+        "status": "passed"
+      },
+      {
+        "name": "test_save_acknowledged_in_session",
+        "status": "passed"
+      },
+      {
+        "name": "test_select_redisplays_content",
+        "status": "passed"
+      }
+    ],
+    "sqlite_verifier_exit": 0,
+    "isolation": {
+      "declared_disabled_channels": [
+        "Networking",
+        "ClipboardRedirection",
+        "AudioInput",
+        "VideoInput",
+        "PrinterRedirection",
+        "VGpu"
+      ],
+      "guest_read_input": true,
+      "guest_write_to_input_denied": true,
+      "guest_create_in_input_denied": true,
+      "guest_scratch_write": true,
+      "guest_no_default_route": true,
+      "guest_no_camera": true,
+      "guest_no_audio_capture": true,
+      "guest_no_redirected_printer": true,
+      "host_sources_unchanged": true,
+      "host_staging_unchanged": true
+    },
+    "authorization_controls": {
+      "missing_confinement": "permission_denied",
+      "out_of_scope": "permission_denied"
+    },
+    "first_diff": {
+      "seed": 742,
+      "git_apply_check": true,
+      "diff_applied": true,
+      "guest_sha256_verified": true,
+      "returned_bytes": 797,
+      "sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+      "returned_bytes_match_local_verified_diff": true
+    },
+    "after_restart": {
+      "ocr_save_button_used": true,
+      "app_restarted": true,
+      "ocr_note_selected_after_restart": true,
+      "ocr_content_visible": true,
+      "sqlite_exact_row": true
+    }
+  },
+  "regression_suite": {
+    "paths": [
+      "tests",
+      "contracts"
+    ],
+    "passed": 238
+  }
+}

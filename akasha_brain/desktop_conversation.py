@@ -92,13 +92,9 @@ def communicate(paths, facts: tuple[int, int, str]) -> str | None:
     return text
 
 
-class ConversationWindow:
-    def __init__(self, root, launch_notes, prepare_project, review_project, latest_report, submit, communication=None):
-        self.window = tk.Toplevel(root)
-        self.window.title("Akasha Brain - Conversation")
-        self.window.geometry("770x540")
-        self.window.minsize(620, 420)
-        self.window.protocol("WM_DELETE_WINDOW", self.window.withdraw)
+class ConversationPane:
+    def __init__(self, parent, launch_notes, prepare_project, review_project, latest_report, submit, communication=None):
+        self.parent = parent
         self.launch_notes, self.prepare_project, self.latest_report = launch_notes, prepare_project, latest_report
         self.submit = submit
         self.review_project = review_project
@@ -109,18 +105,15 @@ class ConversationWindow:
         self.action = None
         self.build()
         self.add("Akasha", "Vous pouvez lancer le banc Notes, préparer une proposition ou consulter le dernier résultat Notes.")
-        self.window.after(150, self.poll)
+        self.parent.after(150, self.poll)
 
-    def show(self):
-        self.window.deiconify()
-        self.window.lift()
+    def focus(self):
         self.entry.focus_set()
 
     def build(self):
-        page = ttk.Frame(self.window, padding=18, style="Data.TFrame")
+        page = ttk.Frame(self.parent, padding=18, style="Data.TFrame")
         page.pack(fill="both", expand=True)
-        ttk.Label(page, text="Conversation", style="DataTitle.TLabel").pack(anchor="w", pady=(0, 12))
-        theme = ttk.Style(self.window)
+        theme = ttk.Style(self.parent)
         panel = ttk.Frame(page, style="Data.TFrame")
         panel.pack(fill="both", expand=True)
         self.transcript = tk.Text(panel, wrap="word", state="disabled", padx=12, pady=8, width=1, height=1,
@@ -135,7 +128,7 @@ class ConversationWindow:
         controls.pack(fill="x", pady=(10, 0))
         self.confirm = ttk.Button(controls, command=self.confirm_action)
         ttk.Button(controls, text="Envoyer", style="Launch.TButton", command=self.send).pack(side="right")
-        self.entry = ttk.Entry(controls)
+        self.entry = ttk.Entry(controls, style="Conversation.TEntry")
         self.entry.pack(side="left", fill="x", expand=True, padx=8)
         self.entry.bind("<Return>", self.send)
 
@@ -227,4 +220,4 @@ class ConversationWindow:
         else:
             self.responding = False
             self.add("Akasha · synthèse locale" if generated else "Résultat du banc", answer)
-        self.window.after(150, self.poll)
+        self.parent.after(150, self.poll)

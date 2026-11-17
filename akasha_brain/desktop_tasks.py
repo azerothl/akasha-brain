@@ -82,22 +82,24 @@ def test_counts(result: dict) -> tuple[int, int] | None:
     return None
 
 
+def saved_task(folder: Path) -> dict | None:
+    try:
+        record = json.loads((folder / "task.json").read_bytes())
+        report_path = folder / "result/report.json"
+        if report_path.is_file():
+            report = json.loads(report_path.read_bytes())
+            record = {**record, **report} if record["status"] in ("waiting", "running") else {**report, **record}
+        datetime.fromisoformat(record["created_at"])
+        if record["status"] in STATUSES and layers(record["graph"]):
+            return record
+    except (OSError, ValueError, TypeError, KeyError):
+        pass
+    return None
+
+
 def saved_tasks(directory: Path) -> list[tuple[Path, dict]]:
-    records = []
-    for task_file in directory.glob("*/task.json"):
-        try:
-            record = json.loads(task_file.read_bytes())
-            report_path = task_file.parent / "result/report.json"
-            if report_path.is_file():
-                report = json.loads(report_path.read_bytes())
-                record = {**record, **report} if record["status"] in ("waiting", "running") else {**report, **record}
-            if not layers(record["graph"]):
-                continue
-            datetime.fromisoformat(record["created_at"])
-            if record["status"] in STATUSES and isinstance(record["created_at"], str):
-                records.append((task_file.parent, record))
-        except (OSError, ValueError, TypeError, KeyError):
-            continue
+    records = [(task_file.parent, record) for task_file in directory.glob("*/task.json")
+               if (record := saved_task(task_file.parent)) is not None]
     return sorted(records, key=lambda record: record[1]["created_at"], reverse=True)
 
 
