@@ -82,14 +82,18 @@ def project_file(project: Path, name: str, *, absent: bool = False) -> Path:
     return path
 
 
-def snapshot(project: Path, names) -> dict:
-    return {name: project_input(project_file(project, name)) for name in names}
+def snapshot(project: Path, names, *, byte_limit: int | None = None) -> dict:
+    return {name: project_input(project_file(project, name), byte_limit=byte_limit) for name in names}
 
 
 def project_input(path: Path, *, byte_limit: int | None = None) -> bytes:
     check_secret_path(path.parts)
     with path.open("rb") as stream:
         content = stream.read() if byte_limit is None else stream.read(byte_limit + 1)
+    return checked_input(content, byte_limit)
+
+
+def checked_input(content: bytes, byte_limit: int | None) -> bytes:
     if byte_limit is not None and len(content) > byte_limit:
         reject(ErrorCode.RESOURCE_BUDGET_EXCEEDED, "Le fichier dépasse la fenêtre de lecture du code.",
                maximum_bytes=byte_limit)
@@ -148,10 +152,25 @@ def make_diff(name: str, before: bytes, after: bytes) -> bytes:
                    for line in lines).encode("utf-8")
 
 
+def replace_text(source: bytes, before: str, after: str, byte_limit: int | None) -> bytes:
+    search = before.encode("utf-8")
+    if not search:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Indiquez le texte exact à remplacer.")
+    offset = source.find(search)
+    if offset < 0:
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Le texte à remplacer est introuvable dans le fichier.")
+    if source.find(search, offset + 1) != -1:
+        reject(ErrorCode.NEEDS_CLARIFICATION, "Le texte apparaît plusieurs fois. Indiquez un extrait plus précis.")
+    replacement = source[:offset] + after.encode("utf-8") + source[offset + len(search):]
+    return checked_input(replacement, byte_limit)
+
+
 def expected_files(manifest: dict) -> tuple[dict, list]:
     files = dict(manifest["files"])
-    source = manifest["target"]
     operation = manifest.get("operation", "replace")
+    if operation == "check":
+        return files, []
+    source = manifest["target"]
     if operation == "replace":
         files[source] = manifest["replacement_sha256"]
         return files, []
@@ -161,7 +180,7 @@ def expected_files(manifest: dict) -> tuple[dict, list]:
     return files, [source]
 
 
-def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None) -> dict:
+def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None, node: bool = False) -> dict:
     if active_sandboxes():
         reject(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Une session Windows Sandbox est déjà active.")
     profile = read_profile()
@@ -174,7 +193,10 @@ def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None) -> dict:
     for name in scripts:
         shutil.copyfile(BENCH / "harness" / name, stage / name)
     (stage / "isolation-sentinel.txt").write_text(tag, encoding="ascii")
-    shutil.copytree(runtime, stage / "python")
+    if node:
+        shutil.copyfile(runtime, stage / "node.exe")
+    else:
+        shutil.copytree(runtime, stage / "python")
     if (stage / "proposal.diff").is_file():
         stage_git(stage)
     pip_version = stage_installer(stage) if has_dependencies else None
@@ -197,7 +219,7 @@ def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None) -> dict:
             checkpoint()
         result = guest_exit(sandbox, f"{POWERSHELL} -File {mount_path}\\validate_project.ps1 -Tag {tag}")
         if result != 0x4700:
-            reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "La validation de la proposition dans le bac a échoué.",
+            reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "La validation dans le bac a échoué.",
                    guest_exit_code=result)
     finally:
         if sandbox in active_sandboxes():
@@ -212,13 +234,14 @@ def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None) -> dict:
 
 
 def prepare(project: Path, output: Path, target: str, replacement: Path | None, test: str, runtime: Path,
-            *, inputs=(), delete: bool = False, move_to: str | None = None, dependencies=()) -> dict:
+            *, inputs=(), delete: bool = False, move_to: str | None = None, dependencies=(),
+            input_byte_limit: int | None = None, text_change: tuple[str, str] | None = None) -> dict:
     project = project.resolve(strict=True)
     project_id = identity(project)
     output = output.resolve()
     if output.is_relative_to(project):
         reject(ErrorCode.PERMISSION_DENIED, "La proposition doit être stockée hors du projet.")
-    if sum((replacement is not None, delete, move_to is not None)) != 1:
+    if sum((replacement is not None, text_change is not None, delete, move_to is not None)) != 1:
         reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Une opération par proposition est requise.")
     names = (target, test, *inputs)
     paths = names if move_to is None else (*names, move_to)
@@ -229,7 +252,7 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
     if delete:
         source = project_file(project, target)
         revision = deletion_revision(source.stat(follow_symlinks=False))
-    original = snapshot(project, names)
+    original = snapshot(project, names, byte_limit=input_byte_limit)
     hashes = fingerprints(original)
     operation = "delete" if delete else "move" if move_to is not None else "replace"
     manifest = {"version": 2, "project": project_id, "operation": operation, "target": target,
@@ -241,8 +264,9 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
     if move_to is not None:
         manifest["destination"] = move_to
     patch = None
-    if replacement is not None:
-        candidate = project_input(replacement)
+    if operation == "replace":
+        candidate = (replace_text(original[target], *text_change, byte_limit=input_byte_limit) if text_change is not None
+                     else project_input(replacement, byte_limit=input_byte_limit))
         patch = make_diff(target, original[target], candidate)
         if not patch:
             reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "La proposition ne contient aucune modification.")
@@ -269,7 +293,7 @@ def prepare(project: Path, output: Path, target: str, replacement: Path | None, 
 def validate_copy(project: Path, output: Path, manifest: dict, original: dict, patch: bytes | None,
                   runtime: Path, dependencies, *, before_run=None, replay: bool = False) -> tuple[dict, list[dict]]:
     expected, absent = expected_files(manifest)
-    target, move_to = manifest["target"], manifest.get("destination")
+    target, move_to = manifest.get("target"), manifest.get("destination")
     with TemporaryDirectory(prefix="stage-", dir=output) as directory:
         stage = Path(directory).resolve(strict=True)
         if stage.parent != output:
@@ -286,12 +310,18 @@ def validate_copy(project: Path, output: Path, manifest: dict, original: dict, p
         if replay and [wheel["request_sha256"] for wheel in wheels] != manifest["dependency_requests"]:
             reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Les dépendances diffèrent de la proposition validée.")
         guest_wheels = [{key: wheel[key] for key in ("name", "version", "filename", "sha256")} for wheel in wheels]
-        request = json.dumps({"operation": manifest.get("operation", "replace"), "target": target,
+        validation_request = {"operation": manifest.get("operation", "replace"), "target": target,
                               "destination": move_to, "test": manifest["test"], "files": expected,
-                              "absent": absent, "dependencies": guest_wheels},
-                             ensure_ascii=False).encode("utf-8")
+                              "absent": absent, "dependencies": guest_wheels}
+        if validation_request["operation"] == "check":
+            validation_request["test_mode"] = manifest["test_mode"]
+            if manifest["test_mode"] == "node":
+                validation_request["test_files"] = manifest["test_files"]
+        request = json.dumps(validation_request, ensure_ascii=False).encode("utf-8")
         (stage / "validation.json").write_bytes(request)
-        if before_run is not None:
+        if validation_request.get("test_mode") == "node":
+            validation = validate_in_sandbox(stage, runtime, node=True)
+        elif before_run is not None:
             before_run()
             validation = validate_in_sandbox(stage, runtime, checkpoint=before_run)
         else:

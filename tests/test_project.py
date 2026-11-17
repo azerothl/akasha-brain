@@ -42,6 +42,16 @@ def test_rejects_missing_or_different_approval(prepared, approval):
     assert (root / "app.py").read_bytes() == b"value = 1\n"
 
 
+def test_exact_text_replacement_rejects_overlapping_matches_and_preserves_other_bytes():
+    with pytest.raises(project.ProjectError) as error:
+        project.replace_text(b"aaa", "aa", "b", byte_limit=20)
+    assert error.value.error.code == ErrorCode.NEEDS_CLARIFICATION
+
+    assert project.replace_text(b"value = 1\r\nflag = True\r\n", "value = 1", "value = 2", byte_limit=40) == (
+        b"value = 2\r\nflag = True\r\n"
+    )
+
+
 @pytest.mark.skipif(sys.platform != "win32", reason="Le parcours cible Windows Sandbox.")
 def test_applies_exactly_the_approved_change(prepared):
     root, output, approval = prepared

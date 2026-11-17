@@ -1,0 +1,58 @@
+[
+  {
+    "capability_id": "project.inspect",
+    "version": "1.0.0",
+    "kind": "tool",
+    "description": "Examiner la structure, la configuration et les tests d’un projet local, quel que soit son langage. Préparer une vérification si un test compatible est trouvé.",
+    "permissions": {"reads": ["selected-project"]},
+    "risk_class": "R0",
+    "side_effects": "none"
+  },
+  {
+    "capability_id": "project.summarize",
+    "version": "1.0.0",
+    "kind": "tool",
+    "description": "Présenter le projet, son utilité, ses technologies et ses composants à partir de sa documentation et de ses manifestes. Répond aux demandes de résumé ou de présentation du projet.",
+    "permissions": {"reads": ["selected-project"]},
+    "risk_class": "R0",
+    "side_effects": "none"
+  },
+  {
+    "capability_id": "documents.compare",
+    "version": "1.0.0",
+    "kind": "tool",
+    "description": "Comparer deux documents texte ou Markdown du dossier choisi. Relever les ajouts, retraits et changements entre deux versions.",
+    "permissions": {"reads": ["selected-project"]},
+    "risk_class": "R0",
+    "side_effects": "none"
+  },
+  {
+    "capability_id": "file.read",
+    "version": "1.0.0",
+    "kind": "tool",
+    "description": "Afficher ou lire le contenu d’un fichier texte du dossier choisi.",
+    "permissions": {"reads": ["selected-project"]},
+    "risk_class": "R0",
+    "side_effects": "none"
+  },
+  {
+    "capability_id": "project.test.python",
+    "version": "1.0.0",
+    "kind": "verifier",
+    "description": "Lancer le test Python repéré sur la copie de travail isolée.",
+    "permissions": {"reads": ["selected-project"], "writes": ["sandbox-scratch"], "execute": ["python-portable"]},
+    "risk_class": "R1",
+    "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+    "side_effects": "local-temporary"
+  },
+  {
+    "capability_id": "project.test.node",
+    "version": "1.0.0",
+    "kind": "verifier",
+    "description": "Lancer les tests natifs Node.js repérés avec node --test, hors ligne et sur la copie de travail isolée.",
+    "permissions": {"reads": ["selected-project"], "writes": ["sandbox-scratch"], "execute": ["node-portable"]},
+    "risk_class": "R1",
+    "sandbox": {"tier": "windows-sandbox", "network_egress": false},
+    "side_effects": "local-temporary"
+  }
+]

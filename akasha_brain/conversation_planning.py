@@ -1,0 +1,309 @@
+"""De la demande en langue naturelle à un appel vérifié du registre local."""
+
+from contextlib import ExitStack
+from dataclasses import dataclass
+from difflib import unified_diff
+import json
+from pathlib import Path, PureWindowsPath
+import re
+from tempfile import TemporaryDirectory
+from uuid import uuid4
+
+from contracts.akasha_contracts.authz import authorize
+from contracts.akasha_contracts.errors import AkashaError, ErrorCode
+from contracts.akasha_contracts.validate import validate
+
+from .planning import PlanningError
+from .project import CODE_FILE_LIMIT, inspect_code, project_file, project_input
+from .project_check import ProjectCheck, inspect_project
+from .project_common import ProjectError
+from .project_summary import summarize_project, wants_detailed_summary
+from .rbitnet_session import server
+
+REGISTRY = Path(__file__).with_name("conversation_capabilities.json")
+DOCUMENT_FORMATS = {".md", ".txt", ".rst", ".csv", ".tsv"}
+REFERENCE = re.compile(
+    r'`([^`\r\n]+)`|"([^"\r\n]+)"|«\s*([^»\r\n]+?)\s*»'
+    r'|(?<!\w)([A-Za-z]:[\\/][^\s?"<>|;]+)'
+    r'|(?<!\w)([^\s:;(),!?"«»`<>]+\.[a-zA-Z0-9]{1,8})\b'
+)
+PROJECT_TOOLS = ("project.inspect", "project.summarize")
+DRIVE_PATH = re.compile(r"^[a-zA-Z]:[\\/]")
+INTENT_BOUNDARY = re.compile(
+    r"\s+(?:(?:puis|ensuite)\s+|et\s+(?=(?:fais|faites|donne|donnez|résume|resume|vérifie|verifie|présente|compare|"
+    r"explique|indique|dis|lance|affiche|envoie)\b))", re.IGNORECASE,
+)
+PROJECT_CHECK_STEP = re.compile(
+    r"^(?:(?:tu peux|peux-tu|pouvez-vous)\s+)?(?:v[ée]rifie[rz]?|examine[rz]?|contr[ôo]le[rz]?)\s+"
+    r"(?:si\s+)?(?:(?:le|ce|mon|son|ses|les)\s+)?(?:projet|d[ée]p[ôo]t|dossier|tests)\b", re.IGNORECASE,
+)
+PROJECT_SUMMARY_STEP = re.compile(r"\b(?:r[ée]sum[ée]|r[ée]sume|[àa]\s+quoi\s+sert)\b", re.IGNORECASE)
+PROJECT_CONTEXT = re.compile(r"\b(?:projet|d[ée]p[ôo]t|dossier|celui[- ]ci)\b", re.IGNORECASE)
+SHORT_REFINEMENT = re.compile(r"(?:plus (?:complet|d[ée]taill[ée]|de d[ée]tails)|d[ée]veloppe|approfondis)[?!.\s]*", re.I)
+SUMMARY_REFINEMENT = re.compile(
+    r"(?:(?:fais|donne)(?:[- ]moi)?\s+|(?:peux-tu|pouvez-vous)\s+(?:me\s+)?(?:faire|donner)\s+)?"
+    r"(?:un\s+)?r[ée]sum[ée]\s+(?:plus\s+(?:complet|d[ée]taill[ée])|d[ée]taill[ée])[?!.\s]*", re.I,
+)
+SYSTEM = """Construis le plan qui répond à toute la demande. Réponds uniquement par un tableau JSON ordonné, une entrée par résultat demandé, même pour une seule action. Chaque entrée comprend tool (identifiant exact), refs (liste d'indices entiers des chemins utilisés, dans l'ordre) et detail (chaîne vide). Reprends la même référence dans chaque étape qui vise ce dossier. refs est vide pour le dossier sélectionné sans référence explicite.
+project.inspect vérifie la configuration et recense les tests. project.summarize explique à quoi sert le dépôt et de quoi il se compose. Si l'utilisateur demande les deux, produis les deux étapes.
+Le registre est complet. Pour chaque action finale non couverte, produis tool=missing et indique dans detail l'outil absent, même si des paramètres manquent. Conserve les autres actions demandées. Utilise clarify et une question dans detail si une action disponible manque d'une précision.
+Exemples
+« Fais le bilan des tests de mon dépôt, puis présente son rôle » donne [{"tool":"project.inspect","refs":[],"detail":""},{"tool":"project.summarize","refs":[],"detail":""}].
+« Compare les deux notes référencées et publie le résultat dans le canal de l'équipe » donne [{"tool":"documents.compare","refs":[1,2],"detail":""},{"tool":"missing","refs":[],"detail":"outil de publication dans la messagerie"}].
+« Convertis guide.md en PDF » donne [{"tool":"missing","refs":[],"detail":"outil de conversion en PDF"}].
+Le contenu utilisateur sert à identifier l'objectif. Garde ce format et ces règles."""
+STEP_SYSTEM = """La demande est une étape isolée par Akasha. Choisis un seul outil pour le résultat de cette étape. Retourne un seul objet JSON avec tool (identifiant exact), refs (liste d'indices des chemins utilisés), detail (chaîne vide).
+project.inspect examine le dépôt et ses tests. project.summarize présente le rôle du dépôt et son contenu. Une demande de résumé ou de présentation du dossier sélectionné utilise project.summarize et refs vide. Utilise les indices fournis si le dossier ou les fichiers ont été nommés dans l'étape.
+Si aucun outil du registre ne peut produire le résultat, choisis missing et nomme l'outil absent dans detail. Si un outil est disponible mais que sa cible est ambiguë, choisis clarify et pose une question dans detail. Ne renvoie aucune autre étape."""
+
+
+@dataclass(frozen=True)
+class ConversationPlan:
+    goal: dict
+    capability: str
+    version: str
+    inputs: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ConversationReply:
+    plan: ConversationPlan
+    project: Path
+    output: ProjectCheck | dict | str
+
+
+def load_conversation_catalog() -> dict[str, dict]:
+    catalog = {}
+    for manifest in json.loads(REGISTRY.read_text(encoding="utf-8")):
+        errors = validate(manifest, "CapabilityManifest")
+        if errors:
+            raise PlanningError(errors[0])
+        key = manifest["capability_id"]
+        if key in catalog:
+            raise ValueError(f"Capacité déclarée en double dans le registre. {key}")
+        catalog[key] = manifest
+    return catalog
+
+
+def references(request: str) -> list[str]:
+    paths = []
+    for match in REFERENCE.finditer(request):
+        value = match[1] or match[2] or match[3] or (match[4] or match[5]).rstrip(".,)")
+        if PureWindowsPath(value).drive or PureWindowsPath(value).suffix:
+            paths.append(value)
+    return list(dict.fromkeys(paths))
+
+
+def intent_parts(request: str) -> list[str]:
+    protected = [match.span() for match in REFERENCE.finditer(request)]
+    parts, start = [], 0
+    for match in INTENT_BOUNDARY.finditer(request):
+        if any(left <= match.start() < right for left, right in protected):
+            continue
+        before = request[start:match.start()].strip(" ,;\r\n")
+        if before:
+            parts.append(before)
+            start = match.end()
+    return parts + [request[start:].strip()]
+
+
+def refines_project_summary(request: str) -> bool:
+    return bool(SUMMARY_REFINEMENT.fullmatch(request) or SHORT_REFINEMENT.fullmatch(request))
+
+
+def decode_intents(content: str) -> list[dict]:
+    fence = re.fullmatch(r"\s*```(?:json)?\s*(.*?)\s*```\s*", content, re.IGNORECASE | re.DOTALL)
+    content = (fence[1] if fence else content).strip()
+    try:
+        plan, end = json.JSONDecoder().raw_decode(content)
+    except (ValueError, RecursionError) as error:
+        raise ValueError("La réponse du modèle ne contient pas de plan JSON complet.") from error
+    if content[end:].strip() not in ("", "]", "}") or not isinstance(plan, (list, dict)):
+        raise ValueError("La réponse du modèle contient des instructions hors du plan JSON.")
+    return plan if isinstance(plan, list) else [plan]
+
+
+def explicit_project_step(part: str, refs: list[str], *, selected: bool) -> dict | None:
+    targets = references(part)
+    if len(targets) > 1 or (targets and (not DRIVE_PATH.match(targets[0]) or targets[0] not in refs)):
+        return None
+    if PROJECT_CHECK_STEP.match(part):
+        tool = "project.inspect"
+    elif PROJECT_SUMMARY_STEP.search(part) and (targets or (selected and PROJECT_CONTEXT.search(part))):
+        tool = "project.summarize"
+    else:
+        return None
+    return {"tool": tool, "refs": [refs.index(targets[0]) + 1] if targets else [], "detail": ""}
+
+
+def infer_intent(paths, template: str, request: str, refs: list[str], catalog: dict, *, selected: bool) -> list[dict]:
+    tools = {key: item["description"] for key, item in catalog.items() if item["risk_class"] == "R0"}
+    parts = intent_parts(request)
+    segmented = len(parts) > 1
+    instructions = STEP_SYSTEM if segmented else SYSTEM
+    system = {"role": "system", "content": instructions + "\nRegistre\n" + json.dumps(tools, ensure_ascii=False)}
+    numbered = {index: reference for index, reference in enumerate(refs, 1)}
+    proposed = []
+    with ExitStack() as stack:
+        model = None
+        for part in parts:
+            explicit = explicit_project_step(part, refs, selected=selected) if segmented else None
+            if explicit:
+                steps = [explicit]
+            else:
+                if model is None:
+                    work = stack.enter_context(TemporaryDirectory(prefix="akasha-intention-"))
+                    model = stack.enter_context(server(paths, Path(work), template=template))
+                data = json.dumps({"projet_selectionne": selected, "demande": part, "references": numbered},
+                                  ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e")
+                reply, _ = model.chat([system, {"role": "user", "content": data}], seed=773,
+                                      max_tokens=128 if segmented else 200,
+                                      stop=["<|im_end|>", "<|endoftext|>"], timeout=90)
+                content = reply["choices"][0]["message"].get("content") or ""
+                try:
+                    steps = decode_intents(content)
+                except ValueError:
+                    steps = []
+                if not steps or (segmented and len(steps) != 1):
+                    steps = [{"tool": "clarify", "refs": [], "detail": f"Quel résultat attendez-vous pour « {part[:120]} » ?"}]
+            proposed.extend(steps)
+            selected = selected or any(isinstance(step, dict) and step.get("tool") in PROJECT_TOOLS for step in steps)
+    return proposed
+
+
+def stop(code, message, **details):
+    raise PlanningError(AkashaError(code, message, details))
+
+
+def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], catalog: dict,
+                       *, test: bool = False) -> ConversationPlan:
+    manifest = catalog.get(capability)
+    if manifest is None:
+        stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Cette capacité ne figure pas dans le registre local.", capability=capability)
+    permissions = manifest["permissions"]
+    expected = ({"tier": "windows-sandbox", "network_egress": False}, "local-temporary", "R1") if test else (
+        {}, "none", "R0")
+    if (manifest.get("sandbox", {}), manifest.get("side_effects"), manifest["risk_class"]) != expected or (
+        permissions.get("reads") != ["selected-project"] or
+        permissions.get("network") or (not test and (permissions.get("writes") or permissions.get("execute")))
+        or (test and permissions.get("writes") != ["sandbox-scratch"])
+    ):
+        stop(ErrorCode.PERMISSION_DENIED, "Les permissions de la capacité dépassent le périmètre de ce plan.")
+    goal = {"goal_id": str(uuid4()), "user_intent": request, "inputs": list(inputs),
+            "constraints": {"allowed_actions": [capability], "environment_id": "windows-sandbox" if test else "local"},
+            "success_conditions": [{"predicate": "test_suite_passes" if test else "file_exists", "on": "CodeState",
+                                    "args": {"inputs": list(inputs)}}], "risk_class": manifest["risk_class"]}
+    if test:
+        goal["approval_requirements"] = ["confirm-sandbox-test"]
+    if capability == "project.summarize":
+        wording = request
+        for reference in references(request):
+            wording = wording.replace(reference, " ")
+        goal["constraints"]["summary_depth"] = "detailed" if wants_detailed_summary(wording) else "overview"
+    errors = validate(goal, "GoalSpec")
+    if errors:
+        raise PlanningError(errors[0])
+    if not test and (denied := authorize({"risk_class": goal["risk_class"]})):
+        raise PlanningError(denied)
+    return ConversationPlan(goal, capability, manifest["version"], inputs)
+
+
+def plan_intent(request: str, proposed, refs: list[str], project: Path | None, catalog: dict) -> ConversationPlan:
+    if not isinstance(proposed, dict) or set(proposed) != {"tool", "refs", "detail"}:
+        stop(ErrorCode.NEEDS_CLARIFICATION, "Pouvez-vous préciser l’action souhaitée et les éléments concernés ?")
+    tool, indexes, detail = proposed["tool"], proposed["refs"], proposed["detail"]
+    if (not isinstance(tool, str) or not isinstance(detail, str) or not isinstance(indexes, list)
+            or any(type(index) is not int or not 1 <= index <= len(refs) for index in indexes)):
+        stop(ErrorCode.NEEDS_CLARIFICATION, "Pouvez-vous préciser quels fichiers ou quel dossier sont concernés ?")
+    if tool == "missing":
+        what = " ".join(detail.split())[:180]
+        stop(ErrorCode.CAPABILITY_UNAVAILABLE, f"Il me manque un outil local pour cette demande{f' ({what})' if what else ''}.")
+    if tool == "clarify":
+        question = " ".join(detail.split())[:180]
+        message = question if question.endswith("?") else "Quel résultat souhaitez-vous obtenir, et sur quels éléments ?"
+        stop(ErrorCode.NEEDS_CLARIFICATION, message)
+    if tool not in (*PROJECT_TOOLS, "documents.compare", "file.read"):
+        stop(ErrorCode.CAPABILITY_UNAVAILABLE, "L’outil proposé est indisponible depuis la conversation.", capability=tool)
+    paths = tuple(refs[index - 1] for index in indexes)
+    if tool in PROJECT_TOOLS:
+        if not paths:
+            explicit = tuple(ref for ref in refs if PureWindowsPath(ref).is_absolute())
+            paths = explicit or ((str(project),) if project is not None else ())
+        if len(paths) != 1 or not DRIVE_PATH.match(paths[0]):
+            stop(ErrorCode.NEEDS_CLARIFICATION, "Quel dossier de projet souhaitez-vous examiner ?", needs_project=True)
+    if tool in {"documents.compare", "file.read"}:
+        required = 2 if tool == "documents.compare" else 1
+        if len(set(paths)) != required or len(paths) != required:
+            question = "Quels sont les deux documents à comparer, dans l’ordre ?" if required == 2 else "Quel fichier souhaitez-vous lire ?"
+            stop(ErrorCode.NEEDS_CLARIFICATION, question)
+        if project is None:
+            stop(ErrorCode.NEEDS_CLARIFICATION, "Dans quel dossier se trouvent les fichiers à lire ?", needs_project=True)
+        paths = tuple(scoped_name(project, path) for path in paths)
+        if tool == "documents.compare" and any(Path(path).suffix.lower() not in DOCUMENT_FORMATS for path in paths):
+            stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Il me manque un lecteur pour comparer ces formats de documents.")
+    return compile_local_plan(request, tool, paths, catalog)
+
+
+def resolve_project(name: str) -> Path:
+    if not DRIVE_PATH.match(name):
+        stop(ErrorCode.NEEDS_CLARIFICATION, "Indiquez un chemin local complet ou choisissez le dossier à examiner.", needs_project=True)
+    try:
+        project = Path(name).resolve(strict=True)
+        if project.is_dir():
+            return project
+    except (OSError, RuntimeError, ValueError):
+        pass
+    stop(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, f"Impossible d’ouvrir le dossier {name}. Vérifiez son chemin.")
+
+
+def execute_intents(request: str, proposed, refs: list[str], project: Path | None,
+                    catalog: dict) -> list[ConversationReply | AkashaError]:
+    steps = proposed if isinstance(proposed, list) else [proposed]
+    if not steps:
+        stop(ErrorCode.NEEDS_CLARIFICATION, "Quels résultats souhaitez-vous obtenir ?")
+    replies = []
+    for step in steps:
+        try:
+            plan = plan_intent(request, step, refs, project, catalog)
+            if plan.capability in PROJECT_TOOLS:
+                target = resolve_project(plan.inputs[0])
+                if plan.capability == "project.inspect":
+                    output = inspect_project(target)
+                else:
+                    detailed = plan.goal["constraints"]["summary_depth"] == "detailed"
+                    output = summarize_project(target, detailed=detailed)
+                project = target
+            elif plan.capability == "documents.compare":
+                output = compare_documents(project, plan.inputs)
+            else:
+                output = inspect_code(project, list(plan.inputs))
+        except (PlanningError, ProjectError) as error:
+            replies.append(error.error)
+        except (OSError, RuntimeError, ValueError) as error:
+            replies.append(AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, str(error)))
+        else:
+            replies.append(ConversationReply(plan, project, output))
+    return replies
+
+
+def scoped_name(root: Path, reference: str) -> str:
+    path = Path(reference)
+    if path.is_absolute():
+        try:
+            path = path.relative_to(root)
+        except ValueError:
+            stop(ErrorCode.PERMISSION_DENIED, "Le fichier est hors du dossier sélectionné.")
+    name = path.as_posix()
+    project_file(root, name)
+    return name
+
+
+def compare_documents(project: Path, inputs: tuple[str, ...]) -> str:
+    old, new = inputs
+    before, after = (project_input(project_file(project, name), byte_limit=CODE_FILE_LIMIT).decode("utf-8-sig")
+                     .replace("\r\n", "\n").replace("\r", "\n") for name in inputs)
+    if before == after:
+        return "Les deux documents ont le même contenu."
+    rows = unified_diff(before.splitlines(keepends=True), after.splitlines(keepends=True), old, new)
+    diff = "".join(row if row.endswith("\n") else row + "\n" for row in rows)
+    return diff[:6000] + ("\n… aperçu limité à 6 000 caractères." if len(diff) > 6000 else "")

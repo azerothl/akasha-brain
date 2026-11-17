@@ -10,6 +10,7 @@ Copy-Item -LiteralPath $pristine -Destination $work -Recurse
 $request = [IO.File]::ReadAllText((Join-Path $inputDir 'validation.json')) | ConvertFrom-Json
 
 switch -Exact ($request.operation) {
+    'check' {}
     'replace' {
         $env:GIT_CONFIG_NOSYSTEM = '1'
         $env:GIT_CONFIG_GLOBAL = 'NUL'
@@ -45,6 +46,16 @@ function Test-CopyHashes {
 }
 if (!(Test-CopyHashes)) { exit 0x4713 }
 
+if ($request.operation -eq 'check' -and $request.test_mode -eq 'node') {
+    if ($request.test_files.Count -eq 0) { exit 0x4719 }
+    Set-Location -LiteralPath $work
+    $tests = @($request.test_files | ForEach-Object { Join-Path $work $_ })
+    & (Join-Path $inputDir 'node.exe') --test -- @tests
+    if ($LASTEXITCODE -ne 0) { exit 0x4714 }
+    if (!(Test-CopyHashes)) { exit 0x4715 }
+    exit 0x4700
+}
+
 $runtime = Join-Path $inputDir 'python'
 $python = Join-Path $runtime 'python.exe'
 $packages = Join-Path $scratch 'packages'
@@ -56,7 +67,28 @@ if ($request.dependencies.Count -gt 0) {
 $test = Join-Path $pristine $request.test
 $bootstrap = 'import runpy, sys; sys.path[0:0] = sys.argv[1:3]; sys.argv = sys.argv[3:]; runpy.run_path(sys.argv[0], run_name=''__main__'')'
 Set-Location -LiteralPath $work
-& $python -I -B -X utf8 -c $bootstrap $work $packages $test
+if ($request.operation -eq 'check' -and $request.test_mode -eq 'unittest') {
+    $bootstrap = @'
+from pathlib import Path
+import sys
+import unittest
+
+root = Path.cwd()
+tests = root / sys.argv[1]
+sys.path[:0] = [str(root), str(root / 'src')]
+suite = unittest.defaultTestLoader.discover(str(tests), top_level_dir=str(root) if (tests / '__init__.py').is_file() else None)
+if suite.countTestCases() == 0:
+    sys.exit(25)
+result = unittest.TextTestRunner().run(suite)
+sys.exit(int(not result.wasSuccessful()))
+'@
+    & $python -I -B -X utf8 -c $bootstrap $request.test
+    if ($LASTEXITCODE -eq 25) { exit 0x4719 }
+} elseif ($request.operation -eq 'check') {
+    & $python -I -B -X utf8 -c $bootstrap $work (Join-Path $work 'src') (Join-Path $work $request.test)
+} else {
+    & $python -I -B -X utf8 -c $bootstrap $work $packages $test
+}
 if ($LASTEXITCODE -ne 0) { exit 0x4714 }
 if (!(Test-CopyHashes)) { exit 0x4715 }
 exit 0x4700

@@ -22,7 +22,7 @@ conda create --name akasha-brain-win --override-channels -c defaults `
     'vs2015_runtime=14.40.33807=h98bb1dd_1'
 conda activate akasha-brain-win
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install 'jsonschema==4.26.0' 'pytest==9.2.0'
+.\.venv\Scripts\python.exe -m pip install 'jsonschema==4.26.0' 'pytest==9.2.0' 'Pygments==2.21.0'
 .\.venv\Scripts\python.exe -m pip check
 ```
 
@@ -63,7 +63,17 @@ Depuis la racine du dépôt, créez une fois le raccourci et enregistrez le chem
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install-windows.ps1 -PythonRuntime $pythonPortable
 ```
 
-Ouvrez ensuite **Akasha Brain** dans le menu Démarrer. Dans **Conversation**, écrivez « Lance le banc Notes » et confirmez le lancement. La réponse arrive dans la conversation à la fin du test. L’onglet **Exécutions** affiche le graphe, le détail des étapes et l’historique. **Préparer un projet** et **Proposition du projet** donnent accès à la préparation isolée et à l’approbation de modifications sur un dépôt choisi.
+Ouvrez **Akasha Brain** dans le menu Démarrer. Dans **Conversation**, indiquez le dossier à vérifier ou sélectionnez-le. Akasha examine les manifestes Python et npm, contrôle la syntaxe Python et affiche les tests repérés. Pour `check.py`, `verify.py`, `unittest` ou un projet JavaScript qui déclare `node --test` et dont les tests sont repérés, **Lancer les tests dans le bac** exécute les tests sur une copie isolée, hors ligne, et affiche le verdict. Le parcours JavaScript utilise `node.exe` depuis le `PATH` Windows.
+
+Activez les demandes libres avec `-Communication @($moteur, $ggufCommunication, $tokenizer)` lors de la création du raccourci. Utilisez le GGUF Qwen3.5-2B Q8_0 qualifié et le moteur et le tokenizer épinglés du [banc de communication](bench/measurements_phase0.md#provenance-et-licences). Le démarrage direct accepte les mêmes chemins après `--communication`. Le modèle local propose un plan pour les résultats demandés. Vous pouvez demander de vérifier et de résumer un même dépôt en une phrase. L’examen statique indique quels tests peuvent être lancés et le résumé s’appuie sur la documentation et les manifestes du dépôt. Akasha peut aussi comparer deux documents texte ou Markdown du dossier choisi. Indiquez leurs chemins et mettez entre guillemets ceux qui contiennent des espaces. Lorsqu’un outil manque, la conversation le signale. L’exécution dans le bac et l’application d’un diff conservent leurs accords respectifs.
+
+Après un résumé, écrivez « Fais-moi un résumé plus complet » pour approfondir le même projet. La vue détaillée consulte la documentation et les manifestes. Elle lit aussi une sélection des sources JavaScript ou TypeScript pour relier les écrans, les routes et leurs appels aux fichiers et lignes concernés. Cette analyse statique se fait en lecture seule.
+
+Sur Documentalist (`4538575`), le résumé détaillé a lu 49 sources JavaScript et TypeScript. La relance a pris **0,328 s** et produit 12 références vérifiées, dont le filtrage de la recherche, l’instantané de publication et l’écriture chiffrée dans SQLite. Les 163 empreintes comparées et l’état Git sont identiques avant et après l’essai en lecture seule. [Relevé de validation](bench/results/documentalist-code-summary-v1.json)
+
+Pour lire un fichier, écrivez `Lis value.py`. Pour tester un remplacement, saisissez `Remplace "VALUE = 7" par "VALUE = 11" dans value.py`, indiquez le chemin relatif d’un script de test existant, puis confirmez **Tester le remplacement**. Le verdict et l’aperçu du diff reviennent dans la conversation. **Examiner le diff** ouvre la fenêtre d’approbation avec le diff complet.
+
+Pour exécuter la démonstration, écrivez « Lance le banc Notes » et confirmez. L’onglet **Exécutions** affiche le graphe, le détail des étapes et l’historique du banc Notes. **Préparer un projet** reste accessible pour un fichier de remplacement complet ou une opération sur les chemins.
 
 Terminez la session Windows Sandbox éventuellement ouverte avant de lancer une tâche. La référence fixe doit afficher **Réussi · 3/3 étapes**, avec les quatre tests et le contrôle SQLite. L’historique du desktop est enregistré sous `%LOCALAPPDATA%\AkashaBrain\runs` par défaut.
 

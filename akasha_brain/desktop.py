@@ -275,7 +275,8 @@ class Desktop:
         self.tabs.add(self.execution_tab, text="Exécutions")
         self.conversation = ConversationPane(
             conversation_tab, lambda: self.launch(show_execution=False), self.open_project, self.open_review,
-            self.latest_notes_report, self.tasks.scheduler.submit, self.communication,
+            self.latest_notes_report, self.tasks, project=self.data_project, review_prepared=self.review_prepared,
+            communication=self.communication,
         )
 
         sidebar = tk.Frame(self.execution_tab, bg=PANEL, padx=16, pady=16)
@@ -639,7 +640,7 @@ def main():
     parser.add_argument("--cuda-library", type=Path, help="Bibliothèque CUDA Rbitnet qualifiée pour Notes")
     parser.add_argument("--model-vram-mib", type=int, default=DEFAULT_VRAM_MIB, help="Plafond VRAM du modèle CUDA")
     parser.add_argument("--communication", nargs=3, type=Path, metavar=("BINAIRE", "GGUF", "TOKENIZER"),
-                        help="Qwen3.5-2B CPU pour les synthèses locales de la conversation")
+                        help="Qwen3.5-2B CPU pour interpréter les demandes libres et synthétiser les résultats Notes")
     parser.add_argument("--rapidocr", action="store_true")
     parser.add_argument("--evolution-db", type=Path, help="Registre d’évolution du banc synthétique Notes")
     parser.add_argument("--integrated-session", type=Path, help="Session de phase 6 qualifiée pour le banc Notes")

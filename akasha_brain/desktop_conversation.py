@@ -1,5 +1,6 @@
 """Conversation locale du desktop et passage explicite à un parcours évalué."""
 
+from dataclasses import dataclass
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -7,14 +8,21 @@ from queue import Empty, SimpleQueue
 import re
 from tempfile import TemporaryDirectory
 import tkinter as tk
-from tkinter import ttk
+from tkinter import filedialog, ttk
 from unicodedata import normalize
+from uuid import uuid4
 
-from bench.communication.templates import render_template
 from bench.run_guided_repair import CHECKPOINTS, file_hash
+from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
+from .conversation_planning import (
+    DRIVE_PATH, PROJECT_TOOLS, compile_local_plan, execute_intents, infer_intent, intent_parts,
+    load_conversation_catalog, references, refines_project_summary,
+)
 from .desktop_tasks import latest_steps, test_counts
 from .planning import PlanningError
+from .project import CODE_FILE_LIMIT, inspect_code, prepare, preview_replacement, project_file
+from .project_check import ProjectCheck, inspect_project, installed_node, run_project_check
 from .rbitnet_session import server
 
 PROMPT = Path(__file__).resolve().parents[1] / "bench" / "communication" / "qwen35-2b-fr-v2.json"
@@ -23,19 +31,87 @@ COMMUNICATION_CHECKPOINTS = {
     "model": "1b04acba824817554f4ce23639bc8495ff70453b8fcb047900c731521021f2c1",
     "tokenizer": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
 }
+QUOTED_TEXT = r'(?:«[^»]*»|"[^"]*"|`[^`]*`)'
+REPLACEMENT = re.compile(
+    rf"^(?:remplace|remplacer)\s+(?P<before>{QUOTED_TEXT})\s+par\s+(?P<after>{QUOTED_TEXT})\s+dans\s+(?P<target>.+)$",
+    re.IGNORECASE,
+)
+READ_FILE = re.compile(r"^(?:lis|lire|affiche\s+le\s+fichier)\s+(.+)$", re.IGNORECASE)
+CHECK_PROJECT = re.compile(
+    r"^(?:est-ce que\s+)?(?:(?:tu (?:peux|pourrais)|peux[- ]tu|pourrais[- ]tu|vous pouvez|pouvez[- ]vous)\s+)?"
+    r"(?:v[ée]rifie[rz]?|examine[rz]?|analyse[rz]?|audite[rz]?|teste[rz]?|regarde[rz]?)\s+(.*)$",
+    re.IGNORECASE,
+)
+PROJECT_SUBJECT = re.compile(r"^(?:(?:ce|le|mon|un)\s+)?(?:projet|dossier)\b\s*", re.IGNORECASE)
+REPLACEMENT_EXAMPLE = 'Remplace "VALUE = 7" par "VALUE = 11" dans value.py'
+
+
+@dataclass(frozen=True)
+class TextChange:
+    target: str
+    before: str
+    after: str
+
+
+def unquote(text: str) -> str:
+    text = text.strip()
+    if len(text) >= 2 and (text[0], text[-1]) in (("«", "»"), ('"', '"'), ("`", "`")):
+        return text[1:-1]
+    return text
+
+
+def parse_replacement(request: str) -> TextChange | None:
+    if match := REPLACEMENT.fullmatch(request.strip()):
+        return TextChange(unquote(match["target"]), match["before"][1:-1], match["after"][1:-1])
+    return None
+
+
+def parse_project_check(request: str) -> str | None:
+    """Return a project path, or an empty string to use the selected project."""
+    request = request.strip().rstrip("?!").rstrip()
+    path = unquote(request)
+    if DRIVE_PATH.match(path):
+        return path
+    match = CHECK_PROJECT.fullmatch(request)
+    if match is None:
+        return None
+    subject, count = PROJECT_SUBJECT.subn("", match[1], count=1)
+    name = unquote(subject.lstrip(": "))
+    if count or DRIVE_PATH.match(name):
+        return name
+    return None
 
 
 def route_request(request: str) -> str | None:
-    words = set(re.findall(r"[a-z]+", normalize("NFKD", request.casefold()).encode("ascii", "ignore").decode()))
+    words = re.findall(r"[a-z]+", normalize("NFKD", request.casefold()).encode("ascii", "ignore").decode())
+    phrase = " ".join(words)
+    words = set(words)
+    notes = bool(words & {"notes", "note"})
+    if notes and re.search(r"\b(?:mis a part|a part|en dehors de|autre chose que|hors|sauf)\b", phrase):
+        return "project_capabilities"
+    if (phrase in {"aide", "que sais tu faire", "a quoi sers tu"} or "capacites" in words
+            or re.search(r"\b(?:tu peux|peux tu|vous pouvez|pouvez vous) faire(?: quoi)?$", phrase)):
+        return "capabilities"
     if words & {"tache", "taches", "transfert"}:
         return None
-    notes = bool(words & {"notes", "note"})
+    if re.fullmatch(r"(?:(?:tu peux|peux tu|pouvez vous) )?(?:lance[rz]?|execute[rz]?) (?:les |ces )?tests", phrase):
+        return "check_tests"
+    if "diff" in words and words & {"affiche", "montre", "voir", "examine"}:
+        return "diff"
     project = bool(words & {"projet", "fichier", "diff", "proposition", "dependance"})
     if words & {"resultat", "resultats", "bilan", "verdict", "rapport"}:
-        return "review" if project and not notes else "result"
+        if project and not notes:
+            return "review"
+        return "result" if notes else "last_result"
     if notes == project:
         return None
-    return "notes" if notes else "project"
+    if project:
+        return "project"
+    actions = {"lance", "lancer", "demarre", "demarrer", "teste", "tester", "repare", "reparer",
+               "execute", "executer", "verifie", "verifier"}
+    if words & actions and not re.search(r"\b(?:ne|n)\s+(?:[a-z]+\s+){1,5}(?:pas|jamais)\b", phrase):
+        return "notes"
+    return None
 
 
 def verification_details(report: dict) -> str:
@@ -63,20 +139,25 @@ def result_summary(report: dict) -> tuple[str, tuple[int, int, str] | None]:
     return evidence + verification_details(report), (passed, total, seconds)
 
 
-def communicate(paths, facts: tuple[int, int, str]) -> str | None:
+def communication_profile(paths) -> dict:
     if any(file_hash(getattr(paths, key)) != expected for key, expected in COMMUNICATION_CHECKPOINTS.items()):
         raise ValueError("Les fichiers du modèle de communication ne correspondent pas au gel.")
     data = json.loads(PROMPT.read_bytes())
     system = data["system"]
     if sha256(system.encode("utf-8")).hexdigest() != data["system_sha256"]:
         raise ValueError("La consigne de communication a changé.")
+    return data
+
+
+def communicate(paths, facts: tuple[int, int, str]) -> str | None:
+    data = communication_profile(paths)
     passed, total, elapsed = facts
     fiche = (f"État=résultat constaté; objet=le banc Notes; auteur=le banc Notes; opération=exécuter les tests; "
              f"succès={passed}/{total} tests; durée totale={elapsed} secondes.")
     settings = data["settings"]
     with TemporaryDirectory(prefix="akasha-communication-") as work:
         with server(paths, Path(work), template=data["chat_template"]) as model:
-            response, _ = model.chat([{"role": "system", "content": system},
+            response, _ = model.chat([{"role": "system", "content": data["system"]},
                                       {"role": "user", "content": "Fiche : " + fiche}],
                                      seed=settings["seed"], max_tokens=settings["max_tokens"],
                                      stop=settings["stop"], timeout=65)
@@ -93,18 +174,29 @@ def communicate(paths, facts: tuple[int, int, str]) -> str | None:
 
 
 class ConversationPane:
-    def __init__(self, parent, launch_notes, prepare_project, review_project, latest_report, submit, communication=None):
+    def __init__(self, parent, launch_notes, prepare_project, review_project, latest_report, tasks, *,
+                 project, review_prepared, communication=None):
         self.parent = parent
         self.launch_notes, self.prepare_project, self.latest_report = launch_notes, prepare_project, latest_report
-        self.submit = submit
+        self.tasks = tasks
         self.review_project = review_project
+        self.review_prepared = review_prepared
+        self.project = project.resolve() if project is not None else None
+        self.change = self.test_file = self.project_job = self.proposal = self.project_error = None
+        self.inspection = self.check_job = self.check_result = None
+        self.intent_job = self.pending_intent = self.conversation_plan = self.test_plan = None
+        self.intent_error = None
+        self.conversation_steps = ()
+        self.last_summary_project = None
+        self.catalog = load_conversation_catalog()
         self.communication = communication
         self.watched = set()
         self.replies = SimpleQueue()
         self.responding = False
         self.action = None
         self.build()
-        self.add("Akasha", "Vous pouvez lancer le banc Notes, préparer une proposition ou consulter le dernier résultat Notes.")
+        self.add("Akasha", "Que souhaitez-vous faire ? Donnez-moi le dossier ou les fichiers concernés." if communication
+                 else "Quel projet souhaitez-vous vérifier ? Donnez-moi son chemin ou choisissez son dossier.")
         self.parent.after(150, self.poll)
 
     def focus(self):
@@ -114,6 +206,12 @@ class ConversationPane:
         page = ttk.Frame(self.parent, padding=18, style="Data.TFrame")
         page.pack(fill="both", expand=True)
         theme = ttk.Style(self.parent)
+        project_bar = ttk.Frame(page, style="Data.TFrame")
+        project_bar.pack(fill="x", pady=(0, 10))
+        ttk.Button(project_bar, text="Choisir un projet…", command=self.choose_project).pack(side="right")
+        self.project_label = ttk.Label(project_bar, style="DataMuted.TLabel")
+        self.project_label.pack(side="left", fill="x", expand=True)
+        self.update_project_label()
         panel = ttk.Frame(page, style="Data.TFrame")
         panel.pack(fill="both", expand=True)
         self.transcript = tk.Text(panel, wrap="word", state="disabled", padx=12, pady=8, width=1, height=1,
@@ -124,6 +222,7 @@ class ConversationPane:
         scrollbar.pack(side="right", fill="y")
         self.transcript.pack(side="left", fill="both", expand=True)
         self.transcript.tag_configure("speaker", font=("Segoe UI", 11, "bold"))
+        self.transcript.tag_configure("code", font=("Consolas", 10))
         controls = ttk.Frame(page, style="Data.TFrame")
         controls.pack(fill="x", pady=(10, 0))
         self.confirm = ttk.Button(controls, command=self.confirm_action)
@@ -132,10 +231,10 @@ class ConversationPane:
         self.entry.pack(side="left", fill="x", expand=True, padx=8)
         self.entry.bind("<Return>", self.send)
 
-    def add(self, speaker, text):
+    def add(self, speaker, text, *, tag=None):
         self.transcript.configure(state="normal")
         self.transcript.insert("end", speaker + "\n", "speaker")
-        self.transcript.insert("end", text + "\n\n")
+        self.transcript.insert("end", text + "\n\n", tag or ())
         self.transcript.see("end")
         self.transcript.configure(state="disabled")
 
@@ -145,34 +244,351 @@ class ConversationPane:
             return
         self.entry.delete(0, "end")
         self.add("Vous", request)
-        self.action = route_request(request)
+        self.action = None
         self.confirm.pack_forget()
-        if self.action == "notes":
+        followup = self.project is not None and self.last_summary_project == self.project and refines_project_summary(request)
+        self.last_summary_project = None
+        cancelled = request.casefold() in ("annule", "annuler")
+        if cancelled:
+            self.pending_intent = None
+            self.intent_job = None
+        elif self.pending_intent is not None:
+            original, turn = self.pending_intent
+            self.request_intent(f"{original}\nPrécision de l’utilisateur\n{request}", turn=turn)
+            return
+        if followup:
+            self.change = self.test_file = None
+            self.request_intent(request, refine_summary=True)
+            return
+        if self.communication is not None and len(intent_parts(request)) > 1:
+            self.change = self.test_file = None
+            self.request_intent(request)
+            return
+        if change := parse_replacement(request):
+            if self.project is not None or self.choose_project():
+                self.change, self.test_file = change, None
+                self.add("Akasha", f"Quel script Python doit vérifier le remplacement dans {change.target} ? "
+                                   "Indiquez son chemin relatif au projet.")
+            return
+        if match := READ_FILE.fullmatch(request):
+            name = unquote(match[1].rstrip("?"))
+            if self.communication is None or Path(name).suffix:
+                self.change = None
+                self.read_file(name)
+                return
+        path = parse_project_check(request)
+        if path is not None and (self.communication is None or DRIVE_PATH.match(unquote(request))):
+            self.change = self.test_file = None
+            self.check_project(path)
+            return
+        action = route_request(request)
+        if self.communication is not None and (
+            (action == "notes" and not re.search(r"\bbanc\s+notes\b", request, re.IGNORECASE))
+            or (action in {"review", "diff", "result", "last_result"} and references(request))
+        ):
+            action = None
+        if self.change is not None and not cancelled and (
+            action is None or unquote(request).lower().endswith(".py")
+        ):
+            self.set_test_file(unquote(request))
+            return
+        self.change = self.test_file = None
+        if action == "notes":
             self.add("Akasha", "Le banc Notes vérifiera la réparation dans Windows Sandbox. Lancez-le quand vous êtes prêt.")
-            self.offer("Lancer Notes")
-        elif self.action == "project":
-            ordered = render_template("État=à venir; étape 1=vous choisissez le dossier, le fichier et le test; "
-                                      "étape 2=je prépare la proposition dans Windows Sandbox après votre lancement; "
-                                      "étape 3=vous examinez la proposition avant de l’approuver.")
-            self.add("Akasha", ordered)
-            self.offer("Préparer un projet")
-        elif self.action == "review":
-            self.add("Akasha", "Vous pouvez examiner la proposition et son verdict dans la fenêtre du projet.")
-            self.offer("Voir la proposition")
-        elif self.action == "result":
-            report = self.latest_report()
-            if report is None:
+            self.offer("Lancer Notes", "notes")
+        elif action == "project" and self.communication is None:
+            self.add("Akasha", "Je peux examiner le dossier et repérer ses tests. Écrivez « Vérifie ce projet » "
+                               "avec le chemin du dossier. Pour préparer une modification, ouvrez le formulaire.")
+            self.offer("Préparer un projet", "project")
+        elif action == "check_tests":
+            if self.inspection is None or self.check_job is not None:
+                self.check_project("")
+            else:
+                self.offer_tests(self.inspection)
+        elif action in ("review", "diff"):
+            self.show_project_result(include_check=action == "review")
+        elif action in ("result", "last_result"):
+            if action == "last_result" and (
+                self.project_job or self.proposal or self.project_error or self.check_job or self.check_result
+            ):
+                self.show_project_result()
+            elif (report := self.latest_report()) is None:
                 self.add("Akasha", "Aucun résultat Notes n’est encore disponible.")
             else:
                 self.reply_to_report(report)
+        elif action in ("capabilities", "project_capabilities"):
+            self.show_capabilities(action == "capabilities")
+        elif cancelled:
+            message = ("Une vérification est déjà en cours. Son résultat apparaîtra ici."
+                       if self.project_job is not None or self.check_job is not None
+                       else "La demande en cours de saisie est effacée.")
+            self.add("Akasha", message)
+        elif self.communication is not None:
+            self.request_intent(request)
         else:
-            self.add("Akasha", render_template(
-                "État=info manquante; objet=si vous souhaitez lancer Notes, préparer un projet ou voir un résultat."
-            ))
+            self.show_capabilities(include_notes=False)
 
-    def offer(self, title):
+    def offer(self, title, action):
+        self.action = action
         self.confirm.configure(text=title)
         self.confirm.pack(side="left", before=self.entry)
+
+    def update_project_label(self):
+        label = str(self.project) if self.project is not None else "Aucun projet choisi"
+        self.project_label.configure(text=label)
+
+    def choose_project(self):
+        chosen = filedialog.askdirectory(parent=self.parent, title="Choisir un projet pour la conversation", mustexist=True)
+        if chosen:
+            self.select_project(Path(chosen).resolve())
+            self.change = self.test_file = self.action = None
+            self.confirm.pack_forget()
+        return bool(chosen)
+
+    def select_project(self, project):
+        if project != self.project:
+            self.project = project
+            self.inspection = self.check_result = self.test_plan = None
+            self.last_summary_project = None
+            if self.action == "run_project_check":
+                self.action = None
+                self.confirm.pack_forget()
+            self.update_project_label()
+
+    def show_capabilities(self, include_notes):
+        message = ("Écrivez « Vérifie ce projet » avec le chemin de son dossier. Je vérifie les fichiers de "
+                   "configuration et la syntaxe Python, puis je repère les tests que le bac peut lancer.\n\n"
+                   f"Je peux aussi lire un fichier (« Lis value.py ») ou tester un remplacement dans le bac "
+                   f"(« {REPLACEMENT_EXAMPLE} »). Le diff reste soumis à votre accord.")
+        if self.communication is not None:
+            message += "\nJe peux aussi résumer le projet à partir de sa documentation et comparer deux documents texte."
+        if include_notes:
+            message += "\nLe banc de démonstration est aussi disponible avec « Lance le banc Notes »."
+        self.add("Akasha", message)
+        if self.project is None:
+            self.offer("Choisir un projet…", "choose_project")
+
+    def request_intent(self, request, *, turn=0, refine_summary=False):
+        if self.intent_job is not None:
+            self.add("Akasha", "J’analyse déjà une demande. Son résultat apparaîtra ici.")
+            return
+        self.pending_intent = None
+        self.conversation_plan = self.intent_error = None
+        self.conversation_steps = ()
+        if len(request) > 8000:
+            self.add("Akasha", "Précisez l’objectif en 8 000 caractères maximum, avec le chemin des fichiers concernés.")
+            return
+        project = self.project
+
+        def plan():
+            refs = references(request)
+            if refine_summary:
+                proposed = {"tool": "project.summarize", "refs": [], "detail": ""}
+            else:
+                profile = communication_profile(self.communication)
+                proposed = infer_intent(self.communication, profile["chat_template"], request, refs, self.catalog,
+                                        selected=project is not None)
+            return execute_intents(request, proposed, refs, project, self.catalog)
+
+        self.intent_job = (request, project, turn, self.tasks.scheduler.submit(plan))
+        self.add("Akasha", "J’analyse votre demande.")
+
+    def poll_intent(self):
+        if self.intent_job is None or not self.intent_job[3].done():
+            return
+        request, project, turn, job = self.intent_job
+        self.intent_job = None
+        if project != self.project:
+            self.add("Akasha", "Le dossier a changé pendant l’analyse. Reformulez la demande pour ce dossier.")
+            return
+        try:
+            replies = job.result()
+        except PlanningError as error:
+            replies = [error.error]
+        except (OSError, RuntimeError, ValueError, KeyError) as error:
+            self.add("Akasha", f"La demande n’a pas pu aboutir. {error}")
+            return
+
+        self.conversation_steps = tuple(reply.plan for reply in replies if not isinstance(reply, AkashaError))
+        if self.conversation_steps:
+            self.conversation_plan = self.conversation_steps[0]
+        for reply in replies:
+            if isinstance(reply, AkashaError):
+                self.intent_error = reply
+                if reply.code == ErrorCode.NEEDS_CLARIFICATION and not self.conversation_steps and turn < 2:
+                    self.pending_intent = (request, turn + 1)
+                    if reply.details.get("needs_project"):
+                        self.offer("Choisir le dossier…", "choose_intent_project")
+                self.add("Akasha", reply.message)
+                continue
+            plan, output = reply.plan, reply.output
+            if plan.capability in PROJECT_TOOLS:
+                self.select_project(reply.project)
+            if isinstance(output, ProjectCheck):
+                self.show_inspection(output)
+            elif plan.capability == "documents.compare":
+                self.add("Akasha", f"Modifications entre {plan.inputs[0]} et {plan.inputs[1]}.")
+                self.add("Comparaison", output, tag="code")
+            elif plan.capability == "file.read":
+                self.show_file(plan.inputs[0], output)
+            else:
+                self.add("Akasha", output)
+                if reply is replies[-1] and plan.capability == "project.summarize":
+                    self.last_summary_project = reply.project
+
+    def check_project(self, name):
+        if self.check_job is not None:
+            self.add("Akasha", "Une vérification de projet est en cours. Son résultat apparaîtra ici.")
+            return
+        if name:
+            if not DRIVE_PATH.match(name):
+                self.add("Akasha", "Indiquez un chemin local complet ou choisissez le dossier à vérifier.")
+                self.offer("Choisir et vérifier…", "choose_checked_project")
+                return
+            try:
+                project = Path(name).resolve(strict=True)
+                if not project.is_dir():
+                    raise ValueError()
+            except (OSError, RuntimeError, ValueError):
+                self.add("Akasha", f"Impossible d’ouvrir le dossier {name}. Vérifiez le chemin ou choisissez le dossier.")
+                self.offer("Choisir et vérifier…", "choose_checked_project")
+                return
+            self.select_project(project)
+        if self.project is None:
+            self.add("Akasha", "Quel dossier souhaitez-vous vérifier ? Donnez-moi son chemin complet ou choisissez-le.")
+            self.offer("Choisir et vérifier…", "choose_checked_project")
+            return
+        project = self.project
+        self.conversation_plan = compile_local_plan("Vérifier le projet", "project.inspect", (str(project),), self.catalog)
+        self.inspection = self.check_result = None
+        self.check_job = (project, self.tasks.scheduler.submit(lambda: inspect_project(project)))
+        self.add("Akasha", f"J’examine {project} en lecture seule.")
+
+    def offer_tests(self, inspection):
+        if inspection.test is None:
+            self.add("Akasha", "Aucun test compatible avec le bac n’est prêt à lancer. Consultez le relevé de vérification.")
+        else:
+            self.add("Akasha", f"Confirmez le lancement de {inspection.test.label} dans Windows Sandbox.")
+            self.offer("Lancer les tests dans le bac", "run_project_check")
+
+    def start_project_check(self):
+        inspection = self.inspection
+        if inspection is None or inspection.test is None or self.check_job is not None:
+            return
+        node = inspection.test.mode == "node"
+        runtime = installed_node(inspection.project) if node else self.tasks.runtime
+        if runtime is None or not (runtime if node else runtime / "python.exe").is_file():
+            self.add("Akasha", "Il me manque un exécutable Node.js dans le PATH pour ce test." if node else
+                     "Choisissez le dossier Python portable pour lancer les tests dans Windows Sandbox.")
+            self.offer("Lancer les tests dans le bac", "run_project_check")
+            return
+        capability = "project.test.node" if node else "project.test.python"
+        self.test_plan = compile_local_plan(f"Exécuter {inspection.test.label}", capability,
+                                            (str(inspection.project), *inspection.test.files), self.catalog, test=True)
+        # Cette vérification locale n'alimente aucun cycle d'évolution.
+        self.check_job = (inspection.project, self.tasks.scheduler.submit(lambda: run_project_check(inspection, runtime)))
+        self.add("Akasha", f"Test demandé pour {inspection.project.name}. Le verdict apparaîtra ici.")
+
+    def poll_check(self):
+        if self.check_job is None or not self.check_job[1].done():
+            return
+        project, job = self.check_job
+        self.check_job = None
+        try:
+            result = job.result()
+        except (OSError, RuntimeError, ValueError) as error:
+            message = f"Vérification de {project.name} interrompue. {error}"
+        else:
+            if isinstance(result, ProjectCheck):
+                self.show_inspection(result)
+                return
+            duration = f"{result['wall_s']:.1f}".replace(".", ",")
+            verdict = result.get("message", "Le test a réussi dans Windows Sandbox.")
+            message = f"{project.name} · {result['test']}\n{verdict} Durée totale de {duration} s."
+        if project == self.project:
+            self.check_result = message
+        self.add("Akasha", message)
+
+    def show_inspection(self, inspection):
+        message = inspection.summary()
+        if inspection.project == self.project:
+            self.inspection, self.check_result = inspection, message
+            if inspection.test is not None and self.action is None and self.change is None:
+                self.offer("Lancer les tests dans le bac", "run_project_check")
+        self.add("Akasha", message)
+
+    def read_file(self, name):
+        if self.project is None and not self.choose_project():
+            self.add("Akasha", "Choisissez d’abord le dossier du projet à lire.")
+            return
+        try:
+            result = inspect_code(self.project, [name])
+        except FileNotFoundError:
+            self.add("Akasha", f"Le fichier {name} est introuvable dans le projet choisi.")
+        except (OSError, RuntimeError, ValueError) as error:
+            self.add("Akasha", str(error))
+        else:
+            self.show_file(name, result)
+
+    def show_file(self, name, result):
+        lines = "\n".join(f"{row['line']:>3}  {row['text']}{'…' if row['excerpt'] else ''}" for row in result["lines"])
+        self.add(name, lines or "Le fichier est vide.", tag="code")
+        if result["more"]:
+            self.add("Akasha", "L’aperçu est limité aux 80 premières lignes.")
+
+    def set_test_file(self, name):
+        self.test_file = None
+        try:
+            project_file(self.project, name)
+        except FileNotFoundError:
+            self.add("Akasha", "Test introuvable. Indiquez le chemin relatif d’un script de test existant.")
+        except (OSError, RuntimeError, ValueError) as error:
+            self.add("Akasha", str(error))
+        else:
+            self.test_file = name
+            self.add("Akasha", f"Je testerai le remplacement dans {self.change.target} avec {name} sur une copie du projet.")
+            self.offer("Tester le remplacement", "prepare_replacement")
+
+    def start_replacement(self):
+        if self.project_job is not None:
+            self.add("Akasha", "Une validation de projet est en cours.")
+            self.offer("Tester le remplacement", "prepare_replacement")
+            return
+        runtime = self.tasks.runtime
+        if runtime is None or not (runtime / "python.exe").is_file():
+            self.add("Akasha", "Choisissez le dossier Python portable pour lancer Windows Sandbox.")
+            self.offer("Tester le remplacement", "prepare_replacement")
+            return
+        project, change, test = self.project, self.change, self.test_file
+        output = self.tasks.directory / "proposals" / str(uuid4())
+
+        def run():
+            prepare(project, output, change.target, None, test, runtime,
+                    text_change=(change.before, change.after), input_byte_limit=CODE_FILE_LIMIT)
+            return preview_replacement(project, output)
+
+        self.project_job = self.tasks.submit_project(run)
+        self.change = self.test_file = self.proposal = self.project_error = None
+        self.add("Akasha", "Validation demandée dans Windows Sandbox.")
+
+    def show_project_result(self, *, include_check=True):
+        if self.project_job is not None:
+            self.add("Akasha", "Le test de la proposition est en cours.")
+        elif include_check and self.check_job is not None:
+            self.add("Akasha", "La vérification de projet est en cours.")
+        elif include_check and self.check_result is not None:
+            self.add("Akasha", self.check_result)
+            if self.inspection is not None and self.inspection.test is not None:
+                self.offer("Lancer les tests dans le bac", "run_project_check")
+        elif self.project_error is not None:
+            self.add("Akasha", self.project_error)
+        elif self.proposal is not None:
+            self.add("Akasha", f"La proposition pour {self.proposal.target} dans {self.proposal.project.name} "
+                               "est disponible pour examen.")
+            self.offer("Examiner le diff", "review_prepared")
+        else:
+            self.add("Akasha", "Ouvrez la proposition pour examiner le diff et le verdict du bac.")
+            self.offer("Voir la proposition", "review")
 
     def confirm_action(self):
         action = self.action
@@ -189,6 +605,21 @@ class ConversationPane:
             self.prepare_project()
         elif action == "review":
             self.review_project()
+        elif action == "choose_project":
+            self.choose_project()
+        elif action == "choose_checked_project":
+            if self.choose_project():
+                self.check_project("")
+        elif action == "choose_intent_project":
+            if self.pending_intent is not None and self.choose_project():
+                request, turn = self.pending_intent
+                self.request_intent(request, turn=turn)
+        elif action == "run_project_check":
+            self.start_project_check()
+        elif action == "prepare_replacement":
+            self.start_replacement()
+        elif action == "review_prepared":
+            self.review_prepared(self.proposal.project, self.proposal.proposal)
 
     def task_update(self, folder, report):
         if folder not in self.watched or report.get("status") not in ("passed", "failed"):
@@ -210,9 +641,12 @@ class ConversationPane:
                 answer = None
             self.replies.put((answer + verification_details(report), True) if answer else (evidence, False))
 
-        self.submit(generate)
+        self.tasks.scheduler.submit(generate)
 
     def poll(self):
+        self.poll_intent()
+        self.poll_check()
+        self.poll_project()
         try:
             answer, generated = self.replies.get_nowait()
         except Empty:
@@ -221,3 +655,22 @@ class ConversationPane:
             self.responding = False
             self.add("Akasha · synthèse locale" if generated else "Résultat du banc", answer)
         self.parent.after(150, self.poll)
+
+    def poll_project(self):
+        if self.project_job is None or not self.project_job.done():
+            return
+        job, self.project_job = self.project_job, None
+        try:
+            self.proposal = job.result()
+        except (OSError, RuntimeError, ValueError) as error:
+            self.project_error = f"La validation de la proposition a échoué. {error}"
+            self.add("Akasha", self.project_error)
+            return
+        review = self.proposal
+        self.add("Akasha", f"{review.test} a réussi dans Windows Sandbox pour {review.project.name}. "
+                           "Le diff est prêt à examiner. Votre accord est requis pour l’appliquer.")
+        self.add(review.target, review.diff[:4000], tag="code")
+        if len(review.diff) > 4000:
+            self.add("Akasha", "Le diff complet est disponible dans la fenêtre de proposition.")
+        if self.action is None and self.change is None:
+            self.offer("Examiner le diff", "review_prepared")

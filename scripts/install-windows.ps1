@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string] $PythonRuntime,
-    [ValidateCount(3, 3)] [string[]] $Rbitnet
+    [ValidateCount(3, 3)] [string[]] $Rbitnet,
+    [ValidateCount(3, 3)] [string[]] $Communication
 )
 
 $ErrorActionPreference = 'Stop'
@@ -12,13 +13,20 @@ if (!(Test-Path -LiteralPath $python -PathType Leaf) -or !(Test-Path -LiteralPat
     throw 'Préparez la venv Windows avec les étapes du README.'
 }
 
-$arguments = '-m akasha_brain.desktop'
-if ($Rbitnet) {
-    $artifacts = foreach ($file in $Rbitnet) {
+function Get-ArtifactArguments([string[]] $Files) {
+    $artifacts = foreach ($file in $Files) {
         if (!(Test-Path -LiteralPath $file -PathType Leaf)) { throw "Artefact Rbitnet introuvable $file" }
         '"' + (Resolve-Path -LiteralPath $file).Path + '"'
     }
-    $arguments += ' --rbitnet ' + ($artifacts -join ' ') + ' --rapidocr'
+    $artifacts -join ' '
+}
+
+$arguments = '-m akasha_brain.desktop'
+if ($Rbitnet) {
+    $arguments += ' --rbitnet ' + (Get-ArtifactArguments $Rbitnet) + ' --rapidocr'
+}
+if ($Communication) {
+    $arguments += ' --communication ' + (Get-ArtifactArguments $Communication)
 }
 
 $programs = [Environment]::GetFolderPath([Environment+SpecialFolder]::Programs)
@@ -31,7 +39,7 @@ if ((Test-Path -LiteralPath $shortcutPath) -and $shortcut.TargetPath -ne $python
 
 Push-Location -LiteralPath $repo
 try {
-    & $python -c 'import tkinter, jsonschema'
+    & $python -c 'import tkinter, jsonschema; from pygments.lexers import TsxLexer'
     if ($LASTEXITCODE -ne 0) { throw 'Tkinter ou les dépendances Python du MVP sont indisponibles.' }
     if ($PythonRuntime) {
         $runtime = (Resolve-Path -LiteralPath $PythonRuntime).Path

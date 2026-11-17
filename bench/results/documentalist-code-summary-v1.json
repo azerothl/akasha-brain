@@ -1,0 +1,38 @@
+{
+  "protocol": "documentalist-code-summary-v1",
+  "status": "passed",
+  "date": "2026-11-17",
+  "project": "Documentalist",
+  "project_revision": "4538575",
+  "entrypoint": "desktop_conversation",
+  "initial_request": "Vérifier et résumer le projet désigné par son chemin.",
+  "followup": "fais moi un résumé plus complet",
+  "analysis": {
+    "mode": "static",
+    "languages": ["JavaScript", "TypeScript"],
+    "files_read": 49,
+    "references_verified": 12,
+    "followup_wall_s": 0.328
+  },
+  "read_only": {
+    "same_project_for_followup": true,
+    "sha256_compared_before_and_after": 163,
+    "compared_files_unchanged": true,
+    "git_status_preserved": true,
+    "sandbox_or_project_test_launched": false
+  },
+  "verified_code_references": [
+    {"file": "src/app/app/page.tsx", "line": 11, "observation": "L’espace de travail filtre les espaces avec canAccessSpace et charge leurs données."},
+    {"file": "src/app/p/[spaceSlug]/[[...path]]/page.tsx", "line": 81, "observation": "Le portail vérifie l’instantané publié et son contrôle d’accès."},
+    {"file": "src/app/api/documents/route.ts", "line": 12, "observation": "La lecture des documents appelle listDocuments."},
+    {"file": "src/app/api/documents/route.ts", "line": 22, "observation": "La création de document appelle createDocument."},
+    {"file": "src/app/api/search/route.ts", "line": 6, "observation": "La recherche transmet le filtre d’espaces allowedSpaceIds."},
+    {"file": "src/app/api/spaces/[spaceId]/publish/route.ts", "line": 8, "observation": "La route de publication appelle publishSpace."},
+    {"file": "src/app/mcp/route.ts", "line": 9, "observation": "La route MCP relie l’authentification, la limitation de débit et le serveur de documentation."},
+    {"file": "src/lib/api.ts", "line": 136, "observation": "Le traitement commun des routes contrôle notamment l’origine des requêtes de modification."},
+    {"file": "src/lib/store.ts", "line": 856, "observation": "La publication construit un instantané et appelle persist."},
+    {"file": "src/lib/store.ts", "line": 140, "observation": "L’écriture transactionnelle sérialise les données et les transmet à encrypt."},
+    {"file": "src/lib/database.ts", "line": 49, "observation": "L’ouverture de la base utilise le pilote SQLite."},
+    {"file": "src/lib/database.ts", "line": 33, "observation": "La fonction de chiffrement utilise AES-256-GCM."}
+  ]
+}
