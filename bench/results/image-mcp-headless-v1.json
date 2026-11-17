@@ -1,0 +1,167 @@
+{
+  "status": "passed",
+  "interface": "MCP stdio",
+  "model": "stable-diffusion.cpp CPU / SD-Turbo Q4_0",
+  "asset_downloads_during_replay": 0,
+  "regression_tests": {
+    "windows_application_and_contracts": {
+      "scope": ["tests", "contracts/tests"],
+      "passed": 264,
+      "failed": 0
+    },
+    "linux_mcp_and_image": {
+      "scope": ["tests/test_mcp_server.py", "tests/test_image_recovery.py"],
+      "passed": 10,
+      "failed": 0
+    },
+    "windows_full_tree": {
+      "passed": 268,
+      "failed": 3,
+      "same_failures_reproduced_at": "676e0f17ea84edf2891cd5d0d368c6fba16cd81e",
+      "expected_faulty_benchmark_tests": [
+        "bench/notes/tests/test_notes.py::test_saved_note_survives_restart",
+        "bench/notes/tests/test_notes.py::test_two_notes_with_accents_multiline_survive_restart",
+        "bench/tasks/tests/test_tasks.py::test_todo_filter_shows_only_todo"
+      ]
+    }
+  },
+  "replays": {
+    "windows": {
+      "status": "passed",
+      "date": "2026-11-17T16:47:53.473024+00:00",
+      "system": "Windows",
+      "platform": "11",
+      "uid": null,
+      "sdk": "mcp==2.0.1",
+      "prompt": "Mirror selfie photograph, a smartphone held upright in the paw of a fluffy white cat, phone and cat both visible in the reflection of a bathroom mirror",
+      "approved_engine_sha256": "08c6b1015370f10c3ee1e689b42738d6281c910b375aefc755f3b49989e779a1",
+      "approved_weights_sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359",
+      "approval_control": {
+        "status": "awaiting_download_approval",
+        "artifact": {
+          "name": "stable-diffusion.cpp (Windows x64, CPU)",
+          "version": "master-955-b7a74e6",
+          "filename": "sd-master-b7a74e6-bin-win-cpu-x64.zip",
+          "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-955-b7a74e6/sd-master-b7a74e6-bin-win-cpu-x64.zip",
+          "size": 17540346,
+          "sha256": "08c6b1015370f10c3ee1e689b42738d6281c910b375aefc755f3b49989e779a1",
+          "license": "MIT",
+          "license_url": "https://github.com/leejet/stable-diffusion.cpp/blob/b7a74e6/LICENSE"
+        },
+        "resume_without_approval": "awaiting_download_approval",
+        "mcp_returned_image": false,
+        "noninteractive_cli": "approval_required",
+        "download_cache_created": false,
+        "protocol_version": "2025-11-25"
+      },
+      "generation": {
+        "task_id": "ce2c1c23-1e9f-4739-a90d-06deee7fc783",
+        "status": "passed",
+        "verdict": {
+          "status": "passed",
+          "sandbox_stopped": true,
+          "sandbox_id": "3858c6fd-4204-46f4-a74f-df847bac4b53",
+          "guest_exit_code": 0,
+          "read_only_input": true,
+          "mount_probe": 17679,
+          "channel_probe": 16671,
+          "disabled_channels": [
+            "Networking",
+            "ClipboardRedirection",
+            "AudioInput",
+            "VideoInput",
+            "PrinterRedirection",
+            "VGpu"
+          ],
+          "headless": true,
+          "export_transport": "hcs-stdout",
+          "backend": "windows-sandbox",
+          "candidate_sha256": "d8d7a56787ff0090a3e6c9fb0e8c831c9c8e7e4fb2ca0160c7d400b2a5a53cb9",
+          "png": {
+            "format": "PNG",
+            "width": 512,
+            "height": 512,
+            "bytes": 406506,
+            "sha256": "10e96116048e9d0380df4f69ae4d6da214bacc79ab29cdd3a294ac5733df6688",
+            "input_sha256": "a0cf37fe329942addc24d3ac5732395c2c4d6fd001e3c11fe663111066077b74"
+          }
+        },
+        "wall_s": 49.196,
+        "protocol_version": "2025-11-25",
+        "transport": "stdio",
+        "status_and_result_agree": true,
+        "verified_by_client": true,
+        "cached_artifacts_unchanged": true,
+        "client_png_sha256": "10e96116048e9d0380df4f69ae4d6da214bacc79ab29cdd3a294ac5733df6688",
+        "file": "selfie-windows.png",
+        "client_wall_s": 50.224
+      }
+    },
+    "linux": {
+      "status": "passed",
+      "date": "2026-11-17T16:48:57.820254+00:00",
+      "system": "Linux",
+      "platform": "6.18.58.1-microsoft-standard-WSL2",
+      "uid": 65534,
+      "sdk": "mcp==2.0.1",
+      "prompt": "Mirror selfie photograph, a smartphone held upright in the paw of a fluffy white cat, phone and cat both visible in the reflection of a bathroom mirror",
+      "approved_engine_sha256": "c33577f8340dc1ac4212adac7def108ecc08e3047d8a3c2d460cc878eac0e78b",
+      "approved_weights_sha256": "d069ef2b2d3d5c2465662d706c242a1016db56163c109bd7e3008a94cdd00359",
+      "approval_control": {
+        "status": "awaiting_download_approval",
+        "artifact": {
+          "name": "stable-diffusion.cpp (Linux x86_64, CPU)",
+          "version": "master-955-b7a74e6",
+          "filename": "sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip",
+          "url": "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-955-b7a74e6/sd-master-b7a74e6-bin-Linux-Ubuntu-24.04-x86_64.zip",
+          "size": 26122695,
+          "sha256": "c33577f8340dc1ac4212adac7def108ecc08e3047d8a3c2d460cc878eac0e78b",
+          "license": "MIT",
+          "license_url": "https://github.com/leejet/stable-diffusion.cpp/blob/b7a74e6/LICENSE"
+        },
+        "resume_without_approval": "awaiting_download_approval",
+        "mcp_returned_image": false,
+        "noninteractive_cli": "approval_required",
+        "download_cache_created": false,
+        "protocol_version": "2025-11-25"
+      },
+      "generation": {
+        "task_id": "2a61dcac-edfe-4d1e-a999-47ab556b8abf",
+        "status": "passed",
+        "verdict": {
+          "status": "passed",
+          "sandbox_stopped": true,
+          "guest_exit_code": 0,
+          "read_only_input": true,
+          "isolation": {
+            "private_namespaces": true,
+            "network_off": true,
+            "read_only_input": true,
+            "private_scratch": true,
+            "no_privileges": true,
+            "headless": true
+          },
+          "backend": "container-rootless",
+          "candidate_sha256": "c5efceb8af42516f2198ce998c3ac41995d51899b3d6b9867ac8dd4341a14553",
+          "png": {
+            "format": "PNG",
+            "width": 512,
+            "height": 512,
+            "bytes": 405265,
+            "sha256": "be6f8d56539f4e5d83c946c571ee5da0eb5d97761675dcbeddae4f234d52e097",
+            "input_sha256": "f15824f1c35d6e389aabc3b401883cebe3b1a5ab8ff0c00397a3c10aad43f918"
+          }
+        },
+        "wall_s": 28.371,
+        "protocol_version": "2025-11-25",
+        "transport": "stdio",
+        "status_and_result_agree": true,
+        "verified_by_client": true,
+        "cached_artifacts_unchanged": true,
+        "client_png_sha256": "be6f8d56539f4e5d83c946c571ee5da0eb5d97761675dcbeddae4f234d52e097",
+        "file": "selfie-linux.png",
+        "client_wall_s": 29.683
+      }
+    }
+  }
+}

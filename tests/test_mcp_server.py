@@ -1,10 +1,15 @@
 import asyncio
+from base64 import b64decode
+from hashlib import sha256
 from uuid import uuid4
 
 import pytest
 
 from akasha_brain.desktop_tasks import NotesTasks
-from akasha_brain import project
+from akasha_brain import image_assets, image_cli, project
+from akasha_brain.capability_recovery import Recovery
+from akasha_brain.image_execution import ImageResult
+from akasha_brain.project_common import ProjectError
 
 pytest.importorskip("mcp.server.mcpserver")
 
@@ -19,9 +24,12 @@ def test_mcp_exposes_structured_notes_tools_and_refuses_unconfigured_runs(tmp_pa
 
     async def check():
         tools = {tool.name: tool for tool in await server.list_tools()}
-        assert set(tools) == {"notes_plan", "notes_start", "notes_status"}
+        assert set(tools) == {"notes_plan", "notes_start", "notes_status",
+                              "image_start", "image_resume", "image_status", "image_result"}
         assert all(tool.output_schema for tool in tools.values())
         assert tools["notes_start"].input_schema["properties"] == {}
+        assert set(tools["image_start"].input_schema["properties"]) == {"prompt"}
+        assert set(tools["image_resume"].input_schema["properties"]) == {"task_id"}
 
         plan = (await server.call_tool("notes_plan", {})).structured_content
         assert plan["runtime_ready"] is False
@@ -34,6 +42,111 @@ def test_mcp_exposes_structured_notes_tools_and_refuses_unconfigured_runs(tmp_pa
 
     asyncio.run(check())
     assert not directory.exists()
+
+
+def test_mcp_image_waits_for_each_artifact_and_returns_verified_content(tmp_path, monkeypatch):
+    runs = tmp_path / "image-runs"
+    server = create_server(NotesTasks(tmp_path / "runs", None, None, False), image_runs=runs)
+    png = b"synthetic PNG supplied by the isolated backend"
+    proof = {"status": "passed", "png": {"bytes": len(png), "sha256": sha256(png).hexdigest()}}
+    installed = set()
+
+    def generate(state, prompt, project, consent):
+        assert state.database == runs.resolve() / "capability-recovery.sqlite"
+        assert prompt == "Selfie de chat" and project is None and consent is None
+        for artifact in (image_assets.ENGINE, image_assets.MODEL):
+            if artifact not in installed:
+                return image_assets.review_download(runs / "image-engine", artifact)
+        return ImageResult(png, {**proof, "png": {**proof["png"], "sha256": "0" * 64}} if corrupt else proof)
+
+    corrupt = False
+    monkeypatch.setattr(Recovery, "generate_image", generate)
+
+    async def check():
+        nonlocal corrupt
+
+        async def poll(args):
+            while True:
+                response = await server.call_tool("image_status", args)
+                report = response.structured_content
+                if report["status"] not in {"waiting", "running"}:
+                    return report
+                await asyncio.sleep(0.01)
+
+        with pytest.raises(ToolError, match="1 500"):
+            await server.call_tool("image_start", {"prompt": " "})
+        start = (await server.call_tool("image_start", {"prompt": " Selfie de chat "})).structured_content
+        args = {"task_id": start["task_id"]}
+        first = await asyncio.wait_for(poll(args), timeout=5)
+        assert first["status"] == "awaiting_download_approval"
+        assert first["artifact"]["sha256"] == image_assets.ENGINE.sha256
+        assert "approval_sha256" not in first["artifact"]
+        await server.call_tool("image_resume", args)
+        assert (await asyncio.wait_for(poll(args), timeout=5))["artifact"] == first["artifact"]
+
+        installed.add(image_assets.ENGINE)
+        await server.call_tool("image_resume", args)
+        second = await asyncio.wait_for(poll(args), timeout=5)
+        assert second["status"] == "awaiting_download_approval"
+        assert second["artifact"]["sha256"] == image_assets.MODEL.sha256
+        pending = await server.call_tool("image_result", args)
+        assert all(item.type == "text" for item in pending.content)
+
+        installed.add(image_assets.MODEL)
+        await server.call_tool("image_resume", args)
+        verdict = await asyncio.wait_for(poll(args), timeout=5)
+        assert verdict["status"] == "passed"
+        output = await server.call_tool("image_result", args)
+        assert output.structured_content == verdict
+        assert output.content[1].mime_type == "image/png"
+        assert b64decode(output.content[1].data, validate=True) == png
+        with pytest.raises(ToolError, match="n’attend pas"):
+            await server.call_tool("image_resume", args)
+
+        corrupt = True
+        args = (await server.call_tool("image_start", {"prompt": "Selfie de chat"})).structured_content
+        args = {"task_id": args["task_id"]}
+        assert (await asyncio.wait_for(poll(args), timeout=5))["status"] == "failed"
+        output = await server.call_tool("image_result", args)
+        assert all(item.type == "text" for item in output.content)
+
+    asyncio.run(check())
+
+
+def test_image_cli_prepare_requires_separate_interactive_agreements(tmp_path, monkeypatch):
+    from io import StringIO
+
+    class Terminal(StringIO):
+        def isatty(self):
+            return True
+
+    installed = []
+
+    def discover(cache, runtime):
+        for artifact in (image_assets.ENGINE, image_assets.MODEL):
+            if artifact not in installed:
+                return image_assets.review_download(cache, artifact)
+        return None
+
+    def download(review, receipt, checkpoint):
+        assert receipt == review.approval_sha256
+        installed.append(review.artifact)
+
+    monkeypatch.setattr(image_cli, "discover", discover)
+    monkeypatch.setattr(image_cli, "download", download)
+    monkeypatch.setattr(image_cli.sys, "stdin", StringIO("oui\noui\n"))
+    with pytest.raises(ProjectError, match="terminal interactif"):
+        image_cli.prepare_assets(tmp_path)
+    assert installed == []
+
+    monkeypatch.setattr(image_cli.sys, "stdin", Terminal("oui\nN\n"))
+    with pytest.raises(ProjectError, match="non autorisé"):
+        image_cli.prepare_assets(tmp_path)
+    assert installed == [image_assets.ENGINE]
+
+    monkeypatch.setattr(image_cli.sys, "stdin", Terminal("oui\n"))
+    assert image_cli.prepare_assets(tmp_path)["status"] == "ready"
+    assert installed == [image_assets.ENGINE, image_assets.MODEL]
 
 
 def test_mcp_project_preparation_returns_a_bound_diff_with_no_approval(tmp_path, monkeypatch):

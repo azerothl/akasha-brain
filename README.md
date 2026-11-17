@@ -160,6 +160,18 @@ L’agent peut appeler `notes_plan`, puis `notes_start` pour obtenir un identifi
 
 Le serveur relit le dossier Python portable enregistré par l’application. Les arguments `--python-runtime`, `--rbitnet` et `--rapidocr` permettent de configurer son lancement. Les rapports MCP sont conservés sous `%LOCALAPPDATA%\AkashaBrain\agent-runs` par défaut.
 
+### Générer une image sans fenêtre
+
+Le serveur MCP fonctionne aussi sous Linux pour ce parcours. Lancez le même script avec le Python de la venv sur la plateforme choisie. Installez `Pillow==13.0.0` et utilisez les prérequis du bac décrits dans la section image.
+
+1. Appelez `image_start` avec la description dans `prompt`, puis suivez `image_status` avec le `task_id` retourné.
+2. Si le statut est `awaiting_download_approval`, la réponse indique l’artefact, sa source, sa taille, sa licence et son SHA-256. Dans un terminal interactif, lancez `python -m akasha_brain.image_cli --prepare` et examinez chaque téléchargement séparément. Avec un cache personnalisé, indiquez le même dossier dans `--image-runs` pour MCP et `--runs` pour la CLI. L’agent reprend ensuite la demande initiale avec `image_resume`.
+3. Une fois le statut `passed`, appelez `image_result`. Le client reçoit le verdict structuré et un contenu MCP `image/png`. Il peut enregistrer le PNG et comparer l’empreinte à `verdict.png.sha256`.
+
+Les identifiants et les PNG restent disponibles pendant la durée de vie du processus MCP. Le client peut conserver le fichier qu’il reçoit.
+
+Le client MCP a récupéré le selfie vérifié en **50,2 s** dans Windows Sandbox et en **29,7 s** sous Ubuntu WSL2 avec Bubblewrap. Les deux bacs étaient sans fenêtre et hors ligne. Le client a recalculé le SHA-256 des PNG et l’a comparé au verdict. Avec un cache vide, les essais sont restés en attente d’accord. [Relevé des rejeux](bench/results/image-mcp-headless-v1.json)
+
 ### Préparer un diff sur un projet réel
 
 Ajoutez `"--project", "D:/chemin/vers/le-projet"` aux `args` du serveur MCP. Ce dossier détermine le projet accessible à l’agent. Le répertoire des propositions doit se trouver en dehors de ce projet.

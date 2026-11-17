@@ -28,6 +28,13 @@ MANIFEST = {
 }
 
 
+def normalize_prompt(prompt: str) -> str:
+    prompt = prompt.strip()
+    if not 1 <= len(prompt) <= 1500 or any(ord(char) < 32 and char not in "\t\n" for char in prompt):
+        reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Décrivez l’image souhaitée en 1 500 caractères au maximum.")
+    return prompt
+
+
 @dataclass(frozen=True)
 class Candidate:
     backend: ImageBackend

@@ -1,4 +1,4 @@
-"""Accès MCP local au graphe Notes et à la préparation de projet."""
+"""Accès MCP local à Notes, à la préparation de projet et à la génération d’images."""
 
 import argparse
 from pathlib import Path
@@ -13,16 +13,18 @@ from mcp_types import ToolAnnotations
 
 from .desktop_settings import app_directory, configured_runtime
 from .desktop_tasks import NotesTasks, checked_task_diff, latest_steps, saved_task, test_counts
+from .mcp_image import register_image_tools
 from .mcp_project import register_project_tools
 from .notes_repair import RbitnetPaths
 from .planning import PlanningError
 
 
-def create_server(tasks: NotesTasks, *, project: Path | None = None) -> MCPServer:
+def create_server(tasks: NotesTasks, *, project: Path | None = None, image_runs: Path | None = None) -> MCPServer:
     server = MCPServer(
         "Akasha Brain",
         instructions=("Inspectez le plan Notes et suivez le verdict par identifiant. "
-                      "Pour un projet configuré, préparez un diff à examiner dans le desktop."),
+                      "Pour un projet configuré, préparez un diff à examiner dans le desktop. "
+                      "Pour une image, appelez image_start, image_status, puis image_result."),
     )
     start_lock = Lock()
     read_only = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=False)
@@ -90,6 +92,8 @@ def create_server(tasks: NotesTasks, *, project: Path | None = None) -> MCPServe
 
     if project is not None:
         register_project_tools(server, tasks, project)
+    register_image_tools(server, tasks.scheduler, image_runs or app_directory() / "runs",
+                         tasks.runtime, project.resolve() if project is not None else None)
     return server
 
 
@@ -97,6 +101,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--python-runtime", type=Path, help="Dossier Python portable du bac")
     parser.add_argument("--runs", type=Path, default=app_directory() / "agent-runs", help="Historique des essais MCP")
+    parser.add_argument("--image-runs", type=Path, help="Registre et cache des moteurs d’images")
     parser.add_argument("--project", type=Path, help="Projet unique autorisé pour la préparation MCP")
     parser.add_argument("--rbitnet", type=Path, nargs=3, metavar=("BINAIRE", "GGUF", "TOKENIZER"),
                         help="Artefacts qualifiés de la réparation CPU")
@@ -108,7 +113,7 @@ def main() -> None:
     repair = RbitnetPaths(*(path.resolve() for path in args.rbitnet)) if args.rbitnet else None
     tasks = NotesTasks(args.runs.resolve(), runtime, repair, args.rapidocr)
     try:
-        server = create_server(tasks, project=args.project)
+        server = create_server(tasks, project=args.project, image_runs=args.image_runs)
     except (OSError, RuntimeError, ValueError) as error:
         parser.error(str(error))
     server.run(transport="stdio")
