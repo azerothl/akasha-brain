@@ -50,6 +50,16 @@ def verify(runtime, root):
     assert "node --test" in check.output.summary()
     candidate = ask(state, "Compare « avant.md » et « apres.md ».", MISSING, project, catalog)
     assert candidate.diagnostic["passed"] and candidate.output.endswith("-Ancien\n+Nouveau\n")
+    utf16 = "Ancien\n".encode("utf-16")
+    (project / "unicode.txt").write_bytes(utf16)
+    converted = ask(state, "Compare « unicode.txt » et « apres.md ».", MISSING, project, catalog)
+    assert converted.diagnostic["level"] == "B" and converted.diagnostic["passed"]
+    assert converted.output.endswith("-Ancien\n+Nouveau\n")
+    assert (project / "unicode.txt").read_bytes() == utf16
+    request = "Lis « avant.md » puis compare « avant.md » et « apres.md »."
+    read, compare = execute_intents(request, [MISSING, MISSING], references(request), project, catalog, recovery=state)
+    assert read.output["lines"][0]["text"] == "Ancien" and compare.output.endswith("-Ancien\n+Nouveau\n")
+    assert read.diagnostic == compare.diagnostic and read.diagnostic["level"] == "C"
 
     def missing():
         reply = ask(state, "Convertis guide.md en PDF", MISSING, project, catalog)
@@ -73,11 +83,15 @@ def verify(runtime, root):
     with closing(sqlite3.connect(database)) as db:
         checked = json.loads(db.execute("SELECT report FROM gap_reports WHERE capability = 'image.ocr'").fetchone()[0])
         assert checked["events"] == ["reused", "resumed"]
-        assert db.execute("SELECT capability FROM local_capabilities ORDER BY 1").fetchall() == [("image.ocr",)]
+        (capability, proof), = db.execute("SELECT capability, proof FROM local_capabilities").fetchall()
+        adaptation = json.loads(proof)["adaptation"]
+        assert capability == "image.ocr" and adaptation == {"level": "D", "capability": capability, "passed": True}
     assert (project / "avant.md").read_text(encoding="utf-8") == "Ancien\n"
     assert (project / "apres.md").read_text(encoding="utf-8") == "Nouveau\n"
     return {"status": "passed" if missing_ms < 2000 else "failed", "covered_project": True,
-            "local_recomposition": candidate.diagnostic, "uncovered_pdf": "missing",
+            "local_recomposition": candidate.diagnostic, "encoding_conversion": converted.diagnostic,
+            "candidate_skill": read.diagnostic, "ocr_adaptation": adaptation,
+            "uncovered_pdf": "missing",
             "ocr_qualified_wall_s": ocr_times[0], "ocr_reused_wall_s": ocr_times[1], "ocr_reused": True,
             "timing": {"inspect_plan_ms": plan_ms, "missing_end_to_end_ms": missing_ms, "samples": 20,
                        "missing_threshold_ms": 2000, "model_loaded": False}}
