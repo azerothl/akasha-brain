@@ -15,6 +15,7 @@ from contracts.akasha_contracts.validate import validate
 
 from . import image_assets, image_recovery
 from .capability_recovery import Recovery
+from .gap_resolution import TRANSCRIPTION, compare_intent, diagnose, replay_comparison, transcription_context
 from .ocr_recovery import CAPABILITY as OCR_CAPABILITY, IMAGE_TYPES, MANIFEST as OCR_MANIFEST
 from .planning import PlanningError
 from .project import CODE_FILE_LIMIT, inspect_code, project_file, project_input
@@ -82,12 +83,17 @@ class PendingImage:
     review: image_assets.DownloadReview
     prompt: str
 
+    @property
+    def outcome(self) -> str:
+        return "awaiting_download_approval"
+
 
 @dataclass(frozen=True)
 class ConversationReply:
     plan: ConversationPlan
     project: Path | None
     output: ProjectCheck | PendingImage | image_recovery.ImageResult | dict | str
+    diagnostic: dict | None = None
 
 
 def load_conversation_catalog() -> dict[str, dict]:
@@ -162,6 +168,8 @@ def explicit_media_step(part: str, refs: list[str]) -> dict | None:
             return {"tool": OCR_CAPABILITY, "refs": targets, "detail": ""}
     if IMAGE_REQUEST.match(part):
         return {"tool": image_recovery.CAPABILITY, "refs": [], "detail": image_subject(part)}
+    if transcription_context(part, references(part)):
+        return {"tool": "missing", "refs": [], "detail": TRANSCRIPTION}
     return None
 
 
@@ -273,6 +281,9 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
         question = " ".join(detail.split())[:180]
         message = question if question.endswith("?") else "Quel résultat souhaitez-vous obtenir, et sur quels éléments ?"
         stop(ErrorCode.NEEDS_CLARIFICATION, message)
+    if tool in catalog and catalog[tool]["risk_class"] not in ("R0", "R1"):
+        stop(ErrorCode.PERMISSION_DENIED, "Cette action doit suivre le parcours d’approbation prévu.",
+             risk_class=catalog[tool]["risk_class"])
     if tool not in (*PROJECT_TOOLS, "documents.compare", "file.read", OCR_CAPABILITY, image_recovery.CAPABILITY):
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "L’outil proposé est indisponible depuis la conversation.", capability=tool)
     paths = tuple(refs[index - 1] for index in indexes)
@@ -325,15 +336,37 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
             recovery.checkpoint()
         try:
             candidate = None
+            diagnostic = None
             try:
                 plan = plan_intent(request, step, refs, project, catalog, default_summary_depth=default_summary_depth)
             except PlanningError as error:
                 if recovery is None or error.error.code != ErrorCode.CAPABILITY_UNAVAILABLE:
                     raise
-                manifest, candidate, events = recovery.activate(error.error, project)
-                capability = manifest["capability_id"]
-                plan = plan_intent(request, {**step, "tool": capability}, refs, project,
-                                   {**catalog, capability: manifest}, default_summary_depth=default_summary_depth)
+                alternate = compare_intent(request, refs, catalog) if len(steps) == 1 else None
+                if alternate is not None:
+                    plan = plan_intent(request, alternate, refs, project, catalog)
+                    if recovery.database.resolve().is_relative_to(project):
+                        stop(ErrorCode.PERMISSION_DENIED, "Le registre de reprise doit être hors du projet.")
+                    try:
+                        diagnostic = replay_comparison(compare_documents)
+                    except PlanningError:
+                        recovery.record(plan.capability, "abstain", ["missing", "candidate", "replay_failed"])
+                        raise
+                    recovery.checkpoint()
+                else:
+                    context = transcription_context(request, refs) if len(steps) == 1 else None
+                    if context:
+                        if project is None:
+                            stop(ErrorCode.NEEDS_CLARIFICATION, "Dans quel projet se trouve le fichier audio ?",
+                                 needs_project=True)
+                        scoped_name(project, refs[0])
+                        if review := recovery.integration_review(project, context):
+                            stop(ErrorCode.APPROVAL_REQUIRED, "Voulez-vous préparer une proposition de spécialiste audio local ?",
+                                 construction_review_id=review.request_id)
+                    manifest, candidate, events = recovery.activate(error.error, project)
+                    capability = manifest["capability_id"]
+                    plan = plan_intent(request, {**step, "tool": capability}, refs, project,
+                                       {**catalog, capability: manifest}, default_summary_depth=default_summary_depth)
             if plan.capability in PROJECT_TOOLS:
                 target = resolve_project(plan.inputs[0])
                 if plan.capability == "project.inspect":
@@ -344,6 +377,9 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
                 project = target
             elif plan.capability == "documents.compare":
                 output = compare_documents(project, plan.inputs)
+                if diagnostic is not None:
+                    recovery.record(plan.capability, "resumed", ["missing", "candidate", "replay", "resumed"],
+                                    diagnostic=diagnostic)
             elif plan.capability == OCR_CAPABILITY:
                 if candidate is None:
                     stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "L’OCR requiert une capacité qualifiée par le registre local.")
@@ -362,11 +398,11 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
             else:
                 output = inspect_code(project, list(plan.inputs))
         except (PlanningError, ProjectError) as error:
-            replies.append(error.error)
+            replies.append(diagnose(error.error))
         except (OSError, RuntimeError, ValueError) as error:
-            replies.append(AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, str(error)))
+            replies.append(diagnose(AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, str(error))))
         else:
-            replies.append(ConversationReply(plan, project, output))
+            replies.append(ConversationReply(plan, project, output, diagnostic))
     return replies
 
 
