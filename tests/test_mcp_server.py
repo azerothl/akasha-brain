@@ -65,9 +65,9 @@ def test_mcp_image_waits_for_each_artifact_and_returns_verified_content(tmp_path
     async def check():
         nonlocal corrupt
 
-        async def poll(args):
+        async def poll(args, active=server):
             while True:
-                response = await server.call_tool("image_status", args)
+                response = await active.call_tool("image_status", args)
                 report = response.structured_content
                 if report["status"] not in {"waiting", "running"}:
                     return report
@@ -109,6 +109,17 @@ def test_mcp_image_waits_for_each_artifact_and_returns_verified_content(tmp_path
         assert (await asyncio.wait_for(poll(args), timeout=5))["status"] == "failed"
         output = await server.call_tool("image_result", args)
         assert all(item.type == "text" for item in output.content)
+
+        restarted = create_server(NotesTasks(tmp_path / "runs", None, None, False), image_runs=runs)
+        previous = {"task_id": start["task_id"]}
+        for tool in ("image_status", "image_resume", "image_result"):
+            with pytest.raises(ToolError, match="inconnu"):
+                await restarted.call_tool(tool, previous)
+        corrupt = False
+        submitted = (await restarted.call_tool("image_start", {"prompt": "Selfie de chat"})).structured_content
+        assert submitted["task_id"] != previous["task_id"]
+        fresh = {"task_id": submitted["task_id"]}
+        assert (await asyncio.wait_for(poll(fresh, active=restarted), timeout=5))["status"] == "passed"
 
     asyncio.run(check())
 

@@ -7,13 +7,45 @@
     "synthetic_checks": 3,
     "passed": true
   },
+  "encoding_conversion": {
+    "level": "B",
+    "candidate": "documents.compare",
+    "synthetic_checks": 3,
+    "passed": true,
+    "conversion": "utf16_bom_to_utf8"
+  },
+  "candidate_skill": {
+    "level": "C",
+    "candidate": "documents.read_then_compare",
+    "version": 1,
+    "graph": [
+      {
+        "capability": "file.read",
+        "version": "1.0.0",
+        "depends_on": []
+      },
+      {
+        "capability": "documents.compare",
+        "version": "1.0.0",
+        "depends_on": [
+          0
+        ]
+      }
+    ],
+    "passed": true
+  },
+  "ocr_adaptation": {
+    "level": "D",
+    "capability": "image.ocr",
+    "passed": true
+  },
   "uncovered_pdf": "missing",
-  "ocr_qualified_wall_s": 114.232,
-  "ocr_reused_wall_s": 60.714,
+  "ocr_qualified_wall_s": 119.363,
+  "ocr_reused_wall_s": 63.378,
   "ocr_reused": true,
   "timing": {
-    "inspect_plan_ms": 0.111,
-    "missing_end_to_end_ms": 3.468,
+    "inspect_plan_ms": 0.116,
+    "missing_end_to_end_ms": 3.192,
     "samples": 20,
     "missing_threshold_ms": 2000,
     "model_loaded": false
@@ -37,5 +69,44 @@
     },
     "client_resume_to_png_s": 113.237,
     "client_end_to_end_s": 119.799
+  },
+  "mcp_restart": {
+    "source_tree": "3afc3b636770636b4815ae34486ddbec13fcacb9",
+    "g4_revision": "7b1f0f4e9b81d44e2d36ad1f69c19f9862472ef5",
+    "g5_revision": "05f34e9d88224f6943075120a25593295784f4fd",
+    "verification": {
+      "status": "passed",
+      "profile": "Windows Sandbox CPU headless",
+      "separate_mcp_processes": 2,
+      "old_task_rejected_by": [
+        "image_status",
+        "image_resume",
+        "image_result"
+      ],
+      "new_task_id": true,
+      "same_image_sha256": true,
+      "cached_qualification_reused": true,
+      "cache_trace_after_restart": [
+        "reused",
+        "resumed"
+      ],
+      "pinned_artifacts_verified": 2,
+      "artifact_source": "approved local copies",
+      "configuration_sha256": "d94ff79675835134f4ea553c06e724e40aef1133f3d8bfcc9f5bf6e3840bc842",
+      "first": {
+        "task_id": "743cae66-8f17-42c9-ac31-4628a01ae389",
+        "png_sha256": "69fa5247de869c95e8012fb9b61b339e8e1e79215cb983bd8c1e5e8537388b30",
+        "candidate": "d94ff79675835134f4ea553c06e724e40aef1133f3d8bfcc9f5bf6e3840bc842",
+        "sandbox_stopped": true,
+        "wall_s": 108.059
+      },
+      "after_restart": {
+        "task_id": "bbdf8f86-7c7f-4f2d-abdb-277b6de811fc",
+        "png_sha256": "69fa5247de869c95e8012fb9b61b339e8e1e79215cb983bd8c1e5e8537388b30",
+        "candidate": "d94ff79675835134f4ea553c06e724e40aef1133f3d8bfcc9f5bf6e3840bc842",
+        "sandbox_stopped": true,
+        "wall_s": 55.638
+      }
+    }
   }
 }

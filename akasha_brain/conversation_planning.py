@@ -4,7 +4,7 @@ from contextlib import ExitStack
 from copy import deepcopy
 from dataclasses import dataclass
 from difflib import unified_diff
-from functools import lru_cache
+from functools import lru_cache, partial
 import json
 from pathlib import Path, PureWindowsPath
 import re
@@ -17,10 +17,13 @@ from contracts.akasha_contracts.validate import validate
 
 from . import image_assets, image_recovery
 from .capability_recovery import Recovery
-from .gap_resolution import TRANSCRIPTION, compare_intent, diagnose, replay_comparison, transcription_context
+from .gap_resolution import (
+    READ_COMPARE_SKILL, TRANSCRIPTION, compare_intent, decode_with_utf16_bom, diagnose,
+    read_compare_steps, replay_comparison, transcription_context,
+)
 from .ocr_recovery import CAPABILITY as OCR_CAPABILITY, IMAGE_TYPES, MANIFEST as OCR_MANIFEST
 from .planning import PlanningError
-from .project import CODE_FILE_LIMIT, inspect_code, project_file, project_input
+from .project import CODE_FILE_LIMIT, checked_input, inspect_code, project_file, project_input
 from .project_check import ProjectCheck, inspect_project
 from .project_common import ProjectError
 from .project_summary import summarize_project, wants_detailed_summary
@@ -332,6 +335,41 @@ def resolve_project(name: str) -> Path:
     stop(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, f"Impossible d’ouvrir le dossier {name}. Vérifiez son chemin.")
 
 
+def qualify_read_compare(request, steps, refs, project, catalog, recovery) -> dict:
+    recovery.checkpoint()
+    plans = [plan_intent(request, step, refs, project, catalog) for step in steps]
+    if recovery.database.resolve().is_relative_to(project):
+        stop(ErrorCode.PERMISSION_DENIED, "Le registre de reprise doit être hors du projet.")
+    with TemporaryDirectory(prefix="akasha-skill-replay-") as directory:
+        candidate = Path(directory)
+        fixtures = {"avant.md": b"Ancien\n", "apres.md": b"Nouveau\n"}
+        for name, content in fixtures.items():
+            (candidate / name).write_bytes(content)
+        proposed = [
+            {"tool": "file.read", "refs": [1], "detail": ""},
+            {"tool": "documents.compare", "refs": [1, 2], "detail": ""},
+        ]
+        read, compare = execute_intents("Lis avant.md puis compare avant.md et apres.md", proposed,
+                                        list(fixtures), candidate, catalog)
+        expected = [{"file": "avant.md", "line": 1, "text": "Ancien", "excerpt": False}]
+        passed = (isinstance(read, ConversationReply) and isinstance(compare, ConversationReply)
+                  and isinstance(read.output, dict) and isinstance(compare.output, str)
+                  and read.output.get("lines") == expected
+                  and compare.output.endswith("-Ancien\n+Nouveau\n")
+                  and all((candidate / name).read_bytes() == raw for name, raw in fixtures.items()))
+    recovery.checkpoint()
+    if not passed:
+        recovery.record(READ_COMPARE_SKILL, "abstain", ["missing", "candidate", "replay_failed"])
+        stop(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "La compétence candidate a échoué au rejeu synthétique.",
+             outcome="abstain")
+    graph = [{"capability": plan.capability, "version": plan.version, "depends_on": [0] if index else []}
+             for index, plan in enumerate(plans)]
+    proof = {"level": "C", "candidate": READ_COMPARE_SKILL, "version": 1, "graph": graph, "passed": True}
+    recovery.record(READ_COMPARE_SKILL, "candidate_evaluated", ["missing", "candidate", "replay"],
+                    diagnostic=proof)
+    return proof
+
+
 def execute_intents(request: str, proposed, refs: list[str], project: Path | None,
                     catalog: dict, *, recovery: Recovery | None = None, image_consent=None,
                     default_summary_depth: str = "standard") -> list[ConversationReply | AkashaError]:
@@ -340,13 +378,26 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
     steps = proposed if isinstance(proposed, list) else [proposed]
     if not steps:
         stop(ErrorCode.NEEDS_CLARIFICATION, "Quels résultats souhaitez-vous obtenir ?")
+    skill = None
+    missing = [isinstance(step, dict) and set(step) == {"tool", "refs", "detail"} and step["tool"] == "missing"
+               for step in steps]
+    if recovery is not None and any(missing):
+        parts = intent_parts(request)
+        recipe = read_compare_steps(parts, [references(part) for part in parts], refs, catalog)
+        if recipe is not None and (all(missing) or (len(steps) == len(recipe) and
+                all(absent or step == intended for absent, step, intended in zip(missing, steps, recipe)))):
+            try:
+                skill = qualify_read_compare(request, recipe, refs, project, catalog, recovery)
+            except (PlanningError, ProjectError) as error:
+                return [diagnose(error.error)]
+            steps = recipe
     replies = []
     for step in steps:
         if recovery is not None:
             recovery.checkpoint()
         try:
             candidate = None
-            diagnostic = None
+            diagnostic = skill
             routing = None
             try:
                 plan = plan_intent(request, step, refs, project, catalog, default_summary_depth=default_summary_depth)
@@ -392,8 +443,27 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
                     output = summarize_project(target, detailed=detailed)
                 project = target
             elif plan.capability == "documents.compare":
-                output = compare_documents(project, plan.inputs)
-                if diagnostic is not None:
+                try:
+                    output = compare_documents(project, plan.inputs)
+                except UnicodeDecodeError:
+                    if recovery is None:
+                        raise
+                    if recovery.database.resolve().is_relative_to(project):
+                        stop(ErrorCode.PERMISSION_DENIED, "Le registre de reprise doit être hors du projet.")
+                    convert = partial(compare_documents, decode=decode_with_utf16_bom)
+                    try:
+                        diagnostic = replay_comparison(convert, utf16=True)
+                    except PlanningError:
+                        recovery.record(plan.capability, "abstain", ["missing", "candidate", "replay_failed"])
+                        raise
+                    recovery.checkpoint()
+                    try:
+                        output = convert(project, plan.inputs)
+                    except UnicodeDecodeError:
+                        recovery.record(plan.capability, "missing", ["missing", "candidate", "replay"],
+                                        reason="invalid_document_encoding", diagnostic=diagnostic)
+                        stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Indiquez des documents UTF-8 ou UTF-16 avec marque d’encodage.")
+                if diagnostic is not None and diagnostic["level"] in {"A", "B"}:
                     recovery.record(plan.capability, "resumed", ["missing", "candidate", "replay", "resumed"],
                                     diagnostic=diagnostic)
             elif plan.capability == OCR_CAPABILITY:
@@ -419,6 +489,8 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
             replies.append(diagnose(AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, str(error))))
         else:
             replies.append(ConversationReply(plan, project, output, diagnostic, routing))
+        if skill is not None and isinstance(replies[-1], AkashaError):
+            break
     return replies
 
 
@@ -434,10 +506,16 @@ def scoped_name(root: Path, reference: str) -> str:
     return name
 
 
-def compare_documents(project: Path, inputs: tuple[str, ...]) -> str:
+def compare_documents(project: Path, inputs: tuple[str, ...], *, decode=None) -> str:
     old, new = inputs
-    before, after = (project_input(project_file(project, name), byte_limit=CODE_FILE_LIMIT).decode("utf-8-sig")
-                     .replace("\r\n", "\n").replace("\r", "\n") for name in inputs)
+    texts = []
+    for name in inputs:
+        content = project_input(project_file(project, name), byte_limit=CODE_FILE_LIMIT)
+        text = content.decode("utf-8-sig") if decode is None else decode(content)
+        if decode is not None:
+            checked_input(text.encode("utf-8"), CODE_FILE_LIMIT)
+        texts.append(text.replace("\r\n", "\n").replace("\r", "\n"))
+    before, after = texts
     if before == after:
         return "Les deux documents ont le même contenu."
     rows = unified_diff(before.splitlines(keepends=True), after.splitlines(keepends=True), old, new)
