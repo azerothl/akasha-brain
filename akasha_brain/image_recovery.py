@@ -16,6 +16,7 @@ from .image_execution import ImageBackend, ImageResult as ImageResult, MEMORY_MI
 from .model_resources import reserve_model
 from .notes_link_promotion import digest
 from .project_common import reject
+from .specialist_registry import require_specialist
 
 CAPABILITY = "image.generate"
 QUALIFICATION = "A photo of a small red sailboat on a clear blue lake, daylight"
@@ -85,6 +86,7 @@ def verifies(candidate: Candidate, proof: dict) -> bool:
 
 
 def run(candidate: Candidate, prompt: str, checkpoint) -> ImageResult:
+    specialist = require_specialist(CAPABILITY, "image", "verified-png.v1", "stable-diffusion.cpp", ram_mib=MEMORY_MIB)
     checkpoint()
     with TemporaryDirectory(prefix="akasha-cpu-image-") as directory:
         stage = Path(directory)
@@ -95,10 +97,11 @@ def run(candidate: Candidate, prompt: str, checkpoint) -> ImageResult:
             if not image_assets.matches(path, artifact):
                 reject(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Un artefact local a changé pendant la préparation.")
         checkpoint()
-        with reserve_model("sd-turbo", MEMORY_MIB, inside_sandbox=True):
+        with reserve_model("sd-turbo", specialist.ram_mib, inside_sandbox=True):
             proof, raw = candidate.backend.execute(stage, prompt, checkpoint)
         if not candidate.backend.verifies(proof):
             reject(ErrorCode.CONTRACT_POSTCONDITION_FAILED, "La preuve d’exécution isolée est incomplète.")
         png, receipt = validate_export(raw)
-        proof = {**proof, "backend": candidate.backend.tier, "candidate_sha256": candidate.fingerprint, "png": receipt}
+        proof = {**proof, "backend": candidate.backend.tier, "candidate_sha256": candidate.fingerprint,
+                 "png": receipt, "routing": specialist.evidence(CAPABILITY)}
         return ImageResult(png, proof)

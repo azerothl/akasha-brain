@@ -18,6 +18,7 @@ from .experience import transaction
 from .notes_evolution import audit
 from .notes_repair import RbitnetPaths
 from .planning import PlanningError, TASKS_ENVIRONMENT, TASKS_TARGET, compile_goal, load_catalog
+from .specialist_registry import require_specialist
 from .tasks_sql_specialist_v2 import verify_coverage
 from .tasks_sql_transfer import run as run_reference
 from . import tasks_gate
@@ -206,11 +207,13 @@ def run(registry: Registry, case: Path, runtime: Path, output: Path, paths: Rbit
                 write_report(output, report)
                 return report
         if decision["graph"] == SPECIALIST:
+            specialist = require_specialist("tasks.sql.v3", "sql", "tasks-sql-filter.v3", "rbitnet", ram_mib=8192)
             (staged / "oracle.py").replace(staged / "independent_oracle.py")
             shutil.copyfile(Path(__file__).with_name("tasks_route_oracle.py"), staged / "oracle.py")
             (staged / "routing_target.json").write_text(json.dumps(contract["target"]), encoding="utf-8")
             report = run_case(staged, runtime, output, paths, timeout_s=RECHECK_TIMEOUT_S,
                               required=contract["plan"], v3=True)
+            report["routing"] = specialist.evidence("tasks.sql.v3")
         else:
             frozen = json.loads(REFERENCE_LOCK.read_bytes())
             report = run_reference(staged, frozen, runtime, output, paths, "cpu", None)

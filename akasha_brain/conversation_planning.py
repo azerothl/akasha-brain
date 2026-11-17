@@ -28,6 +28,7 @@ from .project_check import ProjectCheck, inspect_project
 from .project_common import ProjectError
 from .project_summary import summarize_project, wants_detailed_summary
 from .rbitnet_session import server
+from .specialist_registry import require_specialist
 
 REGISTRY = Path(__file__).with_name("conversation_capabilities.json")
 DOCUMENT_FORMATS = {".md", ".txt", ".rst", ".csv", ".tsv"}
@@ -99,6 +100,7 @@ class ConversationReply:
     project: Path | None
     output: ProjectCheck | PendingImage | image_recovery.ImageResult | dict | str
     diagnostic: dict | None = None
+    routing: dict | None = None
 
 
 def load_conversation_catalog() -> dict[str, dict]:
@@ -207,8 +209,9 @@ def infer_intent(paths, template: str, request: str, refs: list[str], catalog: d
                 steps = [explicit]
             else:
                 if model is None:
+                    specialist = require_specialist("conversation.intent", "intent", "conversation-intent.v1", "rbitnet")
                     work = stack.enter_context(TemporaryDirectory(prefix="akasha-intention-"))
-                    model = stack.enter_context(server(paths, Path(work), template=template))
+                    model = stack.enter_context(server(paths, Path(work), template=template, ram_mib=specialist.ram_mib))
                 data = json.dumps({"projet_selectionne": selected, "demande": part, "references": numbered},
                                   ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e")
                 reply, _ = model.chat([system, {"role": "user", "content": data}], seed=773,
@@ -395,6 +398,7 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
         try:
             candidate = None
             diagnostic = skill
+            routing = None
             try:
                 plan = plan_intent(request, step, refs, project, catalog, default_summary_depth=default_summary_depth)
             except PlanningError as error:
@@ -405,6 +409,8 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
                     plan = plan_intent(request, alternate, refs, project, catalog)
                     if recovery.database.resolve().is_relative_to(project):
                         stop(ErrorCode.PERMISSION_DENIED, "Le registre de reprise doit être hors du projet.")
+                    specialist = require_specialist(plan.capability, "file", "project-readonly.v1", "python", ram_mib=0)
+                    routing = specialist.evidence(plan.capability)
                     try:
                         diagnostic = replay_comparison(compare_documents)
                     except PlanningError:
@@ -425,6 +431,9 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
                     capability = manifest["capability_id"]
                     plan = plan_intent(request, {**step, "tool": capability}, refs, project,
                                        {**catalog, capability: manifest}, default_summary_depth=default_summary_depth)
+            if routing is None and plan.capability in (*PROJECT_TOOLS, "documents.compare", "file.read"):
+                specialist = require_specialist(plan.capability, "file", "project-readonly.v1", "python", ram_mib=0)
+                routing = specialist.evidence(plan.capability)
             if plan.capability in PROJECT_TOOLS:
                 target = resolve_project(plan.inputs[0])
                 if plan.capability == "project.inspect":
@@ -479,7 +488,7 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
         except (OSError, RuntimeError, ValueError) as error:
             replies.append(diagnose(AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, str(error))))
         else:
-            replies.append(ConversationReply(plan, project, output, diagnostic))
+            replies.append(ConversationReply(plan, project, output, diagnostic, routing))
         if skill is not None and isinstance(replies[-1], AkashaError):
             break
     return replies

@@ -164,7 +164,8 @@ class Recovery:
                 if error.error.code == ErrorCode.CONTRACT_POSTCONDITION_FAILED:
                     self.record(capability, "failed", events + ["rolled_back"], reason="execution_failed", retire=True)
                 raise
-            self.record(capability, "resumed", events + ["resumed"], fingerprint=candidate.fingerprint)
+            self.record(capability, "resumed", events + ["resumed"], fingerprint=candidate.fingerprint,
+                        diagnostic=result.proof.get("routing"))
             return result
 
     def activate(self, missing: AkashaError, project: Path | None) -> tuple[dict, ocr_recovery.Candidate, list[str]]:
@@ -255,5 +256,7 @@ class Recovery:
                 self.record(capability, "waiting", events, reason="execution_interrupted", fingerprint=candidate.fingerprint)
                 raise PlanningError(AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED,
                     "La lecture OCR confinée a été interrompue.")) from error
-            self.record(capability, "resumed", events + ["resumed"], fingerprint=candidate.fingerprint)
+            diagnostic = {key: result[key] for key in ("routing", "residency") if key in result}
+            self.record(capability, "resumed", events + ["resumed"], fingerprint=candidate.fingerprint,
+                        diagnostic=diagnostic or None)
             return result["exported"]

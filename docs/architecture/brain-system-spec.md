@@ -359,6 +359,8 @@ Le cache est associé à `capability-recovery.sqlite`. Une qualification synthé
 
 Le registre peut grandir progressivement; toutes ces familles ne sont pas requises dans le premier prototype.
 
+Le [registre G5](../../akasha_brain/specialists.json) déclare les capacités, la modalité, le moteur, le contrat et le budget de mémoire modèle de chaque spécialiste. Une sélection exige la capacité, la modalité et le contrat attendus. Les adaptateurs image et OCR vérifient aussi le moteur et la réservation avant l’exécution et inscrivent le choix dans la preuve. Le solveur fixe de Notes déclare PowerShell, le contrat de copie vérifiée et une réservation modèle de 0 Mio. Un rôle de secours doit être déclaré et autorisé pour la décision en cours. Le registre livré déclare uniquement des spécialistes principaux.
+
 ### 7.1 Langage et code
 
 Le spécialiste du langage extrait et exprime les objectifs. Les spécialistes de code peuvent lire un dépôt, naviguer, diagnostiquer, proposer une modification, l’exécuter dans un bac à sable et vérifier un diff.

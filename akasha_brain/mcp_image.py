@@ -24,6 +24,7 @@ from .image_execution import MAX_PNG_BYTES
 from .image_recovery import normalize_prompt
 from .planning import PlanningError
 from .project_common import ProjectError
+from .specialist_registry import require_specialist
 
 
 @dataclass
@@ -53,6 +54,7 @@ def register_image_tools(server: MCPServer, scheduler: DesktopJobs, runs: Path,
             started = perf_counter()
             png = None
             try:
+                specialist = require_specialist("image.generate", "image", "verified-png.v1", "stable-diffusion.cpp")
                 result = recovery.generate_image(prompt, project, None)
                 if isinstance(result, DownloadReview):
                     artifact = result.artifact
@@ -71,6 +73,7 @@ def register_image_tools(server: MCPServer, scheduler: DesktopJobs, runs: Path,
                             or metadata.get("bytes") != len(png) or metadata.get("sha256") != sha256(png).hexdigest()):
                         raise ToolError("Le PNG ne correspond pas au verdict de génération.")
                     report = {"status": "passed", "verdict": proof}
+                report["routing"] = specialist.evidence("image.generate")
             except (PlanningError, ProjectError) as error:
                 report = {"status": "failed", "error": error.error.as_dict()}
             except ToolError as error:

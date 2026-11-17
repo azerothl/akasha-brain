@@ -203,6 +203,8 @@ Les identifiants et les PNG restent disponibles pendant la durée de vie du proc
 
 Les états sont `waiting`, `running`, `awaiting_download_approval`, `passed` et `failed`. Une reprise admise conserve le même `task_id` et la description initiale. `wall_s` mesure la dernière tentative exécutée. Les accords sont recueillis dans la CLI interactive, avec un reçu distinct pour chaque artefact téléchargé.
 
+Le registre des spécialistes associe une capacité à une modalité, un moteur, un contrat et une réservation de mémoire modèle. Le verdict MCP indique dans `routing` le spécialiste image retenu et le motif de sélection. La reprise OCR enregistre les mêmes champs dans le diagnostic local, avec la réservation ONNX Runtime. [Registre](akasha_brain/specialists.json) · [Rejeux G5](bench/results/specialist-routing-g5-v1.json)
+
 Pour un cache personnalisé sous Windows, configurez le serveur avec `"--image-runs", "D:/cache/akasha-images"`, puis lancez cette commande dans un terminal.
 
 ```powershell

@@ -1,0 +1,271 @@
+{
+  "status": "passed",
+  "windows_test_suite": {
+    "scope": [
+      "tests",
+      "contracts"
+    ],
+    "passed": 284
+  },
+  "ocr_windows": {
+    "status": "passed",
+    "text_verified": true,
+    "qualified_in_windows_sandbox": true,
+    "events": [
+      "missing",
+      "local_discovery",
+      "candidate",
+      "qualification",
+      "activated",
+      "resumed"
+    ],
+    "routing": {
+      "specialist": "vision-rapidocr",
+      "modality": "ocr",
+      "engine": "rapidocr-onnxruntime",
+      "contract": "ocr-text.v1",
+      "capability": "image.ocr",
+      "ram_mib": 4096,
+      "reason": "declared_modality_contract"
+    },
+    "residency": {
+      "engine": "onnxruntime",
+      "ram_reserved_mib": 4096,
+      "vram_reserved_mib": 0,
+      "inside_sandbox": true,
+      "host_ram_free_mib": 20358,
+      "device_vram_free_mib": null,
+      "lease_s": 52.65
+    },
+    "other_model_calls_blocked_in_probe": true,
+    "wall_s": 129.772
+  },
+  "image": {
+    "windows": {
+      "status": "passed",
+      "backend": "windows-sandbox",
+      "routing": {
+        "specialist": "image-sd-turbo",
+        "modality": "image",
+        "engine": "stable-diffusion.cpp",
+        "contract": "verified-png.v1",
+        "capability": "image.generate",
+        "ram_mib": 8192,
+        "reason": "declared_modality_contract"
+      },
+      "baseline_resume_s": 95.664,
+      "maximum_resume_s": 114.7968,
+      "client_resume_to_png_s": 113.521,
+      "client_end_to_end_s": 119.674,
+      "change_vs_baseline_pct": 18.67,
+      "png_sha256": "10e96116048e9d0380df4f69ae4d6da214bacc79ab29cdd3a294ac5733df6688",
+      "png_verified_at_client": true,
+      "isolated_runs_stopped": 2,
+      "separate_approval_receipts": 2,
+      "same_task_resumed": true,
+      "cache_started_empty": true,
+      "artifact_network_requests": 0
+    },
+    "linux": {
+      "status": "passed",
+      "backend": "container-rootless",
+      "routing": {
+        "specialist": "image-sd-turbo",
+        "modality": "image",
+        "engine": "stable-diffusion.cpp",
+        "contract": "verified-png.v1",
+        "capability": "image.generate",
+        "ram_mib": 8192,
+        "reason": "declared_modality_contract"
+      },
+      "baseline_resume_s": 57.611,
+      "maximum_resume_s": 69.1332,
+      "client_resume_to_png_s": 56.944,
+      "client_end_to_end_s": 63.488,
+      "change_vs_baseline_pct": -1.16,
+      "png_sha256": "be6f8d56539f4e5d83c946c571ee5da0eb5d97761675dcbeddae4f234d52e097",
+      "png_verified_at_client": true,
+      "isolated_runs_stopped": 2,
+      "separate_approval_receipts": 2,
+      "same_task_resumed": true,
+      "cache_started_empty": true,
+      "artifact_network_requests": 0
+    }
+  },
+  "reference": "image-mcp-cold-cache-v1.json",
+  "timing_boundary": "image_resume to client-verified PNG after both artifacts were verified",
+  "notes_preemption": {
+    "source_tree": "c5fb4c7a946c326fec2eb2ebcbace5a609d3a06d",
+    "g4_revision": "6ddb0ab31b08754d75c4d8bba90bb34c24948350",
+    "g5_revision": "010a7471bd9199ea5a5c80c5afcf9b94ed42b836",
+    "verification": {
+      "status": "passed",
+      "profile": "Windows Sandbox / Rbitnet CPU / RapidOCR",
+      "artifacts_verified": {
+        "engine": "80cd4e7f7c39b1facb4073915253965c60f85fd936d08c242221acb2cae1f49c",
+        "model": "120307ba529eb2439d6c430d94104dabd578497bc7bfe7e322b5d9933b449bd4",
+        "tokenizer": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+      },
+      "scheduler": {
+        "samples": 20,
+        "baseline_p95_ms": 0.278,
+        "preemption_p95_ms": 2.368,
+        "added_p95_ms": 2.09,
+        "maximum_added_ms": 3000
+      },
+      "simulation": {
+        "status": "preempted",
+        "completed_cases": 1,
+        "host_cpu": 0.1923,
+        "host_free_ram_mib": 20366
+      },
+      "reference": {
+        "status": "passed",
+        "first_diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "tests": [
+          4,
+          4
+        ],
+        "sqlite": "passed",
+        "desktop_after_restart": {
+          "ocr_save_button_used": true,
+          "app_restarted": true,
+          "ocr_note_selected_after_restart": true,
+          "ocr_content_visible": true,
+          "sqlite_exact_row": true
+        },
+        "routes": {
+          "generate_diff": {
+            "specialist": "code-rbitnet",
+            "modality": "code",
+            "engine": "rbitnet",
+            "contract": "unified-diff.v1",
+            "capability": "notes.repair_rbitnet",
+            "ram_mib": 8192,
+            "reason": "declared_modality_contract"
+          },
+          "verify": {
+            "specialist": "notes-sqlite-verifier",
+            "modality": "verification",
+            "engine": "python-sqlite",
+            "contract": "verified-state.v1",
+            "capability": "notes.verify",
+            "ram_mib": 0,
+            "reason": "declared_modality_contract"
+          },
+          "verify_desktop": {
+            "specialist": "vision-rapidocr",
+            "modality": "ocr",
+            "engine": "rapidocr-onnxruntime",
+            "contract": "ocr-text.v1",
+            "capability": "notes.verify_desktop",
+            "ram_mib": 4096,
+            "reason": "declared_modality_contract"
+          }
+        },
+        "sandbox_stopped": true,
+        "submit_to_execution_ms": 1.874,
+        "wall_s": 145.024
+      },
+      "after_preemption": {
+        "status": "passed",
+        "first_diff_sha256": "27602ad73de14748bae776af74b65203bd1cf07d4e7dfaa2243912ac06cb9206",
+        "tests": [
+          4,
+          4
+        ],
+        "sqlite": "passed",
+        "desktop_after_restart": {
+          "ocr_save_button_used": true,
+          "app_restarted": true,
+          "ocr_note_selected_after_restart": true,
+          "ocr_content_visible": true,
+          "sqlite_exact_row": true
+        },
+        "routes": {
+          "generate_diff": {
+            "specialist": "code-rbitnet",
+            "modality": "code",
+            "engine": "rbitnet",
+            "contract": "unified-diff.v1",
+            "capability": "notes.repair_rbitnet",
+            "ram_mib": 8192,
+            "reason": "declared_modality_contract"
+          },
+          "verify": {
+            "specialist": "notes-sqlite-verifier",
+            "modality": "verification",
+            "engine": "python-sqlite",
+            "contract": "verified-state.v1",
+            "capability": "notes.verify",
+            "ram_mib": 0,
+            "reason": "declared_modality_contract"
+          },
+          "verify_desktop": {
+            "specialist": "vision-rapidocr",
+            "modality": "ocr",
+            "engine": "rapidocr-onnxruntime",
+            "contract": "ocr-text.v1",
+            "capability": "notes.verify_desktop",
+            "ram_mib": 4096,
+            "reason": "declared_modality_contract"
+          }
+        },
+        "sandbox_stopped": true,
+        "submit_to_execution_ms": 4.577,
+        "wall_s": 145.896
+      },
+      "wall_difference_s": 0.872
+    }
+  },
+  "fixed_solver": {
+    "source_tree": "780067ef47a0a6b1a2ee70d733fb4aa07442bbcc",
+    "g4_revision": "6ddb0ab31b08754d75c4d8bba90bb34c24948350",
+    "g5_revision": "5c354a4e057219a99e1d64ca1d65d10576a224f3",
+    "verification": {
+      "status": "passed",
+      "profile": "Windows Sandbox / Notes baseline fixe",
+      "route": {
+        "specialist": "notes-reference-solver",
+        "modality": "solver",
+        "engine": "powershell",
+        "contract": "verified-reference-copy.v1",
+        "capability": "notes.restore_reference",
+        "ram_mib": 0,
+        "reason": "declared_modality_contract"
+      },
+      "verification_route": {
+        "specialist": "notes-sqlite-verifier",
+        "modality": "verification",
+        "engine": "python-sqlite",
+        "contract": "verified-state.v1",
+        "capability": "notes.verify",
+        "ram_mib": 0,
+        "reason": "declared_modality_contract"
+      },
+      "reference_verified_in_guest": true,
+      "model_reservation_mib": 0,
+      "tests": [
+        4,
+        4
+      ],
+      "sqlite": "passed",
+      "sandbox_stopped": true,
+      "wall_s": 49.89,
+      "source_sha256": {
+        "akasha_brain/desktop_tasks.py": "a572233141d1a3b4de0249838baebd13c69cb3521ad2bd225b4e4acafd0532d5",
+        "akasha_brain/specialist_registry.py": "63b70f0ff6a5ad8b32857f2a82bebfad590da599f60e814913d7bd7134757b43",
+        "akasha_brain/specialists.json": "7d98b4badc5c0af6ea1f8bcdf862842940617547e8cbe93f7a68aaf85691c867"
+      }
+    }
+  },
+  "combined_windows_suite": {
+    "source_tree": "780067ef47a0a6b1a2ee70d733fb4aa07442bbcc",
+    "scope": [
+      "tests",
+      "contracts"
+    ],
+    "passed": 297,
+    "wall_s": 35.17
+  }
+}

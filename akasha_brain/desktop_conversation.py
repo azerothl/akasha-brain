@@ -34,6 +34,7 @@ from .project import CODE_FILE_LIMIT, inspect_code, prepare, preview_replacement
 from .project_check import ProjectCheck, inspect_project, installed_node, run_project_check
 from .project_common import ProjectError
 from .rbitnet_session import server
+from .specialist_registry import require_specialist
 from .vault_windows import KeyStoreUnavailable, SecretMissing
 
 PROMPT = Path(__file__).resolve().parents[1] / "bench" / "communication" / "qwen35-2b-fr-v2.json"
@@ -189,9 +190,10 @@ def communicate(paths, facts: tuple[int, int, str]) -> str | None:
 
 def compose_image_prompt(paths, subject: str) -> str:
     try:
+        specialist = require_specialist("image.prompt", "intent", "image-prompt.v1", "rbitnet")
         profile = communication_profile(paths)
         with TemporaryDirectory(prefix="akasha-image-prompt-") as work:
-            with server(paths, Path(work), template=profile["chat_template"]) as model:
+            with server(paths, Path(work), template=profile["chat_template"], ram_mib=specialist.ram_mib) as model:
                 reply, _ = model.chat([
                     {"role": "system", "content": "Translate the visual description to natural English for a text-to-image model. "
                      "Keep all subjects, objects, actions, composition and style. Return the description only."},
