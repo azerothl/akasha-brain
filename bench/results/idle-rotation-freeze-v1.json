@@ -1,0 +1,84 @@
+{
+  "protocol": "rotation-transfer-v1",
+  "source_seed": 23,
+  "source_cases": 8,
+  "scores": {
+    "reference": 5,
+    "candidate": 6
+  },
+  "selected": "candidate",
+  "sha256_utf8_lf": {
+    "run_idle_rotation_transfer.py": "145503fe5936ea2e2aaff8af0f7a3b1976e5d52d5e4a84c5defd27e2fd009d0b",
+    "idle_simulation.py": "e2bcce65a34daf931db0a644ee70a6ca807b5c938724b443590972079837e0d6",
+    "run_phase5_notes_action_selection.py": "3065944019fedb7a684d815b382ca089323e392b12aba8013ef2d347d6b113d3",
+    "desktop_state.py": "51807bbe275d673bc886a347851ebb576921f6066b18aa2854db544c58e8abf1"
+  },
+  "pillow": "13.0.0",
+  "pairs": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "criterion": "more verified PNGs than reference and zero paired regressions"
+}

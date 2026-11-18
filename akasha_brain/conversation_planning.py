@@ -15,11 +15,11 @@ from contracts.akasha_contracts.authz import authorize
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 from contracts.akasha_contracts.validate import validate
 
-from . import image_assets, image_recovery
+from . import image_assets, image_orientation, image_recovery
 from .capability_recovery import Recovery
 from .gap_resolution import (
     READ_COMPARE_SKILL, TRANSCRIPTION, compare_intent, decode_with_utf16_bom, diagnose,
-    read_compare_steps, replay_comparison, transcription_context,
+    mask_references, read_compare_steps, replay_comparison, transcription_context,
 )
 from .ocr_recovery import CAPABILITY as OCR_CAPABILITY, IMAGE_TYPES, MANIFEST as OCR_MANIFEST
 from .planning import PlanningError
@@ -172,7 +172,22 @@ def explicit_project_step(part: str, refs: list[str], *, selected: bool) -> dict
     return {"tool": tool, "refs": [refs.index(targets[0]) + 1] if targets else [], "detail": ""}
 
 
+def orientation_step(part: str, refs: list[str]) -> dict | None:
+    targets = references(part)
+    if not 1 <= len(targets) <= 2 or any(name not in refs for name in targets):
+        return None
+    masked = mask_references(part, targets)
+    match = re.fullmatch(r"(?:r[ée]oriente|oriente)[rz]?\s+@(?:\s+comme\s+@)?"
+                         r"(?:\s+(?P<corners>selon les coins uniquement))?[.!?]*", masked, re.I)
+    if match:
+        return {"tool": image_orientation.CAPABILITY, "refs": [refs.index(name) + 1 for name in targets],
+                "detail": "corners" if match["corners"] else "visual"}
+    return None
+
+
 def explicit_media_step(part: str, refs: list[str]) -> dict | None:
+    if orientation := orientation_step(part, refs):
+        return orientation
     if match := OCR_REQUEST.match(part):
         targets = [refs.index(name) + 1 for name in references(part)
                    if name in refs and PureWindowsPath(name).suffix.lower() in IMAGE_TYPES]
@@ -234,7 +249,8 @@ def stop(code, message, **details):
 
 
 def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], catalog: dict,
-                       *, test: bool = False, default_summary_depth: str = "standard") -> ConversationPlan:
+                       *, test: bool = False, default_summary_depth: str = "standard",
+                       orientation_evidence: str | None = None) -> ConversationPlan:
     manifest = catalog.get(capability)
     if manifest is None:
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Cette capacité ne figure pas dans le registre local.", capability=capability)
@@ -258,6 +274,10 @@ def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], c
                                     "args": {"inputs": list(inputs)}}], "risk_class": manifest["risk_class"]}
     if test:
         goal["approval_requirements"] = ["confirm-sandbox-test"]
+    if capability == image_orientation.CAPABILITY:
+        if orientation_evidence not in {"corners", "visual"}:
+            stop(ErrorCode.NEEDS_CLARIFICATION, "Quels indices faut-il utiliser pour orienter l’image ?")
+        goal["constraints"]["orientation_evidence"] = orientation_evidence
     if capability == "project.summarize":
         wording = request
         for reference in references(request):
@@ -297,9 +317,18 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
     if tool in catalog and catalog[tool]["risk_class"] not in ("R0", "R1"):
         stop(ErrorCode.PERMISSION_DENIED, "Cette action doit suivre le parcours d’approbation prévu.",
              risk_class=catalog[tool]["risk_class"])
-    if tool not in (*PROJECT_TOOLS, "documents.compare", "file.read", OCR_CAPABILITY, image_recovery.CAPABILITY):
+    if tool not in (*PROJECT_TOOLS, "documents.compare", "file.read", image_orientation.CAPABILITY,
+                    OCR_CAPABILITY, image_recovery.CAPABILITY):
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "L’outil proposé est indisponible depuis la conversation.", capability=tool)
     paths = tuple(refs[index - 1] for index in indexes)
+    if tool == image_orientation.CAPABILITY:
+        if not any(orientation_step(part, refs) == proposed for part in intent_parts(request)):
+            stop(ErrorCode.NEEDS_CLARIFICATION, "Précisez la demande : « Oriente source.png comme repère.png ».")
+        if project is None:
+            stop(ErrorCode.NEEDS_CLARIFICATION, "Dans quel dossier se trouvent les images ?", needs_project=True)
+        if any(Path(name).suffix.lower() != ".png" for name in paths):
+            stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Indiquez des images PNG.")
+        paths = tuple(scoped_name(project, name) for name in paths)
     if tool == image_recovery.CAPABILITY and paths:
         stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Décrivez une image à générer à partir de texte.")
     if tool in PROJECT_TOOLS:
@@ -320,7 +349,8 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
             stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Indiquez une image PNG ou JPEG.")
         if tool == "documents.compare" and any(Path(path).suffix.lower() not in DOCUMENT_FORMATS for path in paths):
             stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Il me manque un lecteur pour comparer ces formats de documents.")
-    return compile_local_plan(request, tool, paths, catalog, default_summary_depth=default_summary_depth)
+    return compile_local_plan(request, tool, paths, catalog, default_summary_depth=default_summary_depth,
+                              orientation_evidence=detail if tool == image_orientation.CAPABILITY else None)
 
 
 def resolve_project(name: str) -> Path:
@@ -466,6 +496,11 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
                 if diagnostic is not None and diagnostic["level"] in {"A", "B"}:
                     recovery.record(plan.capability, "resumed", ["missing", "candidate", "replay", "resumed"],
                                     diagnostic=diagnostic)
+            elif plan.capability == image_orientation.CAPABILITY:
+                specialist = require_specialist(plan.capability, "image", "png-orientation.v1", "pillow")
+                routing = specialist.evidence(plan.capability)
+                output = image_orientation.orient(project, plan.inputs,
+                                                  corners_only=plan.goal["constraints"]["orientation_evidence"] == "corners")
             elif plan.capability == OCR_CAPABILITY:
                 if candidate is None:
                     stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "L’OCR requiert une capacité qualifiée par le registre local.")

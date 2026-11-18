@@ -1,0 +1,924 @@
+{
+  "model_sha256": "e751aa9206af8f214fa3ad2d747b3d623695fc40a1c8fcce7ddd6b4ba5a68f4e",
+  "scores": {
+    "reference": 24,
+    "learned": 48,
+    "swapped": 24
+  },
+  "paired_regressions": 0,
+  "criterion_met": true,
+  "cases": [
+    {
+      "seed": 71,
+      "initial": 0,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 0,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 0,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 0,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 1,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 1,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 1,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 1,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 2,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 2,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 2,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 2,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 3,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 3,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 3,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 71,
+      "initial": 3,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 0,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 0,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 0,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 0,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 1,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 1,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 1,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 1,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 2,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 2,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 2,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 2,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 3,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 3,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 3,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 73,
+      "initial": 3,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 0,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 0,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 0,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 0,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 1,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 1,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 1,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 1,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 2,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 2,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 2,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 2,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 3,
+      "target": 0,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": true
+        },
+        "learned": {
+          "plan": "A",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "B",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 3,
+      "target": 1,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "AA",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "AA",
+          "passed": true
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 3,
+      "target": 2,
+      "trials": {
+        "reference": {
+          "plan": "A",
+          "passed": false
+        },
+        "learned": {
+          "plan": "B",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "A",
+          "passed": false
+        }
+      }
+    },
+    {
+      "seed": 79,
+      "initial": 3,
+      "target": 3,
+      "trials": {
+        "reference": {
+          "plan": "copy",
+          "passed": true
+        },
+        "learned": {
+          "plan": "copy",
+          "passed": true
+        },
+        "swapped": {
+          "plan": "copy",
+          "passed": true
+        }
+      }
+    }
+  ]
+}

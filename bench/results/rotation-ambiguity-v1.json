@@ -1,0 +1,2133 @@
+{
+  "model_sha256": "e751aa9206af8f214fa3ad2d747b3d623695fc40a1c8fcce7ddd6b4ba5a68f4e",
+  "protocol_sha256": "21078dc48bc207235f2066684435ccdf65c5784ce6a40f34efd62cf1d002f840",
+  "summary": {
+    "cases": 64,
+    "frozen_choices": {
+      "copy": 64
+    },
+    "frozen_exact_png": 32,
+    "probe_corners_only": {
+      "abstain": 64
+    },
+    "probe_with_reference": {
+      "selected": 32,
+      "abstain": 32
+    },
+    "probe_exact_png": 32
+  },
+  "cases": [
+    {
+      "pattern": "arrow",
+      "initial": 0,
+      "target": 0,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "copy"
+        ],
+        "status": "selected",
+        "plan": "copy"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 0,
+      "target": 1,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "A"
+        ],
+        "status": "selected",
+        "plan": "A"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 0,
+      "target": 2,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "AA"
+        ],
+        "status": "selected",
+        "plan": "AA"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 0,
+      "target": 3,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "B"
+        ],
+        "status": "selected",
+        "plan": "B"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 1,
+      "target": 0,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "B"
+        ],
+        "status": "selected",
+        "plan": "B"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 1,
+      "target": 1,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "copy"
+        ],
+        "status": "selected",
+        "plan": "copy"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 1,
+      "target": 2,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "A"
+        ],
+        "status": "selected",
+        "plan": "A"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 1,
+      "target": 3,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "AA"
+        ],
+        "status": "selected",
+        "plan": "AA"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 2,
+      "target": 0,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "AA"
+        ],
+        "status": "selected",
+        "plan": "AA"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 2,
+      "target": 1,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "B"
+        ],
+        "status": "selected",
+        "plan": "B"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 2,
+      "target": 2,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "copy"
+        ],
+        "status": "selected",
+        "plan": "copy"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 2,
+      "target": 3,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "A"
+        ],
+        "status": "selected",
+        "plan": "A"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 3,
+      "target": 0,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "A"
+        ],
+        "status": "selected",
+        "plan": "A"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 3,
+      "target": 1,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "AA"
+        ],
+        "status": "selected",
+        "plan": "AA"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 3,
+      "target": 2,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "B"
+        ],
+        "status": "selected",
+        "plan": "B"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "arrow",
+      "initial": 3,
+      "target": 3,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "copy"
+        ],
+        "status": "selected",
+        "plan": "copy"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 0,
+      "target": 0,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "copy"
+        ],
+        "status": "selected",
+        "plan": "copy"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 0,
+      "target": 1,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "A"
+        ],
+        "status": "selected",
+        "plan": "A"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 0,
+      "target": 2,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "AA"
+        ],
+        "status": "selected",
+        "plan": "AA"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 0,
+      "target": 3,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "B"
+        ],
+        "status": "selected",
+        "plan": "B"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 1,
+      "target": 0,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "B"
+        ],
+        "status": "selected",
+        "plan": "B"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 1,
+      "target": 1,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "copy"
+        ],
+        "status": "selected",
+        "plan": "copy"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 1,
+      "target": 2,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "A"
+        ],
+        "status": "selected",
+        "plan": "A"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 1,
+      "target": 3,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "AA"
+        ],
+        "status": "selected",
+        "plan": "AA"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 2,
+      "target": 0,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "AA"
+        ],
+        "status": "selected",
+        "plan": "AA"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 2,
+      "target": 1,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "B"
+        ],
+        "status": "selected",
+        "plan": "B"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 2,
+      "target": 2,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "copy"
+        ],
+        "status": "selected",
+        "plan": "copy"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 2,
+      "target": 3,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "A"
+        ],
+        "status": "selected",
+        "plan": "A"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 3,
+      "target": 0,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "A"
+        ],
+        "status": "selected",
+        "plan": "A"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 3,
+      "target": 1,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "AA"
+        ],
+        "status": "selected",
+        "plan": "AA"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 3,
+      "target": 2,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "B"
+        ],
+        "status": "selected",
+        "plan": "B"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "off_axis",
+      "initial": 3,
+      "target": 3,
+      "orientation_identifiable": true,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 5,
+        "remaining": [
+          "copy"
+        ],
+        "status": "selected",
+        "plan": "copy"
+      },
+      "verified_png": true
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 0,
+      "target": 0,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 0,
+      "target": 1,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "A",
+          "B"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 0,
+      "target": 2,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 0,
+      "target": 3,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "A",
+          "B"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 1,
+      "target": 0,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "A",
+          "B"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 1,
+      "target": 1,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 1,
+      "target": 2,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "A",
+          "B"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 1,
+      "target": 3,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 2,
+      "target": 0,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 2,
+      "target": 1,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "A",
+          "B"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 2,
+      "target": 2,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 2,
+      "target": 3,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "A",
+          "B"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 3,
+      "target": 0,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "A",
+          "B"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 3,
+      "target": 1,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 3,
+      "target": 2,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": false
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "A",
+          "B"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "half_turn",
+      "initial": 3,
+      "target": 3,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 0,
+      "target": 0,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 0,
+      "target": 1,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 0,
+      "target": 2,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 0,
+      "target": 3,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 1,
+      "target": 0,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 1,
+      "target": 1,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 1,
+      "target": 2,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 1,
+      "target": 3,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 2,
+      "target": 0,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 2,
+      "target": 1,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 2,
+      "target": 2,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 2,
+      "target": 3,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 3,
+      "target": 0,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 3,
+      "target": 1,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 3,
+      "target": 2,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    },
+    {
+      "pattern": "quarter_turn",
+      "initial": 3,
+      "target": 3,
+      "orientation_identifiable": false,
+      "frozen": {
+        "plan": "copy",
+        "passed": true
+      },
+      "corners_only": {
+        "corner_matches": 4,
+        "interior_groups_examined": 0,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "with_reference": {
+        "corner_matches": 4,
+        "interior_groups_examined": 7,
+        "remaining": [
+          "copy",
+          "A",
+          "B",
+          "AA"
+        ],
+        "status": "abstain",
+        "plan": null
+      },
+      "verified_png": null
+    }
+  ]
+}

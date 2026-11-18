@@ -1,0 +1,452 @@
+{
+  "scope": "notes_sqlite_store",
+  "synthetic_scores": {
+    "reference": 5,
+    "candidate": 6
+  },
+  "selected": "candidate",
+  "verified": {
+    "reference": 14,
+    "candidate": 15
+  },
+  "cases": [
+    {
+      "faulty": false,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "any"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "save"
+          ],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [
+            "save"
+          ],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": false,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "same"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "save"
+          ],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [
+            "save"
+          ],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": false,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "different"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 0,
+          "pid_relation": "different",
+          "passed": false
+        },
+        "candidate": {
+          "plan": [
+            "save",
+            "restart"
+          ],
+          "rows": 1,
+          "pid_relation": "different",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": false,
+      "saved": true,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "any"
+      },
+      "arms": {
+        "reference": {
+          "plan": [],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": false,
+      "saved": true,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "same"
+      },
+      "arms": {
+        "reference": {
+          "plan": [],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": false,
+      "saved": true,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "different"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 1,
+          "pid_relation": "different",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 1,
+          "pid_relation": "different",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": false,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": false,
+        "pid_relation": "any"
+      },
+      "arms": {
+        "reference": {
+          "plan": [],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": false,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": false,
+        "pid_relation": "same"
+      },
+      "arms": {
+        "reference": {
+          "plan": [],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": false,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": false,
+        "pid_relation": "different"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 0,
+          "pid_relation": "different",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 0,
+          "pid_relation": "different",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": true,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "any"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "save"
+          ],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": false
+        },
+        "candidate": {
+          "plan": [
+            "save"
+          ],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": false
+        }
+      }
+    },
+    {
+      "faulty": true,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "same"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "save"
+          ],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": false
+        },
+        "candidate": {
+          "plan": [
+            "save"
+          ],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": false
+        }
+      }
+    },
+    {
+      "faulty": true,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "different"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 0,
+          "pid_relation": "different",
+          "passed": false
+        },
+        "candidate": {
+          "plan": [
+            "save",
+            "restart"
+          ],
+          "rows": 0,
+          "pid_relation": "different",
+          "passed": false
+        }
+      }
+    },
+    {
+      "faulty": true,
+      "saved": true,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "any"
+      },
+      "arms": {
+        "reference": {
+          "plan": [],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": true,
+      "saved": true,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "same"
+      },
+      "arms": {
+        "reference": {
+          "plan": [],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [],
+          "rows": 1,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": true,
+      "saved": true,
+      "goal": {
+        "exact_fixture_present": true,
+        "pid_relation": "different"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 1,
+          "pid_relation": "different",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 1,
+          "pid_relation": "different",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": true,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": false,
+        "pid_relation": "any"
+      },
+      "arms": {
+        "reference": {
+          "plan": [],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": true,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": false,
+        "pid_relation": "same"
+      },
+      "arms": {
+        "reference": {
+          "plan": [],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [],
+          "rows": 0,
+          "pid_relation": "same",
+          "passed": true
+        }
+      }
+    },
+    {
+      "faulty": true,
+      "saved": false,
+      "goal": {
+        "exact_fixture_present": false,
+        "pid_relation": "different"
+      },
+      "arms": {
+        "reference": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 0,
+          "pid_relation": "different",
+          "passed": true
+        },
+        "candidate": {
+          "plan": [
+            "restart"
+          ],
+          "rows": 0,
+          "pid_relation": "different",
+          "passed": true
+        }
+      }
+    }
+  ]
+}

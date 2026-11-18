@@ -1,5 +1,14 @@
 [
   {
+    "id": "png-orientation",
+    "modality": "image",
+    "engine": "pillow",
+    "capabilities": ["image.orient"],
+    "contract": "png-orientation.v1",
+    "ram_mib": 64,
+    "fallback": false
+  },
+  {
     "id": "communication-qwen",
     "modality": "intent",
     "engine": "rbitnet",

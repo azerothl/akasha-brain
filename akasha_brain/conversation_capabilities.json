@@ -1,5 +1,14 @@
 [
   {
+    "capability_id": "image.orient",
+    "version": "1.0.0",
+    "kind": "tool",
+    "description": "Orienter un PNG comme un PNG de référence du projet, avec abstention si la rotation est indéterminée.",
+    "permissions": {"reads": ["selected-project"]},
+    "risk_class": "R0",
+    "side_effects": "none"
+  },
+  {
     "capability_id": "project.inspect",
     "version": "1.0.0",
     "kind": "tool",

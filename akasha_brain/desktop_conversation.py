@@ -609,7 +609,11 @@ class ConversationPane:
                          f"Licence {asset.license}\n{asset.license_url}\nSHA-256 {asset.sha256}")
                 self.offer("Autoriser ce téléchargement", "download_image_artifact")
             elif isinstance(output, ImageResult):
-                self.show_generated_image(output)
+                if plan.capability == "image.orient":
+                    angle = output.proof["clockwise_degrees"]
+                    self.show_generated_image(output, f"Orientation déterminée : {angle}° dans le sens horaire.")
+                else:
+                    self.show_generated_image(output)
             elif plan.capability == "documents.compare":
                 if reply.diagnostic is not None:
                     self.add("Akasha", "J’ai vérifié un autre chemin de comparaison sur des documents synthétiques.")
@@ -622,10 +626,10 @@ class ConversationPane:
                 if reply is replies[-1] and plan.capability == "project.summarize":
                     self.last_summary_project = reply.project
 
-    def show_generated_image(self, result):
+    def show_generated_image(self, result, message="Voici l’image générée dans Windows Sandbox."):
         preview = tk.PhotoImage(master=self.transcript, data=base64.b64encode(result.png), format="png")
         self.previews.append(preview)
-        self.add("Akasha", "Voici l’image générée dans Windows Sandbox.")
+        self.add("Akasha", message)
         self.transcript.configure(state="normal")
         self.transcript.image_create("end", image=preview)
         self.transcript.insert("end", "\n\n")

@@ -160,6 +160,38 @@ La chaîne produit a suivi G0, G1, G2, G3, G4 puis G5. G6 a été intégré entr
 
 La revue opérateur s’appliquait à G0, G1, G2, G3 et G6, ainsi qu’à G4 si le contrôle de la simulation changeait dans l’interface. La publication du cadrage G0 et les fusions G1, G2, G3 et G6 ont été autorisées dans la conversation. L’accord pour G4 et G5 était conditionné à la réussite des tests après G3.
 
+## Première comparaison entre simulation et stockage Notes
+
+Sur les huit combinaisons synthétiques de G4, le prédicteur réussit six cas et la référence cinq. Le banc retient donc le prédicteur avant de lancer les essais SQLite. Les deux politiques reçoivent ensuite les mêmes dix-huit objectifs de persistance et de relance, chacun dans une base temporaire distincte. La lecture SQL après fermeture donne quinze réussites au prédicteur et quatorze à la référence. Le seul résultat différent concerne une note neuve à conserver après relance sur le stockage fonctionnel. Le prédicteur la sauvegarde avant de relancer le processus. Les deux politiques échouent sur les trois demandes de sauvegarde neuve avec le stockage défectueux. [Résultats par cas](../../bench/results/idle-notes-persistence-v1.json)
+
+La commande `python -m bench.run_idle_notes_persistence` reproduit la comparaison. Elle utilise les deux politiques existantes et les deux stockages du banc Notes. Les signaux de fenêtre sont synthétiques. Le prochain essai devra figer le choix issu de la simulation avant de le confronter à une tâche indépendante de ces scénarios Notes.
+
+## Transfert du choix de plan sur la rotation d’un PNG
+
+Le 18 novembre 2026, les huit simulations Notes ont sélectionné la règle qui privilégie le premier plan dont l’état final prédit satisfait la demande (6 réussites contre 5). La référence prend le premier plan admissible du catalogue ordonné par longueur. Avant l’exécution sur les PNG, le manifeste a figé le choix, les empreintes des sources, les seize couples d’orientations et le critère de gain sans régression. [Manifeste de gel](../../bench/results/idle-rotation-freeze-v1.json)
+
+Chaque bras a reçu la même petite image asymétrique, l’orientation initiale et l’orientation demandée. À la réouverture, le vérificateur a comparé le format, les dimensions et chaque pixel à une matrice attendue dessinée séparément. La règle sélectionnée a réussi 16 cas sur 16 et la référence 8 sur 16. Les huit gains concernent les rotations vers la gauche et les demi-tours. Les deux bras réussissent les quatre copies et les quatre rotations vers la droite. Un second passage a reproduit le rapport à l’octet près. Le rejeu se lance avec `python -m bench.run_idle_rotation_transfer evaluate --output rejeu.json` vers un nouveau fichier, avec Pillow 13.0.0. [Résultats appariés](../../bench/results/idle-rotation-transfer-v1.json)
+
+La comparaison mesure le transfert de la règle de sélection avec un prédicteur géométrique fourni et des orientations connues. Les seize cas couvrent les rotations d’un seul motif. L’apprentissage du prédicteur et le gain sur des demandes utilisateur variées restent à évaluer.
+
+## Apprentissage des transitions sur des PNG
+
+Le banc PNG a ensuite appris l’effet des deux commandes à partir de quatre observations avant/après sur deux images. Pour chaque commande, il cherche la permutation des quatre coins compatible avec toutes les observations. Le choix sur Notes, les permutations apprises et les trois motifs réservés ont été figés avant l’évaluation. [Gel du prédicteur et observations](../../bench/results/learned-rotation-freeze-v1.json)
+
+Sur les 48 demandes réservées (16 couples d’orientations pour chacun des trois motifs), les sorties PNG ont été décodées puis comparées pixel par pixel à une matrice indépendante. Le prédicteur appris obtient 48 réussites, la référence 24 et le témoin aux commandes interverties 24. Un rejeu a reproduit le rapport à l’octet près. Le résultat porte sur des rotations sans perte, des coins distinctifs et un objectif exprimé par les valeurs des quatre coins. Le banc utilise une représentation des coins fournie et fonctionne indépendamment du planificateur interactif. Pour reproduire les deux étapes, exécuter `python -m bench.run_learned_rotation_transfer train` puis `python -m bench.run_learned_rotation_transfer evaluate` avec Pillow 13.0.0. [Rapport par motif et orientation](../../bench/results/learned-rotation-transfer-v1.json)
+
+## Ambiguïté d’orientation sur des PNG aux coins identiques
+
+Le sélecteur gelé a choisi la copie dans les 64 essais (quatre motifs carrés et seize couples d’orientations par motif). Sur la flèche et le point décentré, chacune des deux séries donne 4 copies exactes sur 16. Les copies exactes montent à 8 puis 16 sur les motifs symétriques à 180° et 90°. Le sélecteur retient le premier plan compatible même quand les quatre le sont. Il n’a cherché aucun indice intérieur ni signalé l’ambiguïté.
+
+Une sonde expérimentale conserve les permutations apprises et compte les plans compatibles. Avec un objectif limité aux coins, elle s’abstient 64 fois. Quand la demande inclut une référence visuelle, elle examine des groupes de pixels intérieurs. Elle choisit une orientation unique sur les deux motifs asymétriques (32 PNG exacts après décodage) et s’abstient dans les 32 cas où deux ou quatre rotations restent visuellement équivalentes. Le critère est d’identifier la rotation demandée. Une copie peut donner les bons pixels sans identifier cette rotation. La recherche d’indices intérieurs a été fournie à la sonde et évaluée uniquement sur le banc. Rejeu avec `python -m bench.run_rotation_ambiguity`. [Résultats par motif](../../bench/results/rotation-ambiguity-v1.json)
+
+### Intégration au planificateur de conversation
+
+Le spécialiste local `image.orient` lit les PNG du projet sélectionné. Le plan enregistre les indices demandés, les coins seuls ou la référence visuelle. Si plusieurs rotations correspondent aux coins, la comparaison visuelle départage les candidats à partir du contenu du PNG. Le résultat indique l’angle horaire si une seule rotation convient. Zéro ou plusieurs correspondances produisent une abstention typée. L’aperçu reste en mémoire jusqu’à l’enregistrement demandé par l’utilisateur.
+
+Sur les 64 paires du banc, les demandes avec référence complète ont donné 32 PNG exacts et 32 abstentions sur les motifs symétriques. Les mêmes 64 demandes limitées aux coins ont donné 64 abstentions. Le rejeu vérifie les pixels décodés, les angles compatibles et les fichiers du projet après chaque demande. Commande de rejeu : `python -m bench.run_planner_rotation_ambiguity`. [Comparaison par demande](../../bench/results/planner-rotation-ambiguity-v1.json)
+
 ## Ce qui reste non prouvé
 
 - Qu’un vault handle résiste à toutes les fuites (embeddings, backups, exports utilisateur hors Akasha).

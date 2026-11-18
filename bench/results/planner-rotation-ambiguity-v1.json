@@ -1,0 +1,1550 @@
+{
+  "cases": [
+    {
+      "motif": "arrow",
+      "initial": 0,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        0
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 0,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 0,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        90
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 0,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 0,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        180
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 0,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 0,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 0,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 1,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 1,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 1,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        0
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 1,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 1,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        90
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 1,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 1,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        180
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 1,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 2,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        180
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 2,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 2,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 2,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 2,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        0
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 2,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 2,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        90
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 2,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 3,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        90
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 3,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 3,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        180
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 3,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 3,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 3,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 3,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        0
+      ]
+    },
+    {
+      "motif": "arrow",
+      "initial": 3,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 0,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        0
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 0,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 0,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        90
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 0,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 0,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        180
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 0,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 0,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 0,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 1,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 1,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 1,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        0
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 1,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 1,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        90
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 1,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 1,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        180
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 1,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 2,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        180
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 2,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 2,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 2,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 2,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        0
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 2,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 2,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        90
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 2,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 3,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        90
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 3,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 3,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        180
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 3,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 3,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 3,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 3,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "verified_png",
+      "angles": [
+        0
+      ]
+    },
+    {
+      "motif": "off_axis",
+      "initial": 3,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 0,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        180
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 0,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 0,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        90,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 0,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 0,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        180
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 0,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 0,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        90,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 0,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 1,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        90,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 1,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 1,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        180
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 1,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 1,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        90,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 1,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 1,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        180
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 1,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 2,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        180
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 2,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 2,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        90,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 2,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 2,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        180
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 2,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 2,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        90,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 2,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 3,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        90,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 3,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 3,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        180
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 3,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 3,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        90,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 3,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 3,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        180
+      ]
+    },
+    {
+      "motif": "half_turn",
+      "initial": 3,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 0,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 0,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 0,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 0,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 0,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 0,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 0,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 0,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 1,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 1,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 1,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 1,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 1,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 1,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 1,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 1,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 2,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 2,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 2,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 2,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 2,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 2,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 2,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 2,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 3,
+      "target": 0,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 3,
+      "target": 0,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 3,
+      "target": 1,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 3,
+      "target": 1,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 3,
+      "target": 2,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 3,
+      "target": 2,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 3,
+      "target": 3,
+      "mode": "visual",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    },
+    {
+      "motif": "quarter_turn",
+      "initial": 3,
+      "target": 3,
+      "mode": "corners",
+      "outcome": "abstain",
+      "angles": [
+        0,
+        90,
+        180,
+        270
+      ]
+    }
+  ],
+  "summary": {
+    "corners": {
+      "abstain": 64,
+      "verified_png": 0
+    },
+    "visual": {
+      "abstain": 32,
+      "verified_png": 32
+    }
+  }
+}

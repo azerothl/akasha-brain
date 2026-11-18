@@ -1,0 +1,116 @@
+{
+  "policy": "candidate",
+  "policy_freeze": "169a5c1d5884cb59ce7f95c56e7e45a11a11cc78bc3d950ae6d0f13f9253991d",
+  "protocol_sha256": "11e596f4ead2c5a015a0d32697d2e194ba7fb9cbb349a1e54d671f2ce09d39d5",
+  "pillow": "13.0.0",
+  "train": [
+    [
+      23,
+      3,
+      5
+    ],
+    [
+      29,
+      6,
+      4
+    ]
+  ],
+  "holdout": [
+    [
+      71,
+      4,
+      7
+    ],
+    [
+      73,
+      5,
+      5
+    ],
+    [
+      79,
+      8,
+      3
+    ]
+  ],
+  "traces": [
+    {
+      "seed": 23,
+      "action": "A",
+      "before": [
+        148,
+        8,
+        12,
+        113
+      ],
+      "after": [
+        113,
+        148,
+        8,
+        12
+      ]
+    },
+    {
+      "seed": 23,
+      "action": "B",
+      "before": [
+        148,
+        8,
+        12,
+        113
+      ],
+      "after": [
+        8,
+        12,
+        113,
+        148
+      ]
+    },
+    {
+      "seed": 29,
+      "action": "A",
+      "before": [
+        38,
+        73,
+        84,
+        57
+      ],
+      "after": [
+        57,
+        38,
+        73,
+        84
+      ]
+    },
+    {
+      "seed": 29,
+      "action": "B",
+      "before": [
+        38,
+        73,
+        84,
+        57
+      ],
+      "after": [
+        73,
+        84,
+        57,
+        38
+      ]
+    }
+  ],
+  "model": {
+    "A": [
+      3,
+      0,
+      1,
+      2
+    ],
+    "B": [
+      1,
+      2,
+      3,
+      0
+    ]
+  },
+  "criterion": "more verified images than reference, zero paired regressions, beats swapped model"
+}
