@@ -1,0 +1,99 @@
+{
+  "engine": "whisper.cpp-small",
+  "qualification_device": "cpu",
+  "source": "HTTPS",
+  "decisions": "automated",
+  "input": "prise-2.wav",
+  "text": "[0.00–6.96 s] À vérifier : Ce qui nous sert à mes inversions, mais mon type, plus le nombre de roses billets petit, moins les fonds d'activité.",
+  "desktop": {
+    "outside": {
+      "prompts": [],
+      "verified_downloads": 0,
+      "qualified": false
+    },
+    "declined": {
+      "prompts": [
+        "whisper-bin-x64.zip"
+      ],
+      "verified_downloads": 0,
+      "qualified": false
+    },
+    "cancelled": {
+      "prompts": [
+        "whisper-bin-x64.zip"
+      ],
+      "verified_downloads": 0,
+      "qualified": false
+    },
+    "switch_project": {
+      "prompts": [
+        "whisper-bin-x64.zip"
+      ],
+      "verified_downloads": 0,
+      "qualified": false
+    },
+    "cancel_during_model_transfer": {
+      "prompts": [
+        "whisper-bin-x64.zip",
+        "ggml-small.bin"
+      ],
+      "verified_downloads": 1,
+      "qualified": false
+    },
+    "cold": {
+      "prompts": [
+        "whisper-bin-x64.zip",
+        "ggml-small.bin"
+      ],
+      "verified_downloads": 2,
+      "qualified": true
+    },
+    "restarted": {
+      "prompts": [],
+      "verified_downloads": 2,
+      "qualified": true
+    }
+  },
+  "mcp": {
+    "cancel_during_model_transfer": {
+      "prompts": [
+        "whisper-bin-x64.zip",
+        "ggml-small.bin"
+      ],
+      "verified_downloads": 1,
+      "qualified": false
+    },
+    "outside": {
+      "prompts": [],
+      "verified_downloads": 0,
+      "qualified": false
+    },
+    "declined": {
+      "prompts": [
+        "whisper-bin-x64.zip"
+      ],
+      "verified_downloads": 0,
+      "qualified": false
+    },
+    "cancelled": {
+      "prompts": [
+        "whisper-bin-x64.zip"
+      ],
+      "verified_downloads": 0,
+      "qualified": false
+    },
+    "cold": {
+      "prompts": [
+        "whisper-bin-x64.zip",
+        "ggml-small.bin"
+      ],
+      "verified_downloads": 2,
+      "qualified": true
+    },
+    "restarted": {
+      "prompts": [],
+      "verified_downloads": 2,
+      "qualified": true
+    }
+  }
+}

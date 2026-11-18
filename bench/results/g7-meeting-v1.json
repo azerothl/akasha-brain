@@ -1,0 +1,210 @@
+{
+  "input_sha256": "ace06134cbecbc834cadec33563e3919d31d9252d1fb81ba11edb243d638d580",
+  "request": "Résume la réunion reunion.wav",
+  "desktop": "Résumé\n[reunion.wav · 0.00–3.44 s] Nous préparons la journée des portes ouvertes de la bibliothèque.\n[reunion.wav · 8.68–13.52 s] Nous décidons de réserver la grande salle pour lundi matin.\n[reunion.wav · 13.52–17.80 s] Marie doit envoyer les invitations avant jeudi. [Responsable cité : Marie]\n[reunion.wav · 17.80–21.88 s] Je vais préparer les badges pour les visiteurs. [Attribution à vérifier]\n\nDécisions\n[reunion.wav · 8.68–13.52 s] Nous décidons de réserver la grande salle pour lundi matin.\n\nActions\n[reunion.wav · 13.52–17.80 s] Marie doit envoyer les invitations avant jeudi. [Responsable cité : Marie]\n[reunion.wav · 17.80–21.88 s] Je vais préparer les badges pour les visiteurs. [Attribution à vérifier]",
+  "mcp": {
+    "engine": "whisper.cpp-small",
+    "execution": {
+      "device": "cuda",
+      "reused": true,
+      "residency_id": "206760e4-10ff-4cda-b9a4-e578b692eab0"
+    },
+    "status": "transcribed",
+    "duration_ms": 23548,
+    "segments": [
+      {
+        "start_ms": 0,
+        "end_ms": 3440,
+        "text": "Nous préparons la journée des portes ouvertes de la bibliothèque.",
+        "uncertain": false,
+        "reasons": [],
+        "min_token_p": 0.795
+      },
+      {
+        "start_ms": 3440,
+        "end_ms": 8680,
+        "text": "Vendredi serait possible, mais ce jour reste une proposition.",
+        "uncertain": false,
+        "reasons": [],
+        "min_token_p": 0.923
+      },
+      {
+        "start_ms": 8680,
+        "end_ms": 13520,
+        "text": "Nous décidons de réserver la grande salle pour lundi matin.",
+        "uncertain": false,
+        "reasons": [],
+        "min_token_p": 0.943
+      },
+      {
+        "start_ms": 13520,
+        "end_ms": 17800,
+        "text": "Marie doit envoyer les invitations avant jeudi.",
+        "uncertain": false,
+        "reasons": [],
+        "min_token_p": 0.939
+      },
+      {
+        "start_ms": 17800,
+        "end_ms": 21880,
+        "text": "Je vais préparer les badges pour les visiteurs.",
+        "uncertain": false,
+        "reasons": [],
+        "min_token_p": 0.9
+      }
+    ],
+    "summary": [
+      {
+        "text": "Nous préparons la journée des portes ouvertes de la bibliothèque.",
+        "source": {
+          "file": "reunion.wav",
+          "segment_indices": [
+            0
+          ],
+          "start_ms": 0,
+          "end_ms": 3440
+        },
+        "transcript_uncertain": false
+      },
+      {
+        "text": "Nous décidons de réserver la grande salle pour lundi matin.",
+        "source": {
+          "file": "reunion.wav",
+          "segment_indices": [
+            2
+          ],
+          "start_ms": 8680,
+          "end_ms": 13520
+        },
+        "transcript_uncertain": false
+      },
+      {
+        "text": "Marie doit envoyer les invitations avant jeudi.",
+        "source": {
+          "file": "reunion.wav",
+          "segment_indices": [
+            3
+          ],
+          "start_ms": 13520,
+          "end_ms": 17800
+        },
+        "transcript_uncertain": false,
+        "attribution": {
+          "mentioned_owner": "Marie",
+          "status": "named_in_passage"
+        }
+      },
+      {
+        "text": "Je vais préparer les badges pour les visiteurs.",
+        "source": {
+          "file": "reunion.wav",
+          "segment_indices": [
+            4
+          ],
+          "start_ms": 17800,
+          "end_ms": 21880
+        },
+        "transcript_uncertain": false,
+        "attribution": {
+          "mentioned_owner": null,
+          "status": "needs_review"
+        }
+      }
+    ],
+    "decisions": [
+      {
+        "text": "Nous décidons de réserver la grande salle pour lundi matin.",
+        "source": {
+          "file": "reunion.wav",
+          "segment_indices": [
+            2
+          ],
+          "start_ms": 8680,
+          "end_ms": 13520
+        },
+        "transcript_uncertain": false
+      }
+    ],
+    "actions": [
+      {
+        "text": "Marie doit envoyer les invitations avant jeudi.",
+        "source": {
+          "file": "reunion.wav",
+          "segment_indices": [
+            3
+          ],
+          "start_ms": 13520,
+          "end_ms": 17800
+        },
+        "transcript_uncertain": false,
+        "attribution": {
+          "mentioned_owner": "Marie",
+          "status": "named_in_passage"
+        }
+      },
+      {
+        "text": "Je vais préparer les badges pour les visiteurs.",
+        "source": {
+          "file": "reunion.wav",
+          "segment_indices": [
+            4
+          ],
+          "start_ms": 17800,
+          "end_ms": 21880
+        },
+        "transcript_uncertain": false,
+        "attribution": {
+          "mentioned_owner": null,
+          "status": "needs_review"
+        }
+      }
+    ]
+  },
+  "verified_against_reference": true,
+  "citation_checks": [
+    {
+      "role": "topic",
+      "speech_ms": [
+        90,
+        3370
+      ],
+      "citation_ms": [
+        0,
+        3440
+      ]
+    },
+    {
+      "role": "decision",
+      "speech_ms": [
+        10366,
+        13456
+      ],
+      "citation_ms": [
+        8680,
+        13520
+      ]
+    },
+    {
+      "role": "named_action",
+      "speech_ms": [
+        15253,
+        17723
+      ],
+      "citation_ms": [
+        13520,
+        17800
+      ]
+    },
+    {
+      "role": "unidentified_action",
+      "speech_ms": [
+        19493,
+        21823
+      ],
+      "citation_ms": [
+        17800,
+        21880
+      ]
+    }
+  ]
+}

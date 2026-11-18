@@ -1,7 +1,7 @@
 """Préparation et lecture de propositions sur le projet autorisé au serveur MCP."""
 
 from collections.abc import Callable
-import asyncio
+import anyio
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -10,8 +10,10 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from mcp.server import MCPServer
+from mcp.server.mcpserver import Context
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp_types import ToolAnnotations
+from pydantic import BaseModel, StrictBool
 
 from bench.run_guided_repair import write_report
 from contracts.akasha_contracts.errors import ErrorCode
@@ -19,8 +21,12 @@ from contracts.akasha_contracts.errors import ErrorCode
 from .desktop_tasks import NotesTasks
 from .project import CODE_FILE_LIMIT, inspect_code, prepare, preview_replacement, project_file
 from .project_common import ProjectError, digest, project_scope
-from . import whisper_pilot
+from . import meeting_minutes, whisper_pilot, whisper_recovery
 from .planning import PlanningError
+
+
+class DownloadConsent(BaseModel):
+    autoriser: StrictBool
 
 
 def register_project_tools(server: MCPServer, tasks: NotesTasks, project: Path) -> None:
@@ -47,19 +53,50 @@ def register_project_tools(server: MCPServer, tasks: NotesTasks, project: Path) 
             raise ToolError("Impossible de lire les fichiers du projet autorisé.") from error
 
     if whisper_pilot.configured():
-        @server.tool(annotations=read_only, structured_output=True)
-        async def audio_transcribe(file: str) -> dict[str, Any]:
-            """Transcrit un WAV ou FLAC français du projet et marque les passages incertains par segment."""
+        audio_access = ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True)
+
+        async def transcript(file: str, ctx: Context) -> dict[str, Any]:
             cancelled = Event()
 
             def checkpoint():
                 if cancelled.is_set():
                     raise InterruptedError("Transcription annulée.")
 
+            async def ask(review):
+                caps = ctx.client_capabilities
+                elicitation = caps.elicitation if caps else None
+                if elicitation is None or (elicitation.url is not None and elicitation.form is None):
+                    raise ToolError("Ce téléchargement exige un client MCP avec formulaire d’accord ou le bureau Akasha.")
+                answer = await ctx.elicit(whisper_recovery.describe(review), DownloadConsent)
+                if answer.action == "accept":
+                    return "accept" if answer.data.autoriser else "decline"
+                return answer.action
+
+            def run():
+                require_project()
+                return whisper_pilot.transcribe(project, file, checkpoint,
+                                                ask=lambda review: anyio.from_thread.run(ask, review))
+
             try:
-                return await asyncio.to_thread(read_project, lambda: whisper_pilot.transcribe(project, file, checkpoint))
+                return await anyio.to_thread.run_sync(run, abandon_on_cancel=True)
+            except (ProjectError, PlanningError, InterruptedError) as error:
+                raise ToolError(str(error)) from error
+            except OSError as error:
+                raise ToolError("Impossible de lire le fichier ou de préparer le cache Whisper.") from error
             finally:
                 cancelled.set()
+
+        @server.tool(annotations=audio_access, structured_output=True)
+        async def audio_transcribe(file: str, ctx: Context) -> dict[str, Any]:
+            """Transcrit un WAV ou FLAC du projet. Chaque téléchargement exige un accord dans le client MCP."""
+            return await transcript(file, ctx)
+
+        @server.tool(annotations=audio_access, structured_output=True)
+        async def audio_meeting_minutes(file: str, ctx: Context) -> dict[str, Any]:
+            """Résume une réunion du projet avec décisions, actions, sources horodatées et attributions à vérifier."""
+            result = await transcript(file, ctx)
+            require_project()
+            return meeting_minutes.analyze(result, file)
 
     def prepare_in_sandbox(folder: Path, target: str, replacement: bytes, test: str, runtime: Path,
                            inputs: tuple[str, ...]) -> None:

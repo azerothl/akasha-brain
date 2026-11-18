@@ -24,7 +24,7 @@ def test_uncertainty_is_local_and_visible():
 
 
 def test_conversation_silence_and_scope(tmp_path, monkeypatch):
-    monkeypatch.setattr(pilot, "cache_path", lambda: tmp_path)
+    monkeypatch.setattr(pilot, "cache_path", lambda: tmp_path/"cache")
     project = tmp_path/"project"
     project.mkdir()
     with wave.open(str(project/"vide.wav"), "wb") as out:
@@ -74,7 +74,8 @@ def test_only_unavailable_gpu_replays_on_cpu(tmp_path, monkeypatch, failure, sho
     with wave.open(str(project/"audio.wav"), "wb") as stream:
         stream.setparams((1, 2, 16000, 0, "NONE", ""))
         stream.writeframes(b"\x01\x00"*320)
-    monkeypatch.setattr(pilot, "cache_path", lambda: tmp_path)
+    monkeypatch.setattr(pilot, "cache_path", lambda: tmp_path/"cache")
+    monkeypatch.setattr(pilot.whisper_recovery, "prepare", lambda *args: None)
     monkeypatch.setattr(pilot.whisper_resident, "cache_path", lambda: tmp_path)
     monkeypatch.setattr(pilot, "reserve_model", lambda *a, **kw: nullcontext())
 

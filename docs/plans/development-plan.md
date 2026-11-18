@@ -1,6 +1,6 @@
 # Akasha Brain — Plan de développement
 
-**Statut :** plan v0.19, issu de la spécification v0.19\
+**Statut :** plan v0.20, issu de la spécification v0.20\
 **Date :** 2026-11-18\
 **Banc d'essai initial :** bureau & code local (poste Windows d'abord, environnement isolé). La cible produit est l’agent universel local à domaines croissants. La piste spatiale est séparée.
 
@@ -190,6 +190,16 @@ Les phases 0 à 6 ont validé les mécanismes sur le banc bureau et code. Les ja
 La réouverture d’une session G1 restaure les faits admis. Une tâche image MCP en attente se reprend avec son `task_id` tant que le même serveur tourne. Après un redémarrage du serveur, le client utilise `image_start` et obtient un nouvel identifiant. Les caches restent disponibles et le serveur vérifie les artefacts avant de les réutiliser (§8.7).
 
 Après G1 et G6, la suite `tests` et `contracts` a passé 272 tests. Elle en a passé 275 après G2, 289 après G3 et 297 après G4 et G5. [Révisions testées et preuves par jalon](product-goal-roadmap-v1.md#clôture-sur-main)
+
+### Voix locale — G7 validé sur Windows, G8 et G9 à livrer
+
+Le parcours G7 aboutit à un compte rendu extractif dans le bureau et via MCP. Les bornes citées ont été comparées aux interventions de référence et le responsable d’une action reste indéterminé lorsque la voix dit seulement « je ». Le prochain jalon porte sur la lecture d’une réponse en français. [Validation de G7](../../bench/results/g7-meeting-v1.json)
+
+**Entrée.** Reprendre le dossier de spécialiste `audio.transcribe` prévu par G3 et le registre de G5. Figer un corpus français avec transcriptions de référence et extraits réservés. Préparer les manifestes candidats avec versions, licences, empreintes, formats et budgets mesurables. [Contrats audio](../architecture/brain-system-spec.md#731-transcription-et-synthèse-vocale-locales)
+
+**Exécution.** Comparer les moteurs STT sur CPU sous Windows, puis raccorder le profil retenu à la conversation et au serveur MCP avec les mêmes vérifications de projet, de récupération et d’admission. Composer les segments avec les capacités d’analyse déclarées en gardant les références aux passages sources. Livrer ensuite `audio.synthesize` pour la lecture à la demande. Raccorder enfin le micro et l’import explicite d’une demande vocale au parcours de brouillon et d’envoi de la conversation. [Jalons et critères de sortie](product-goal-roadmap-v1.md#prochains-jalons--voix-locale)
+
+**Validation et retour arrière.** Publier les mesures de qualité et de ressources par moteur. Rejouer les cas d’échec, de reprise, d’annulation et d’isolation. Vérifier qu’une consigne prononcée dans un enregistrement à analyser reste une donnée et qu’une demande vocale envoyée suit les mêmes contrôles qu’une demande écrite. Vérifier l’ordonnancement des tâches audio avec une autre tâche interactive. En cas d’échec de qualification ou de régression, retirer le profil du routage actif et conserver son rapport d’évaluation. La transcription non couverte revient au parcours de diagnostic G3.
 
 ## Piste séparée — Modèle du monde spatial et agent incarné
 

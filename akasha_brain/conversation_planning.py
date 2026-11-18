@@ -15,7 +15,7 @@ from contracts.akasha_contracts.authz import authorize
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 from contracts.akasha_contracts.validate import validate
 
-from . import image_assets, image_orientation, image_recovery, whisper_pilot
+from . import image_assets, image_orientation, image_recovery, meeting_minutes, whisper_pilot
 from .capability_recovery import Recovery
 from .gap_resolution import (
     READ_COMPARE_SKILL, TRANSCRIPTION, compare_intent, decode_with_utf16_bom, diagnose,
@@ -106,7 +106,7 @@ class ConversationReply:
 def load_conversation_catalog() -> dict[str, dict]:
     catalog = _validated_catalog(REGISTRY.read_bytes())
     if whisper_pilot.configured():
-        catalog = {**catalog, TRANSCRIPTION: whisper_pilot.MANIFEST}
+        catalog = {**catalog, TRANSCRIPTION: whisper_pilot.MANIFEST, meeting_minutes.CAPABILITY: meeting_minutes.MANIFEST}
     return deepcopy(catalog)
 
 
@@ -189,6 +189,10 @@ def orientation_step(part: str, refs: list[str]) -> dict | None:
 
 
 def explicit_media_step(part: str, refs: list[str]) -> dict | None:
+    targets = references(part)
+    if (len(targets) == 1 and targets[0] in refs and Path(targets[0]).suffix.lower() in {".wav", ".flac"}
+            and meeting_minutes.REQUEST.fullmatch(mask_references(part, targets))):
+        return {"tool": meeting_minutes.CAPABILITY, "refs": [refs.index(targets[0])+1], "detail": ""}
     if orientation := orientation_step(part, refs):
         return orientation
     if match := OCR_REQUEST.match(part):
@@ -261,7 +265,7 @@ def compile_local_plan(request: str, capability: str, inputs: tuple[str, ...], c
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "Cette capacité ne figure pas dans le registre local.", capability=capability)
     image = capability == image_recovery.CAPABILITY
     restricted = {OCR_CAPABILITY: OCR_MANIFEST, image_recovery.CAPABILITY: image_recovery.MANIFEST,
-                  TRANSCRIPTION: whisper_pilot.MANIFEST}
+                  TRANSCRIPTION: whisper_pilot.MANIFEST, meeting_minutes.CAPABILITY: meeting_minutes.MANIFEST}
     if capability in restricted and manifest != restricted[capability]:
         stop(ErrorCode.PERMISSION_DENIED, "Le manifeste diffère de l’adaptateur autorisé.")
     permissions = manifest["permissions"]
@@ -324,7 +328,7 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
         stop(ErrorCode.PERMISSION_DENIED, "Cette action doit suivre le parcours d’approbation prévu.",
              risk_class=catalog[tool]["risk_class"])
     if tool not in (*PROJECT_TOOLS, "documents.compare", "file.read", image_orientation.CAPABILITY,
-                    TRANSCRIPTION, OCR_CAPABILITY, image_recovery.CAPABILITY):
+                    TRANSCRIPTION, meeting_minutes.CAPABILITY, OCR_CAPABILITY, image_recovery.CAPABILITY):
         stop(ErrorCode.CAPABILITY_UNAVAILABLE, "L’outil proposé est indisponible depuis la conversation.", capability=tool)
     paths = tuple(refs[index - 1] for index in indexes)
     if tool == image_orientation.CAPABILITY:
@@ -343,7 +347,7 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
             paths = explicit or ((str(project),) if project is not None else ())
         if len(paths) != 1 or not DRIVE_PATH.match(paths[0]):
             stop(ErrorCode.NEEDS_CLARIFICATION, "Quel dossier de projet souhaitez-vous examiner ?", needs_project=True)
-    if tool in {"documents.compare", "file.read", OCR_CAPABILITY, TRANSCRIPTION}:
+    if tool in {"documents.compare", "file.read", OCR_CAPABILITY, TRANSCRIPTION, meeting_minutes.CAPABILITY}:
         required = 2 if tool == "documents.compare" else 1
         if len(set(paths)) != required or len(paths) != required:
             question = "Quels sont les deux documents à comparer, dans l’ordre ?" if required == 2 else "Quel fichier souhaitez-vous lire ?"
@@ -351,7 +355,7 @@ def plan_intent(request: str, proposed, refs: list[str], project: Path | None, c
         if project is None:
             stop(ErrorCode.NEEDS_CLARIFICATION, "Dans quel dossier se trouvent les fichiers à lire ?", needs_project=True)
         paths = tuple(scoped_name(project, path) for path in paths)
-        if tool == TRANSCRIPTION and Path(paths[0]).suffix.lower() not in {".wav", ".flac"}:
+        if tool in {TRANSCRIPTION, meeting_minutes.CAPABILITY} and Path(paths[0]).suffix.lower() not in {".wav", ".flac"}:
             stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Indiquez un WAV ou un FLAC.")
         if tool == OCR_CAPABILITY and Path(paths[0]).suffix.lower() not in IMAGE_TYPES:
             stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "Indiquez une image PNG ou JPEG.")
@@ -410,7 +414,8 @@ def qualify_read_compare(request, steps, refs, project, catalog, recovery) -> di
 
 def execute_intents(request: str, proposed, refs: list[str], project: Path | None,
                     catalog: dict, *, recovery: Recovery | None = None, image_consent=None,
-                    default_summary_depth: str = "standard") -> list[ConversationReply | AkashaError]:
+                    default_summary_depth: str = "standard", audio_approval=None,
+                    audio_checkpoint=None) -> list[ConversationReply | AkashaError]:
     if recovery is not None:
         catalog = {**catalog, image_recovery.CAPABILITY: image_recovery.MANIFEST}
     steps = proposed if isinstance(proposed, list) else [proposed]
@@ -509,10 +514,15 @@ def execute_intents(request: str, proposed, refs: list[str], project: Path | Non
                 routing = specialist.evidence(plan.capability)
                 output = image_orientation.orient(project, plan.inputs,
                                                   corners_only=plan.goal["constraints"]["orientation_evidence"] == "corners")
-            elif plan.capability == TRANSCRIPTION:
+            elif plan.capability in {TRANSCRIPTION, meeting_minutes.CAPABILITY}:
                 specialist = require_specialist(TRANSCRIPTION, "audio", "fr-transcript.v1", "whisper.cpp-small")
                 routing = specialist.evidence(TRANSCRIPTION)
-                output = whisper_pilot.transcribe(project, plan.inputs[0], recovery.checkpoint if recovery else lambda: None)
+                check = audio_checkpoint or (recovery.checkpoint if recovery else lambda: None)
+                output = whisper_pilot.transcribe(project, plan.inputs[0], check,
+                                                  ask=audio_approval, progress=recovery.progress if recovery else lambda _: None)
+                if plan.capability == meeting_minutes.CAPABILITY:
+                    check()
+                    output = meeting_minutes.analyze(output, plan.inputs[0])
             elif plan.capability == OCR_CAPABILITY:
                 if candidate is None:
                     stop(ErrorCode.CONTRACT_PRECONDITION_FAILED, "L’OCR requiert une capacité qualifiée par le registre local.")

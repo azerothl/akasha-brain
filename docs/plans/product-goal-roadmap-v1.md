@@ -1,15 +1,15 @@
 # But produit et feuille de route post-MVP
 
-- **Statut** — G0 publié et G1 à G6 clôturés sur `main`.
+- **Statut** — G0 publié, G1 à G6 clôturés sur `main`. G7 validé sur le banc Windows local. Prochain jalon : G8, puis G9.
 - **Dernière mise à jour** — 2026-11-18.
 - **Prérequis** — Phases 0 à 6 qualifiées sur le banc bureau et code.
-- **Spec liée** — v0.19, §2, §8 à §11, §13, §14, §17 et §19. [Spécification](../architecture/brain-system-spec.md)
+- **Spec liée** — v0.20, §2, §7.3.1, §8 à §11, §13, §14, §17 et §19. [Spécification](../architecture/brain-system-spec.md)
 
 ## Ce qui change
 
 Le but produit passe d’un MVP « deux parcours + évolution bornée sur banc » à un agent de demandes utilisateur qui compose des spécialistes, comble les lacunes sous garde-fous, mémorise par session et globalement, simule hors charge, et isole les secrets dans un vault.
 
-La spec v0.19 et le plan de développement v0.19 portent ce but. Les révisions fusionnées et leurs résultats figurent dans la section de clôture. [Plan de développement](development-plan.md)
+La v0.19 a fixé ce but. La v0.20 l’étend aux demandes audio et aux interactions vocales locales. [Plan de développement](development-plan.md)
 
 ## Jugement sur la formulation proposée
 
@@ -92,13 +92,28 @@ Les suites `tests` et `contracts` ont été exécutées sous Windows après chaq
 | + G3 | `b290c1b` | 289 | 34,15 s |
 | + G4 et G5 | `02b0447` | **297** | **137,49 s** |
 
+## Prochains jalons — Voix locale
+
+G7 s’appuie sur la reprise de capacités de G3 et le registre de G5. La livraison suit l’ordre G7, G8, G9. Les demandes vocales de G9 réutilisent le moteur et les vérifications de G7. [Contrats et qualification](../architecture/brain-system-spec.md#731-transcription-et-synthèse-vocale-locales)
+
+| Jalon | Résultat visible | Critère de sortie |
+| --- | --- | --- |
+| **G7 — Transcription et analyse d’enregistrements parlés** | Un WAV ou FLAC peut être transcrit dans le bureau et via MCP. Les segments horodatés permettent de résumer une réunion, d’en extraire les décisions et actions ou de retrouver un passage. | Publier la comparaison française sur CPU et qualifier un moteur. Rejouer le parcours à cache vide et après qualification, puis vérifier un cas d’analyse avec renvoi aux passages sources, la reprise après accord, l’isolation du projet et l’annulation. |
+| **G8 — Lecture des réponses** | Le bouton **Lire la réponse** lit le texte affiché avec une voix française locale. La lecture peut être arrêtée depuis le bureau. | Qualifier une voix en français et vérifier l’intelligibilité, le délai de lecture, l’arrêt et la libération des ressources. |
+| **G9 — Demandes vocales** | L’utilisateur peut dicter une demande avec le bouton micro ou importer un enregistrement comme message vocal. Le texte transcrit s’insère en brouillon modifiable et rejoint la conversation à l’envoi. | Rejouer la même phrase dans un enregistrement à analyser et dans une demande vocale. Vérifier que seul le brouillon envoyé déclenche la planification de la consigne. Couvrir le refus d’accès au micro, l’annulation et le nettoyage de la capture. |
+
+- **ASR.** Comparer VibeVoice-ASR-BitNet via VibeASR.cpp à whisper.cpp sur le même corpus français. Retenir le profil par défaut après le rejeu sur le banc. Évaluer le VibeVoice-ASR complet dans un profil optionnel si les usages réunion ou podcast exigent la séparation des locuteurs et les enregistrements longs. [VibeVoice-ASR-BitNet](https://huggingface.co/microsoft/VibeVoice-ASR-BitNet) · [whisper.cpp](https://github.com/ggml-org/whisper.cpp) · [VibeVoice-ASR](https://huggingface.co/microsoft/VibeVoice-ASR)
+- **TTS.** Qualifier d’abord une voix française de Piper, avec vérification des conditions d’usage du moteur et de la voix choisie. Évaluer VibeVoice-Realtime-0.5B si la lecture en continu devient prioritaire. Microsoft présente ses voix françaises comme expérimentales. [Voix Piper](https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/VOICES.md) · [VibeVoice-Realtime-0.5B](https://huggingface.co/microsoft/VibeVoice-Realtime-0.5B)
+
 ### Pilote G7 sur CPU Windows
 
 Le pilote local utilise whisper.cpp small pour transcrire un fichier du projet dans la conversation et via MCP. Le second lot contient six extraits français de FLEURS, dont trois avec bruit ajouté, et un témoin de silence. Le pilote a signalé les six segments contenant une erreur de mots et a aussi signalé le seul segment exact. Deux des sept mentions de noms propres ont été correctement transcrites. Le témoin de silence a produit un texte vide. [Comparaison initiale](../../bench/results/g7-asr-fr-cpu-v1.json) · [Lot figé](../../bench/corpora/g7-fr-pilot-v2/manifest.json) · [Rejeu et audit par segment](../../bench/results/g7-whisper-pilot-v2.json)
 
 Le réglage sur 60 nouvelles phrases françaises conserve les seuils du pilote. Sur 45 autres phrases mêlées à des enregistrements réels de pluie, de vagues et de feu, un réglage plus permissif abaisse les fausses alertes de 10 à 7 sur 16 segments exacts. Il laisse passer 10 des 52 segments erronés, contre 5 avec le pilote. Le pilote conserve donc son réglage. [Protocole et sources](../../bench/corpora/g7-alert-v3.md) · [Comparaison par segment](../../bench/results/g7-alert-comparison-v3.json)
 
-G7 reste ouvert. Il reste notamment à mieux distinguer les passages fiables, à qualifier la reprise depuis un cache vide et à vérifier une analyse de réunion dont les conclusions renvoient aux passages sources.
+Le parcours Windows à cache vide demande un accord par téléchargement et qualifie whisper.cpp small sur un extrait français avant de reprendre la demande. Le bureau et MCP réutilisent la qualification au lancement suivant. Le rejeu couvre le refus, l’annulation et le rejet d’un chemin hors projet. [Rejeu à cache vide](../../bench/results/g7-whisper-cold-cache-v1.json)
+
+Le dernier critère de G7 a été vérifié dans le bureau et via MCP sur la même réunion française scénarisée. Chaque point du résumé, la décision et les deux actions citent le WAV et la plage parlée. Le vendredi proposé reste distinct du lundi retenu. Les invitations sont attribuées à Marie. Pour les badges, la personne qui dit « je » reste à identifier. Le pilote est qualifié pour les enregistrements courts dans les formats annoncés. [Enregistrement](../../bench/corpora/g7-reunion-fr-v1/reunion.wav) · [Référence](../../bench/corpora/g7-reunion-fr-v1/reference.json) · [Rejeu et contrôles des citations](../../bench/results/g7-meeting-v1.json)
 
 Le bureau et MCP partagent désormais une instance de whisper.cpp small sur GPU pour le projet ouvert. Sur la RTX 4080 SUPER, le même WAV bruité de 6,96 s a demandé 43,49 s au premier appel dans le bureau, puis 3,06 s à chaud. Le client MCP a retrouvé la même instance en 2,72 s. Avec un budget vidéo nul, MCP a transcrit le fichier sur CPU en 21,78 s. Les deux chemins utilisent la règle d’alerte du pilote. [Rejeu de la résidence GPU](../../bench/results/g7-resident-gpu-v1.json)
 

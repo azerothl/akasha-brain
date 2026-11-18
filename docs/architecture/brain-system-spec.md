@@ -1,7 +1,7 @@
 # Akasha Brain — Spécification d’architecture
 
-**Statut :** proposition de conception, v0.19\
-**Date :** 2026-11-17\
+**Statut :** proposition de conception, v0.20\
+**Date :** 2026-11-18\
 **Portée :** architecture fonctionnelle et technique, sans framework ni fournisseur imposé
 
 > **Révision v0.2 (2026-11-13) :** premier terrain arrêté (bureau & code local), compléments issus d'une recherche sourcée sur l'orchestration, les contrats, le routage local, la mémoire, les modèles du monde bureau et l'évaluation/sécurité. Voir §2.5, §6.1, §8.4, §9.7, §10.1, §11.6, §13.5, §19 révisé, les [notes de recherche](../research/research-notes.md) et le [plan de développement](../plans/development-plan.md). Les seuils chiffrés restent à mesurer en Phase 0/1 ; aucun chiffre de la littérature n'est repris comme seuil universel (§2.4).
@@ -39,6 +39,8 @@
 > **Révision v0.18 (2026-11-17)** — Raccordement de la conversation au planificateur et au registre, récupération de capacités déclarées, contrat d’exécution image commun à Windows et Linux et accès MCP local. La qualification et l’export PNG sont vérifiés dans un bac headless. Les téléchargements du moteur et des poids demandent chacun un accord hors modèle (§6.3, §8.7, §11.8).
 
 > **Révision v0.19 (2026-11-17)** — But produit figé. Agent local multi-spécialistes à domaines croissants avec abstention. Session portant des projets. Vault hybride (keystore OS pour les secrets, vault applicatif pour les handles). Cible produit = agent universel local. Piste spatiale séparée. Feuille de route post-MVP dans [product-goal-roadmap-v1.md](../plans/product-goal-roadmap-v1.md) (§2.1, §2.3, §2.4, §2.5, §17, §19).
+
+> **Révision v0.20 (2026-11-18)** — Ajout du contrat des capacités vocales locales et de leur qualification sur le banc Windows. Les jalons G7 à G9 couvrent l’analyse d’enregistrements parlés, la lecture des réponses et les demandes vocales (§7.3.1, §17, §19).
 
 ## 1. Résumé
 
@@ -374,6 +376,24 @@ Détection, segmentation, suivi, profondeur, pose, reconstruction, cartes, coord
 ### 7.3 Image, audio et parole
 
 La génération d’image, d’audio ou de vidéo, le STT, le TTS, l’alignement et l’identification de locuteur peuvent être composés selon la demande. Leurs manifestes indiquent licence, mémoire, latence, langue, qualité et conservation des entrées.
+
+#### 7.3.1 Transcription et synthèse vocale locales
+
+Le registre expose deux capacités optionnelles derrière les adaptateurs du §6.2. Les contrats restent communs aux moteurs et leur activation dépend des preuves de qualification du profil utilisé.
+
+| Capacité | Entrée | Résultat attendu |
+| --- | --- | --- |
+| `audio.transcribe` (STT / ASR) | Référence à un WAV ou FLAC dans un projet autorisé, ou à la capture temporaire de la session active pour une demande vocale | Texte UTF-8 et segments contenant le texte et les bornes de début et de fin en millisecondes. Les segments sont ordonnés et bornés par la durée du média. Le profil peut fournir la langue détectée et distinguer les locuteurs s’il a été qualifié pour ces fonctions. |
+| `audio.synthesize` (TTS) | Texte destiné à l’utilisateur, langue et voix autorisée par le profil | Audio WAV validé avant restitution. Le premier profil cible la lecture à la demande des réponses affichées en français, dans le bureau. |
+
+Le STT sert à deux parcours selon l’intention exprimée par l’utilisateur.
+
+- **Analyser un enregistrement parlé.** Depuis le bureau Windows ou MCP, `audio.transcribe` fournit les segments à une capacité déclarée de résumé, d’extraction de décisions et d’actions ou de recherche d’un passage. Le résultat peut renvoyer à l’horodatage de l’extrait qui l’étaye. Les propos transcrits restent des données de l’enregistrement, même s’ils contiennent des consignes. L’analyse de musique ou d’événements sonores relève de capacités audio distinctes.
+- **Formuler une demande à la voix.** Dans le bureau, l’utilisateur choisit de dicter au micro ou d’utiliser un fichier WAV ou FLAC autorisé comme demande vocale. La transcription remplit un brouillon modifiable. Après envoi explicite, le texte rejoint le même parcours de planification et d’autorisations qu’une demande écrite (§5, §13). L’origine de la demande est déterminée par cette interaction, indépendamment du contenu de la transcription.
+
+Le moteur est chargé à la demande sous les budgets et priorités partagés (§6.2 et §8.5). Chaque artefact est identifié par sa source, sa version, sa licence et son empreinte. Chaque téléchargement requis suit l’accord par artefact et la reprise vérifiée du §11.8. L’inférence s’exécute hors ligne sur des entrées préparées et des sorties bornées. La capture et la lecture relèvent de l’application hôte. Le moteur isolé reçoit uniquement le fichier ou le texte de la demande, conformément au profil du §13.5. Les copies de travail et les résultats sont temporaires par défaut et traités selon les règles d’admission en session ou les droits d’export. Les traces conservent les mesures techniques selon les règles des §8.3, §10.6 et §13.3.
+
+La qualification initiale se fait en CPU sur le banc Windows. En ASR, les candidats reçoivent les mêmes extraits français de référence avec noms propres, vocabulaire technique, bruit et silence. Le rapport mesure le taux d’erreur de mots, les erreurs sur les noms, la validité des horodatages, les faux textes sur le silence, le chargement à froid, le temps de traitement rapporté à la durée audio et le pic RAM. En TTS, le banc vérifie l’intelligibilité en français, notamment les acronymes et les nombres, le délai jusqu’à la lecture et le pic RAM. Les limites d’entrée, de sortie et de temps sont déclarées par profil à partir des mesures. Les rejeux couvrent également les entrées invalides, l’annulation, la restitution du résultat et la libération des ressources. Les seuils de promotion sont fixés sur le banc avant le rejeu réservé (§11.6, §12).
 
 ### 7.4 Domaines et calcul
 
@@ -788,6 +808,8 @@ Après les phases 0 à 6, le produit vise l’agent universel local décrit au �
 
 G1 applique la protection des secrets avant la persistance de session. G2 ajoute le vault et G3 s’appuie sur les reprises locales déjà qualifiées. Pour la mesure à froid du spécialiste image en G5, le chronomètre part de `image_resume`, avec les artefacts déjà vérifiés et une qualification à effectuer, et s’arrête au PNG reçu et vérifié. Le temps complet, accords compris, reste une mesure du parcours à cache vide. [Relevé à cache vide](../../bench/results/image-mcp-cold-cache-v1.json)
 
+G7 à G9 étendent le registre et les parcours d’interaction à la voix dans l’ordre transcription et analyse d’enregistrements parlés, lecture à la demande, puis demandes vocales. La qualification de chaque profil repose sur le contrat du §7.3.1. [Jalons voix locale](../plans/product-goal-roadmap-v1.md#prochains-jalons--voix-locale)
+
 ### Piste séparée — modèle du monde spatial et agent incarné
 
 Un plan distinct traitera la perception spatiale, les états dynamiques, la prédiction conditionnée par les actions et l’interaction avec des environnements simulés puis réels selon des garanties adaptées au risque. Cette piste n’est pas couverte par la Phase 5. Elle ne partage pas le calendrier produit post-MVP.
@@ -807,7 +829,7 @@ Ces phases réduisent les risques. Elles ne définissent pas de calendrier. Le d
 - Confidentialité et droits d’usage sont documentés.
 - Environnement de départ et autonomie sont décidés avant les actions réelles.
 
-## 19. Décisions — état v0.19
+## 19. Décisions — état v0.20
 
 Décisions enregistrées pour le prototype, le banc d'essai et le but produit :
 
@@ -833,6 +855,7 @@ Décisions enregistrées pour le prototype, le banc d'essai et le but produit :
 20. **Porte de décision outillée (v0.17)** — Le routage déterministe est actif par défaut. Sur le banc Tâches, le Path A de `akasha-model==0.3.0` (MIT) peut évaluer en option une proposition avec `Choice`, `Score` et `Noul` et journaliser le verdict `ready`, `abstain` ou `blocked`. L’hôte applique les autorisations et les approbations. La promotion suit les paliers et critères du §11.6 (§8.6, §17).
 21. **Exécution image et MCP (v0.18)** — Le parcours CPU emploie une logique commune de découverte, qualification et validation PNG et un backend isolé propre à Windows ou Linux. L’opérateur donne les accords du moteur et des poids séparément. Le client MCP suit puis reprend sa tâche avec le même identifiant et récupère le verdict et le PNG vérifié (§6.3, §8.7, §11.8).
 22. **But produit (v0.19)** — Agent universel local à domaines croissants avec abstention, organisé en sessions portant des projets. G1 filtre la persistance de session dès l’entrée. G2 ajoute le vault hybride avec keystore OS et handles applicatifs. La piste spatiale suit son propre plan (§2.1, §10.6, §17). [Feuille de route](../plans/product-goal-roadmap-v1.md)
+23. **Voix locale (v0.20)** — Transcription et synthèse sont des capacités optionnelles avec contrats versionnés. Le premier profil de chaque capacité est choisi après qualification en français sur CPU. Le STT alimente l’analyse d’enregistrements et les demandes vocales. Une demande vocale rejoint le planificateur après l’envoi du brouillon par l’utilisateur (§7.3.1, §17).
 
 ## 20. Glossaire
 

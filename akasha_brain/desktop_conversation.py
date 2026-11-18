@@ -1,6 +1,8 @@
 """Conversation locale du desktop et passage explicite à un parcours évalué."""
 
 import base64
+from concurrent.futures import Future, TimeoutError as FutureTimeout
+from datetime import datetime
 from dataclasses import dataclass
 from hashlib import sha256
 import json
@@ -33,9 +35,11 @@ from .planning import PlanningError
 from .project import CODE_FILE_LIMIT, inspect_code, prepare, preview_replacement, project_file
 from .project_check import ProjectCheck, inspect_project, installed_node, run_project_check
 from .project_common import ProjectError
+from .project_approval import require_fresh
 from .rbitnet_session import server
 from .specialist_registry import require_specialist
 from .vault_windows import KeyStoreUnavailable, SecretMissing
+from .whisper_recovery import describe as describe_audio_download
 
 PROMPT = Path(__file__).resolve().parents[1] / "bench" / "communication" / "qwen35-2b-fr-v2.json"
 COMMUNICATION_CHECKPOINTS = {
@@ -227,6 +231,7 @@ class ConversationPane:
         self.intent_cancel = Event()
         self.intent_progress = SimpleQueue()
         self.pending_image = None
+        self.audio_decision = None
         self.pending_gap = None
         self.previews = []
         self.intent_error = None
@@ -239,6 +244,7 @@ class ConversationPane:
         self.responding = False
         self.action = None
         self.build()
+        self.transcript.bind("<Destroy>", lambda _: self.intent_cancel.set(), add="+")
         if self.session_record is not None:
             self.refresh_session(self.session_record)
         self.add("Akasha", "Que souhaitez-vous faire ? Donnez-moi le dossier ou les fichiers concernés." if communication
@@ -288,6 +294,7 @@ class ConversationPane:
         controls = ttk.Frame(page, style="Data.TFrame")
         controls.pack(fill="x", pady=(10, 0))
         self.confirm = ttk.Button(controls, command=self.confirm_action)
+        self.refuse_audio = ttk.Button(controls, text="Refuser", command=lambda: self.answer_audio("decline"))
         ttk.Button(controls, text="Envoyer", style="Launch.TButton", command=self.send).pack(side="right")
         self.entry = ttk.Entry(controls, style="Conversation.TEntry")
         self.entry.pack(side="left", fill="x", expand=True, padx=8)
@@ -304,6 +311,11 @@ class ConversationPane:
         request = self.entry.get().strip()
         if not request:
             return
+        if self.audio_decision is not None:
+            if request.casefold() not in ("annule", "annuler"):
+                self.add("Akasha", "Autorisez ou refusez le téléchargement, ou saisissez « Annuler ».")
+                return
+            self.answer_audio("cancel")
         self.entry.delete(0, "end")
         if self.seal_request(request):
             return
@@ -315,6 +327,7 @@ class ConversationPane:
         followup = self.project is not None and self.last_summary_project == self.project and refines_project_summary(request)
         self.last_summary_project = None
         cancelled = request.casefold() in ("annule", "annuler")
+        cancelling_job = cancelled and self.intent_job is not None
         if cancelled:
             self.pending_intent = None
             self.intent_cancel.set()
@@ -392,7 +405,8 @@ class ConversationPane:
         elif action in ("capabilities", "project_capabilities"):
             self.show_capabilities(action == "capabilities")
         elif cancelled:
-            message = ("Une vérification est déjà en cours. Son résultat apparaîtra ici."
+            message = ("Annulation de la demande en cours." if cancelling_job else
+                       "Une vérification est déjà en cours. Son résultat apparaîtra ici."
                        if self.project_job is not None or self.check_job is not None
                        else "La demande en cours de saisie est effacée.")
             self.add("Akasha", message)
@@ -405,6 +419,14 @@ class ConversationPane:
         self.action = action
         self.confirm.configure(text=title)
         self.confirm.pack(side="left", before=self.entry)
+
+    def answer_audio(self, decision):
+        pending, self.audio_decision = self.audio_decision, None
+        if pending is not None:
+            self.action = None
+            self.confirm.pack_forget()
+            self.refuse_audio.pack_forget()
+            pending.set_result(decision)
 
     def update_project_label(self):
         label = str(self.project) if self.project is not None else "Aucun projet choisi"
@@ -482,6 +504,7 @@ class ConversationPane:
         if project != self.project:
             if self.intent_job is not None:
                 self.intent_cancel.set()
+            self.answer_audio("cancel")
             self.project = project
             self.pending_gap = None
             self.inspection = self.check_result = self.test_plan = None
@@ -536,6 +559,18 @@ class ConversationPane:
         if project is not None and database.is_relative_to(project):
             recovery = None
 
+        def approve_audio(review):
+            decision = Future()
+            progress.put((review, decision))
+            expires = datetime.fromisoformat(review.expires_at)
+            while not cancelled.is_set():
+                require_fresh(expires)
+                try:
+                    return decision.result(timeout=.1)
+                except FutureTimeout:
+                    continue
+            raise InterruptedError("Transcription annulée.")
+
         def plan():
             refs = references(request)
             consent = None
@@ -552,7 +587,12 @@ class ConversationPane:
                 proposed = infer_intent(communication, profile["chat_template"], request, refs, catalog,
                                         selected=project is not None)
             return execute_intents(request, proposed, refs, project, catalog, recovery=recovery, image_consent=consent,
-                                   default_summary_depth=summary_depth)
+                                   default_summary_depth=summary_depth, audio_approval=approve_audio,
+                                   audio_checkpoint=audio_checkpoint)
+
+        def audio_checkpoint():
+            if cancelled.is_set():
+                raise InterruptedError("Transcription annulée.")
 
         self.intent_job = (request, project, turn, self.tasks.scheduler.submit(plan))
         self.add("Akasha", "J’analyse votre demande.")
@@ -564,12 +604,20 @@ class ConversationPane:
         if self.project == project:
             while True:
                 try:
-                    self.add("Akasha", self.intent_progress.get_nowait())
+                    update = self.intent_progress.get_nowait()
+                    if isinstance(update, tuple):
+                        review, self.audio_decision = update
+                        self.add("Akasha", describe_audio_download(review))
+                        self.offer("Autoriser ce téléchargement", "download_audio_artifact")
+                        self.refuse_audio.pack(side="left", before=self.entry)
+                    else:
+                        self.add("Akasha", update)
                 except Empty:
                     break
         if not job.done():
             return
         self.intent_job = None
+        self.answer_audio("cancel")
         if project != self.project:
             self.add("Akasha", "Le dossier a changé pendant l’analyse. Reformulez la demande pour ce dossier.")
             return
@@ -621,6 +669,9 @@ class ConversationPane:
                 self.add("Comparaison", output, tag="code")
             elif plan.capability == "file.read":
                 self.show_file(plan.inputs[0], output)
+            elif plan.capability == "audio.meeting_minutes":
+                from .meeting_minutes import display
+                self.add("Compte rendu", display(output))
             elif plan.capability == "audio.transcribe":
                 from .whisper_pilot import display
                 execution = output.get("execution", {})
@@ -805,7 +856,9 @@ class ConversationPane:
         action = self.action
         self.action = None
         self.confirm.pack_forget()
-        if action == "download_image_artifact" and self.pending_image is not None:
+        if action == "download_audio_artifact":
+            self.answer_audio("accept")
+        elif action == "download_image_artifact" and self.pending_image is not None:
             request, pending = self.pending_image
             self.pending_image = None
             self.request_intent(request, image_consent=pending)

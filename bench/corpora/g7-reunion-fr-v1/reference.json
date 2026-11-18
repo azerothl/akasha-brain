@@ -1,0 +1,36 @@
+{
+  "source": "Réunion fictive. Voix françaises Windows Julie et Paul, en alternance. Aucun participant ne se présente.",
+  "sha256": "ace06134cbecbc834cadec33563e3919d31d9252d1fb81ba11edb243d638d580",
+  "turns": [
+    {
+      "role": "topic",
+      "text": "Nous préparons la journée des portes ouvertes de la bibliothèque.",
+      "start_ms": 0,
+      "end_ms": 4065
+    },
+    {
+      "role": "proposal",
+      "text": "Vendredi serait possible, mais ce jour reste une proposition.",
+      "start_ms": 5065,
+      "end_ms": 9276
+    },
+    {
+      "role": "decision",
+      "text": "Nous décidons de réserver la grande salle pour lundi matin.",
+      "start_ms": 10276,
+      "end_ms": 14143
+    },
+    {
+      "role": "named_action",
+      "text": "Marie doit envoyer les invitations avant jeudi.",
+      "start_ms": 15143,
+      "end_ms": 18413
+    },
+    {
+      "role": "unidentified_action",
+      "text": "Je vais préparer les badges pour les visiteurs.",
+      "start_ms": 19413,
+      "end_ms": 22548
+    }
+  ]
+}

@@ -68,6 +68,22 @@ MODEL = Artifact(
 )
 ARTIFACTS = (ENGINE, MODEL)
 
+WHISPER_ENGINE = Artifact(
+    "whisper.cpp pour Windows x64 (CPU)", "v1.8.3", "whisper-bin-x64.zip",
+    "https://github.com/ggml-org/whisper.cpp/releases/tag/v1.8.3",
+    "https://github.com/ggml-org/whisper.cpp/releases/download/v1.8.3/whisper-bin-x64.zip",
+    "d824b1e37599f882b396e73f1ee0bfd5d0529f700314c48311dcbd00b803321d", 3_968_674,
+    "MIT", "https://github.com/ggml-org/whisper.cpp/blob/v1.8.3/LICENSE", ENGINE.redirect_hosts,
+)
+_WHISPER_REV = "5359861c739e955e79d9a303bcbc70fb988958b1"
+WHISPER_MODEL = Artifact(
+    "Whisper small multilingue", _WHISPER_REV, "ggml-small.bin",
+    f"https://huggingface.co/ggerganov/whisper.cpp/tree/{_WHISPER_REV}",
+    f"https://huggingface.co/ggerganov/whisper.cpp/resolve/{_WHISPER_REV}/ggml-small.bin",
+    "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b", 487_601_967,
+    "MIT", "https://github.com/openai/whisper/blob/main/LICENSE", MODEL.redirect_hosts,
+)
+
 
 @dataclass(frozen=True)
 class DownloadReview:
@@ -115,7 +131,7 @@ class CatalogRedirects(HTTPRedirectHandler):
 def download(review: DownloadReview, approval: str | None, checkpoint) -> None:
     artifact = review.artifact
     denied = authorize({"risk_class": "R3", "human_approval": (
-        artifact in (*ARTIFACTS, LINUX_ENGINE) and approval == review.approval_sha256
+        artifact in (*ARTIFACTS, LINUX_ENGINE, WHISPER_ENGINE, WHISPER_MODEL) and approval == review.approval_sha256
     )})
     if denied:
         raise ProjectError(denied)
@@ -128,7 +144,8 @@ def download(review: DownloadReview, approval: str | None, checkpoint) -> None:
             claim.write(review.approval_sha256)
     except FileExistsError:
         reject(ErrorCode.APPROVAL_REQUIRED, "Cet accord a déjà servi. Un nouvel accord est nécessaire.")
-    record(review.audit, action="image_artifact_download", risk="R3", actor="human", decision="approved")
+    action = "audio_artifact_download" if artifact in (WHISPER_ENGINE, WHISPER_MODEL) else "image_artifact_download"
+    record(review.audit, action=action, risk="R3", actor="human", decision="approved")
 
     partial = None
     deadline = monotonic() + 900
@@ -155,7 +172,7 @@ def download(review: DownloadReview, approval: str | None, checkpoint) -> None:
         (review.audit / "receipt.json").write_text(json.dumps({
             "approval_sha256": review.approval_sha256, "artifact": asdict(artifact),
         }, ensure_ascii=False), encoding="utf-8")
-        record(review.audit, action="image_artifact_download", risk="R3", actor="runtime", decision="verified")
+        record(review.audit, action=action, risk="R3", actor="runtime", decision="verified")
     except URLError as error:
         raise ProjectError(AkashaError(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED,
                            "Téléchargement impossible depuis la source approuvée.")) from error

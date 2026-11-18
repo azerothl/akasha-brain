@@ -16,10 +16,10 @@ from .image_windows import PROBES, run_headless_guest, system32, tool_stdout
 from .model_resources import reserve_model
 from .notes_desktop import VC_RUNTIME
 from .project import project_file, project_input
-from .project_common import reject
+from .project_common import project_scope, reject
 from .specialist_registry import require_specialist
 from .planning import PlanningError
-from . import whisper_resident
+from . import whisper_recovery, whisper_resident
 
 CAPABILITY = "audio.transcribe"
 MANIFEST = {"capability_id": CAPABILITY, "version": "1.0.0", "kind": "adapter",
@@ -45,6 +45,8 @@ def cache_path():
     if value is None:
         try:
             value = (app_directory()/"whisper-cache.txt").read_text("utf-8-sig").strip()
+        except FileNotFoundError:
+            return app_directory()/"whisper-small"
         except (OSError, UnicodeError):
             return None
     return Path(value) if value and Path(value).is_absolute() else None
@@ -119,15 +121,14 @@ def decode(raw, duration, *, server=False):
     return segments
 
 
-def transcribe(project, name, checkpoint=lambda: None):
+def transcribe(project, name, checkpoint=lambda: None, *, ask=None, progress=lambda _: None):
     specialist = require_specialist(CAPABILITY, "audio", "fr-transcript.v1", "whisper.cpp-small", ram_mib=RAM_MIB)
     cache = cache_path()
     if cache is None:
         reject(ErrorCode.CAPABILITY_UNAVAILABLE, "Configurez le cache local du pilote Whisper.")
-    cache = cache.resolve()
-    if not cache.is_dir():
-        reject(ErrorCode.CAPABILITY_UNAVAILABLE, "Le cache Whisper configuré est introuvable.")
-    if cache.is_relative_to(project.resolve()):
+    project = project.resolve(strict=True)
+    scope = project_scope(project)
+    if cache.resolve() != cache or cache.is_relative_to(project) or project.is_relative_to(cache):
         reject(ErrorCode.PERMISSION_DENIED, "Le cache du spécialiste doit être hors du projet.")
     path = project_file(project, name)
     suffix = path.suffix.lower()
@@ -139,13 +140,20 @@ def transcribe(project, name, checkpoint=lambda: None):
     segments = []
     execution = {"device": "none", "reused": False}
     if not silent:
+        def scoped_checkpoint():
+            checkpoint()
+            if project_scope(project) != scope:
+                reject(ErrorCode.PERMISSION_DENIED, "Le dossier de projet a changé.")
+
+        whisper_recovery.prepare(cache, scoped_checkpoint, ask, progress)
+        scoped_checkpoint()
         gpu = whisper_resident.cache_path()
         fallback = None
         if gpu:
             try:
                 with reserve_model(specialist.engine, RAM_MIB, vram_mib=whisper_resident.VRAM_MIB):
                     packet, execution = whisper_resident.transcribe(
-                        gpu, cache/"ggml-small.bin", HASHES["ggml-small.bin"], project, raw, suffix, checkpoint)
+                        gpu, cache/"ggml-small.bin", HASHES["ggml-small.bin"], project, raw, suffix, scoped_checkpoint)
                     segments = decode(packet, duration, server=True)
             except whisper_resident.GpuUnavailable as error:
                 fallback = str(error)
@@ -156,8 +164,9 @@ def transcribe(project, name, checkpoint=lambda: None):
         if execution["device"] != "cuda":
             checkpoint()
             with reserve_model(specialist.engine, RAM_MIB):
-                segments = cpu_transcribe(cache, raw, suffix, duration, checkpoint)
+                segments = cpu_transcribe(cache, raw, suffix, duration, scoped_checkpoint)
             execution = {"device": "cpu", "reused": False, "fallback_reason": fallback or "cuda_not_configured"}
+        scoped_checkpoint()
     uncertain = any(s["uncertain"] for s in segments)
     status = ("silence" if silent else "no_transcript") if not segments else ("needs_review" if uncertain else "transcribed")
     return {"engine": specialist.engine, "execution": execution, "language": "fr", "status": status, "duration_ms": duration,
