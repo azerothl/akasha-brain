@@ -34,3 +34,7 @@
 /akasha_brain/integrated_evolution.py text eol=lf
 /akasha_brain/phase6_*.py text eol=lf
 /bench/run_phase6_*.py text eol=lf
+
+# Les empreintes G7 relient les relevés au manifeste et à la calibration Windows.
+/bench/corpora/g7-alert-v3.json text eol=crlf
+/bench/results/g7-alert-*-v3.json text eol=crlf

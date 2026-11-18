@@ -1,0 +1,259 @@
+{
+  "corpus_sha256": "174e9504ecbffc0f88f49a08611fed4c2e37b96beb936736cc3e1937c43d9b9a",
+  "status_counts": {
+    "needs_review": 6,
+    "silence": 1
+  },
+  "results": [
+    {
+      "file": "prise-1.wav",
+      "surfaces": [
+        "conversation",
+        "MCP"
+      ],
+      "errors": 7,
+      "words": 22,
+      "snr_db": null,
+      "names": {
+        "TogiNet Radio": {
+          "found": false,
+          "in_flagged_text": false
+        }
+      },
+      "engine": "whisper.cpp-small",
+      "language": "fr",
+      "status": "needs_review",
+      "duration_ms": 8460,
+      "text": "Initialement, l'émission était uniquement diffusée sur le vénérable site radio interne Toguinet radio ainsi de consacrer à la radio parlé.",
+      "segments": [
+        {
+          "start_ms": 0,
+          "end_ms": 8000,
+          "text": "Initialement, l'émission était uniquement diffusée sur le vénérable site radio interne Toguinet radio ainsi de consacrer à la radio parlé.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence"
+          ],
+          "min_token_p": 0.252
+        }
+      ],
+      "word_errors_by_segment": [
+        7
+      ]
+    },
+    {
+      "file": "prise-2.wav",
+      "surfaces": [
+        "MCP"
+      ],
+      "errors": 14,
+      "words": 19,
+      "snr_db": 8,
+      "names": {
+        "Rossby": {
+          "found": false,
+          "in_flagged_text": false
+        }
+      },
+      "engine": "whisper.cpp-small",
+      "language": "fr",
+      "status": "needs_review",
+      "duration_ms": 6960,
+      "text": "Ce qui nous sert à mes inversions, mais mon type, plus le nombre de roses billets petit, moins les fonds d'activité.",
+      "segments": [
+        {
+          "start_ms": 0,
+          "end_ms": 6960,
+          "text": "Ce qui nous sert à mes inversions, mais mon type, plus le nombre de roses billets petit, moins les fonds d'activité.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence",
+            "timestamp_clipped"
+          ],
+          "min_token_p": 0.024
+        }
+      ],
+      "word_errors_by_segment": [
+        14
+      ]
+    },
+    {
+      "file": "prise-3.flac",
+      "surfaces": [
+        "conversation"
+      ],
+      "errors": 2,
+      "words": 20,
+      "snr_db": null,
+      "names": {
+        "Haïti": {
+          "found": false,
+          "in_flagged_text": false
+        }
+      },
+      "engine": "whisper.cpp-small",
+      "language": "fr",
+      "status": "needs_review",
+      "duration_ms": 6000,
+      "text": "Avant l'arrivée des troupes, Aitin avait pas rencontré de problèmes liés à la maladie depuis les années 1800.",
+      "segments": [
+        {
+          "start_ms": 0,
+          "end_ms": 6000,
+          "text": "Avant l'arrivée des troupes, Aitin avait pas rencontré de problèmes liés à la maladie depuis les années 1800.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence"
+          ],
+          "min_token_p": 0.161
+        }
+      ],
+      "word_errors_by_segment": [
+        2
+      ]
+    },
+    {
+      "file": "prise-4.wav",
+      "surfaces": [
+        "MCP"
+      ],
+      "errors": 4,
+      "words": 32,
+      "snr_db": null,
+      "names": {
+        "Ottawa": {
+          "found": true,
+          "in_flagged_text": true
+        },
+        "Canada": {
+          "found": true,
+          "in_flagged_text": true
+        }
+      },
+      "engine": "whisper.cpp-small",
+      "language": "fr",
+      "status": "needs_review",
+      "duration_ms": 8400,
+      "text": "Ottawa est la charmante capitale bilingue du Canada et dispose d'un grand nombre de calridaires et de musées qui mettent en valeur le passé de le présent du Canada.",
+      "segments": [
+        {
+          "start_ms": 0,
+          "end_ms": 4320,
+          "text": "Ottawa est la charmante capitale bilingue du Canada et dispose d'un grand nombre de",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence"
+          ],
+          "min_token_p": 0.359
+        },
+        {
+          "start_ms": 4320,
+          "end_ms": 7680,
+          "text": "calridaires et de musées qui mettent en valeur le passé de le présent du Canada.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence"
+          ],
+          "min_token_p": 0.298
+        }
+      ],
+      "word_errors_by_segment": [
+        0,
+        4
+      ]
+    },
+    {
+      "file": "prise-5.wav",
+      "surfaces": [
+        "conversation"
+      ],
+      "errors": 36,
+      "words": 38,
+      "snr_db": 5,
+      "names": {
+        "Bali": {
+          "found": false,
+          "in_flagged_text": false
+        }
+      },
+      "engine": "whisper.cpp-small",
+      "language": "fr",
+      "status": "needs_review",
+      "duration_ms": 10980,
+      "text": "Parmi les autres sujets, on a un deuxième jour, un deuxième journal, on a un deuxième journal pour les dernières forêts, le deuxième journal pour les partages et les médicaments, et on devrait prendre un truc pour les passants et les premières fois.",
+      "segments": [
+        {
+          "start_ms": 0,
+          "end_ms": 10980,
+          "text": "Parmi les autres sujets, on a un deuxième jour, un deuxième journal, on a un deuxième journal pour les dernières forêts, le deuxième journal pour les partages et les médicaments, et on devrait prendre un truc pour les passants et les premières fois.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence",
+            "timestamp_clipped"
+          ],
+          "min_token_p": 0.027
+        }
+      ],
+      "word_errors_by_segment": [
+        36
+      ]
+    },
+    {
+      "file": "prise-6.wav",
+      "surfaces": [
+        "MCP"
+      ],
+      "errors": 14,
+      "words": 26,
+      "snr_db": 10,
+      "names": {
+        "Mashhad": {
+          "found": false,
+          "in_flagged_text": false
+        }
+      },
+      "engine": "whisper.cpp-small",
+      "language": "fr",
+      "status": "needs_review",
+      "duration_ms": 8340,
+      "text": "Veuillez-moi, un autre agent de ligne a créé une sortie d'épic à Machade et Heurté-un-Mur, tuant un film du Stet Personne.",
+      "segments": [
+        {
+          "start_ms": 0,
+          "end_ms": 8280,
+          "text": "Veuillez-moi, un autre agent de ligne a créé une sortie d'épic à Machade et Heurté-un-Mur, tuant un film du Stet Personne.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence"
+          ],
+          "min_token_p": 0.087
+        }
+      ],
+      "word_errors_by_segment": [
+        14
+      ]
+    },
+    {
+      "file": "prise-7.wav",
+      "surfaces": [
+        "conversation",
+        "MCP"
+      ],
+      "errors": 0,
+      "words": 0,
+      "snr_db": null,
+      "names": {},
+      "engine": "whisper.cpp-small",
+      "language": "fr",
+      "status": "silence",
+      "duration_ms": 4250,
+      "text": "",
+      "segments": [],
+      "word_errors_by_segment": []
+    }
+  ],
+  "segment_audit": {
+    "flagged_with_error": 6,
+    "flagged_exact": 1
+  }
+}

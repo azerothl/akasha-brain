@@ -92,6 +92,16 @@ Les suites `tests` et `contracts` ont été exécutées sous Windows après chaq
 | + G3 | `b290c1b` | 289 | 34,15 s |
 | + G4 et G5 | `02b0447` | **297** | **137,49 s** |
 
+### Pilote G7 sur CPU Windows
+
+Le pilote local utilise whisper.cpp small pour transcrire un fichier du projet dans la conversation et via MCP. Le second lot contient six extraits français de FLEURS, dont trois avec bruit ajouté, et un témoin de silence. Le pilote a signalé les six segments contenant une erreur de mots et a aussi signalé le seul segment exact. Deux des sept mentions de noms propres ont été correctement transcrites. Le témoin de silence a produit un texte vide. [Comparaison initiale](../../bench/results/g7-asr-fr-cpu-v1.json) · [Lot figé](../../bench/corpora/g7-fr-pilot-v2/manifest.json) · [Rejeu et audit par segment](../../bench/results/g7-whisper-pilot-v2.json)
+
+Le réglage sur 60 nouvelles phrases françaises conserve les seuils du pilote. Sur 45 autres phrases mêlées à des enregistrements réels de pluie, de vagues et de feu, un réglage plus permissif abaisse les fausses alertes de 10 à 7 sur 16 segments exacts. Il laisse passer 10 des 52 segments erronés, contre 5 avec le pilote. Le pilote conserve donc son réglage. [Protocole et sources](../../bench/corpora/g7-alert-v3.md) · [Comparaison par segment](../../bench/results/g7-alert-comparison-v3.json)
+
+G7 reste ouvert. Il reste notamment à mieux distinguer les passages fiables, à qualifier la reprise depuis un cache vide et à vérifier une analyse de réunion dont les conclusions renvoient aux passages sources.
+
+Le bureau et MCP partagent désormais une instance de whisper.cpp small sur GPU pour le projet ouvert. Sur la RTX 4080 SUPER, le même WAV bruité de 6,96 s a demandé 43,49 s au premier appel dans le bureau, puis 3,06 s à chaud. Le client MCP a retrouvé la même instance en 2,72 s. Avec un budget vidéo nul, MCP a transcrit le fichier sur CPU en 21,78 s. Les deux chemins utilisent la règle d’alerte du pilote. [Rejeu de la résidence GPU](../../bench/results/g7-resident-gpu-v1.json)
+
 ## PR-G0 — But produit dans la spec et le plan
 
 - [x] Dépend de : décisions 1–4 ci-dessus

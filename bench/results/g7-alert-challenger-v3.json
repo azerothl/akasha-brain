@@ -1,0 +1,14 @@
+{
+  "calibration_sha256": "b04ce86f40438c70e154c7f429486ac0473cc5e58c815d59c88389715efc42c8",
+  "rule": [
+    0.4,
+    0.8,
+    100
+  ],
+  "calibration": {
+    "exact": 31,
+    "erroneous": 52,
+    "false_alerts": 3,
+    "missed": 12
+  }
+}

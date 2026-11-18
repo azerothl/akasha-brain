@@ -1,6 +1,8 @@
 """Accès MCP local à Notes, à la préparation de projet et à la génération d’images."""
 
 import argparse
+import ctypes
+import os
 from pathlib import Path
 from queue import Empty
 from threading import Lock
@@ -98,6 +100,11 @@ def create_server(tasks: NotesTasks, *, project: Path | None = None, image_runs:
 
 
 def main() -> None:
+    if os.name == "nt" and not os.environ.get("PROGRAMFILES"):
+        # The SDK's minimal stdio environment omits this NVML driver lookup path.
+        folder = ctypes.create_unicode_buffer(260)
+        if ctypes.windll.shell32.SHGetFolderPathW(None, 0x26, None, 0, folder) == 0:
+            os.environ["PROGRAMFILES"] = folder.value
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--python-runtime", type=Path, help="Dossier Python portable du bac")
     parser.add_argument("--runs", type=Path, default=app_directory() / "agent-runs", help="Historique des essais MCP")

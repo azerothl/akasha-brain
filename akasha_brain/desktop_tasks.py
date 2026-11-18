@@ -215,6 +215,8 @@ class NotesTasks:
 
         receipt = None
         try:
+            from .whisper_resident import yield_to_sandbox
+            yield_to_sandbox()
             routes = notes_specialists(record["graph"])
             if self.integrated is not None:
                 report, receipt = self.integrated.run_task(goal, self.catalog, runtime, folder / "result", self.repair,

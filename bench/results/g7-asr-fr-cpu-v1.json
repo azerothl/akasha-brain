@@ -1,0 +1,868 @@
+{
+  "cpu": "AMD Ryzen 7 9800X3D 8-Core Processor",
+  "windows": "10.0.26320",
+  "threads": 4,
+  "manifest_sha256_lf": "9f88b1bcc09b0a57670cf9244ec171a0c5ca4695e35b7bd0826e7e09fd7df6e8",
+  "hashes": {
+    "whisper-cli.exe": "0ff971e410240a0b97117432d771245698f376e06105c011959d2bfc4bb23311",
+    "asr_infer.exe": "f102bef633c02644de6a67d181df020117e1e633710d8beb1585854a8d14f371",
+    "vibeasr-lm-i2_s-embed-q6_k.gguf": "fbe273d8dc2f2433bb25f849e19d77ea65aaa2188d12c20cee987ab6f321e002",
+    "vibeasr-vae-encoder-i8_s.gguf": "4941c82608c253ec066b5cc74d3dd11a5c8fef96cccbc5b87359ef0fe4338df6",
+    "ggml-small.bin": "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b",
+    "ggml-base.dll": "61c9c57f49f380896ed54ed3f71735e10a2d986f482c2b0a55e72b47f731b193",
+    "ggml-cpu.dll": "eb2f1d023e51c40b27463b5ab165600eb48cb60323740f400b1b62e1c8706c56",
+    "ggml.dll": "bcfeaf6e5b59c315fc36e290715aa7a84b22461e968543c13dfcf57df7b1b81d",
+    "SDL2.dll": "de23db1694a3c7a4a735e7ecd3d214b2023cc2267922c6c35d30c7fc7370d677",
+    "whisper.dll": "4037a6567fbb08fc7efda18e4d128a95df9c31ba171af20439d1a93b785d007e"
+  },
+  "runs": [
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "14203199903136889342.wav",
+      "split": "dev",
+      "audio_s": 11.16,
+      "wall_s": 4.7185,
+      "model_load_ms": 663.4,
+      "peak_ws_bytes": 4480745472,
+      "reference_words": 20,
+      "word_errors": 3,
+      "hypothesis": "Les plages sont nombreuses, car à Auckland est un cheval sur deux portes les plus populaires se trouvent dans trois zones.",
+      "offsets_ms": [],
+      "names_found": {
+        "Auckland": true
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "14203199903136889342.wav",
+      "split": "dev",
+      "audio_s": 11.16,
+      "wall_s": 3.6565,
+      "model_load_ms": 368.1,
+      "peak_ws_bytes": 679649280,
+      "reference_words": 20,
+      "word_errors": 1,
+      "hypothesis": "Les plages sont nombreuses car Hawkeland est à cheval sur deux ports. Les plus populaires se trouvent dans trois zones.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 6880
+        },
+        {
+          "from": 6880,
+          "to": 8880
+        }
+      ],
+      "names_found": {
+        "Auckland": false
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "17999210160761730950.wav",
+      "split": "test",
+      "audio_s": 6.0,
+      "wall_s": 3.3932,
+      "model_load_ms": 278.93,
+      "peak_ws_bytes": 679104512,
+      "reference_words": 11,
+      "word_errors": 2,
+      "hypothesis": "Le compagnie Rosemis a annulé les derniers concerts de sa tournée.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 4900
+        }
+      ],
+      "names_found": {
+        "Aerosmith": false
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "17999210160761730950.wav",
+      "split": "test",
+      "audio_s": 6.0,
+      "wall_s": 3.2114,
+      "model_load_ms": 675.0999999999999,
+      "peak_ws_bytes": 3434524672,
+      "reference_words": 11,
+      "word_errors": 14,
+      "hypothesis": "Il me convient Roselyne, c'est un de mes derniers conceptions, mais ça tourne hein.",
+      "offsets_ms": [],
+      "names_found": {
+        "Aerosmith": false
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "3661632639400662062.wav",
+      "split": "test",
+      "audio_s": 7.08,
+      "wall_s": 4.242,
+      "model_load_ms": 787.5,
+      "peak_ws_bytes": 3653603328,
+      "reference_words": 28,
+      "word_errors": 11,
+      "hypothesis": "Soyez le l'un des parcs d'attraction les plus connus en Afrique, je suis déconsidérée comme le florent des parcs nationaux sud-africains, sans parcs.",
+      "offsets_ms": [],
+      "names_found": {
+        "Afrique du Sud": false,
+        "SANParks": false
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "3661632639400662062.wav",
+      "split": "test",
+      "audio_s": 7.08,
+      "wall_s": 3.6659,
+      "model_load_ms": 321.97,
+      "peak_ws_bytes": 679186432,
+      "reference_words": 28,
+      "word_errors": 3,
+      "hypothesis": "Il s'agit de l'un des parcs d'attraction les plus connus en Afrique du sud et considéré comme le Floron des parcs nationaux sud-africains, sans parcs.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 7000
+        }
+      ],
+      "names_found": {
+        "Afrique du Sud": true,
+        "SANParks": false
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "8969527857548188961.wav",
+      "split": "test",
+      "audio_s": 7.02,
+      "wall_s": 3.6107,
+      "model_load_ms": 285.17,
+      "peak_ws_bytes": 679403520,
+      "reference_words": 24,
+      "word_errors": 1,
+      "hypothesis": "Tout comme la Lune exerce une traction sur la Terre, provoquant des marées, la Voie lactée exerce une force sur la galaxie du salutaire.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 2600
+        },
+        {
+          "from": 2600,
+          "to": 7000
+        }
+      ],
+      "names_found": {
+        "Voie lactée": true,
+        "Sagittaire": false
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "8969527857548188961.wav",
+      "split": "test",
+      "audio_s": 7.02,
+      "wall_s": 3.7873,
+      "model_load_ms": 722.4000000000001,
+      "peak_ws_bytes": 3640868864,
+      "reference_words": 24,
+      "word_errors": 1,
+      "hypothesis": "Tout comme la lune exerce une traction sur la terre, provoquant des marées, la voie lactée exerce une force sur la galaxie du solitaire.",
+      "offsets_ms": [],
+      "names_found": {
+        "Voie lactée": true,
+        "Sagittaire": false
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "7989253100718399733.wav",
+      "split": "test",
+      "audio_s": 7.56,
+      "wall_s": 3.9139,
+      "model_load_ms": 719.5,
+      "peak_ws_bytes": 3750248448,
+      "reference_words": 19,
+      "word_errors": 24,
+      "hypothesis": "Et sur place, il a voulu constituer des biens et des coussins pour s'accrocher à sa mère et pas qu'il l'a pas pris.",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "7989253100718399733.wav",
+      "split": "test",
+      "audio_s": 7.56,
+      "wall_s": 3.7073,
+      "model_load_ms": 325.9,
+      "peak_ws_bytes": 679612416,
+      "reference_words": 19,
+      "word_errors": 8,
+      "hypothesis": "La surface de la ligne est constituée des pierres et il possède sa couche extérieure et des raccouruques.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 7000
+        }
+      ],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "118005971910520590.wav",
+      "split": "test",
+      "audio_s": 10.86,
+      "wall_s": 3.4717,
+      "model_load_ms": 294.98,
+      "peak_ws_bytes": 679575552,
+      "reference_words": 20,
+      "word_errors": 0,
+      "hypothesis": "Premièrement, la plupart des cavaliers portent des bottes d'équitation avec un talon et une semelle lisse et assez étroite.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 10000
+        }
+      ],
+      "names_found": {}
+    },
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "118005971910520590.wav",
+      "split": "test",
+      "audio_s": 10.86,
+      "wall_s": 4.7674,
+      "model_load_ms": 683.9,
+      "peak_ws_bytes": 4420694016,
+      "reference_words": 20,
+      "word_errors": 2,
+      "hypothesis": "Premièrement, la plupart des cavaliers portent des bottes d'équitation avec un talon et une semelle lisses et assez étroites.",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "12217957387078475556.wav",
+      "split": "test",
+      "audio_s": 8.88,
+      "wall_s": 4.1959,
+      "model_load_ms": 772.7,
+      "peak_ws_bytes": 4018536448,
+      "reference_words": 22,
+      "word_errors": 4,
+      "hypothesis": "Le travail effectué était principalement théorique, le programme a été effectué pour simuler les observations faites de la galaxie posititaire.",
+      "offsets_ms": [],
+      "names_found": {
+        "Sagittaire": false
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "12217957387078475556.wav",
+      "split": "test",
+      "audio_s": 8.88,
+      "wall_s": 3.4417,
+      "model_load_ms": 291.27,
+      "peak_ws_bytes": 679370752,
+      "reference_words": 22,
+      "word_errors": 1,
+      "hypothesis": "Le travail effectué était principalement théorique, et le programme a été écrit pour simuler les observations faites de la galaxie du sagittaire.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 5100
+        },
+        {
+          "from": 5100,
+          "to": 8220
+        }
+      ],
+      "names_found": {
+        "Sagittaire": true
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "15942080413960253441.wav",
+      "split": "test",
+      "audio_s": 8.46,
+      "wall_s": 3.5455,
+      "model_load_ms": 277.89,
+      "peak_ws_bytes": 679370752,
+      "reference_words": 24,
+      "word_errors": 15,
+      "hypothesis": "Tout le monde est parti de l'ISST et utilise le système de transport, et si l'entreprise montre ce plan du système de transport.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 5340
+        },
+        {
+          "from": 5340,
+          "to": 6720
+        }
+      ],
+      "names_found": {}
+    },
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "15942080413960253441.wav",
+      "split": "test",
+      "audio_s": 8.46,
+      "wall_s": 4.1048,
+      "model_load_ms": 709.8,
+      "peak_ws_bytes": 3933286400,
+      "reference_words": 24,
+      "word_errors": 19,
+      "hypothesis": "Plus grande que la quantité de laquelle s'était utillée du système de transport. Et une entreprise qui s'appelle un système de transport.",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "9747669897173511466.wav",
+      "split": "test",
+      "audio_s": 7.5,
+      "wall_s": 4.1767,
+      "model_load_ms": 733.5,
+      "peak_ws_bytes": 3738742784,
+      "reference_words": 28,
+      "word_errors": 10,
+      "hypothesis": "Le registrement vidéo a mené à de bandes et ouvertes dans l'interprétation des micros expressions, c'est-à-dire expressions faciales durant quelques millisecondes.",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "9747669897173511466.wav",
+      "split": "test",
+      "audio_s": 7.5,
+      "wall_s": 3.8708,
+      "model_load_ms": 289.95,
+      "peak_ws_bytes": 679276544,
+      "reference_words": 28,
+      "word_errors": 15,
+      "hypothesis": "Je donne un registrement vidéo à Monnaie Adegrand, dévoilée dans l'interprétation des microsexpressions, c'est-à-dire expression faciale durant quelques millisecondes.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 4000
+        },
+        {
+          "from": 4000,
+          "to": 7360
+        }
+      ],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 1,
+      "wav": "silence.wav",
+      "split": "control",
+      "audio_s": 3.0,
+      "wall_s": 3.1967,
+      "model_load_ms": 273.89,
+      "peak_ws_bytes": 678809600,
+      "reference_words": 0,
+      "word_errors": 0,
+      "hypothesis": "...",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 10000
+        }
+      ],
+      "names_found": {}
+    },
+    {
+      "engine": "vibe",
+      "repeat": 1,
+      "wav": "silence.wav",
+      "split": "control",
+      "audio_s": 3.0,
+      "wall_s": 1.9618,
+      "model_load_ms": 737.2,
+      "peak_ws_bytes": 2827137024,
+      "reference_words": 0,
+      "word_errors": 0,
+      "hypothesis": "",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "14203199903136889342.wav",
+      "split": "dev",
+      "audio_s": 11.16,
+      "wall_s": 3.4894,
+      "model_load_ms": 311.3,
+      "peak_ws_bytes": 679677952,
+      "reference_words": 20,
+      "word_errors": 1,
+      "hypothesis": "Les plages sont nombreuses car Hawkeland est à cheval sur deux ports. Les plus populaires se trouvent dans trois zones.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 6880
+        },
+        {
+          "from": 6880,
+          "to": 8880
+        }
+      ],
+      "names_found": {
+        "Auckland": false
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "14203199903136889342.wav",
+      "split": "dev",
+      "audio_s": 11.16,
+      "wall_s": 4.7579,
+      "model_load_ms": 704.8,
+      "peak_ws_bytes": 4480446464,
+      "reference_words": 20,
+      "word_errors": 3,
+      "hypothesis": "Les plages sont nombreuses, car à Auckland est un cheval sur deux portes les plus populaires se trouvent dans trois zones.",
+      "offsets_ms": [],
+      "names_found": {
+        "Auckland": true
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "17999210160761730950.wav",
+      "split": "test",
+      "audio_s": 6.0,
+      "wall_s": 3.2409,
+      "model_load_ms": 735.9,
+      "peak_ws_bytes": 3434733568,
+      "reference_words": 11,
+      "word_errors": 14,
+      "hypothesis": "Il me convient Roselyne, c'est un de mes derniers conceptions, mais ça tourne hein.",
+      "offsets_ms": [],
+      "names_found": {
+        "Aerosmith": false
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "17999210160761730950.wav",
+      "split": "test",
+      "audio_s": 6.0,
+      "wall_s": 3.5201,
+      "model_load_ms": 288.88,
+      "peak_ws_bytes": 679198720,
+      "reference_words": 11,
+      "word_errors": 2,
+      "hypothesis": "Le compagnie Rosemis a annulé les derniers concerts de sa tournée.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 4900
+        }
+      ],
+      "names_found": {
+        "Aerosmith": false
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "3661632639400662062.wav",
+      "split": "test",
+      "audio_s": 7.08,
+      "wall_s": 3.7206,
+      "model_load_ms": 316.11,
+      "peak_ws_bytes": 679276544,
+      "reference_words": 28,
+      "word_errors": 3,
+      "hypothesis": "Il s'agit de l'un des parcs d'attraction les plus connus en Afrique du sud et considéré comme le Floron des parcs nationaux sud-africains, sans parcs.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 7000
+        }
+      ],
+      "names_found": {
+        "Afrique du Sud": true,
+        "SANParks": false
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "3661632639400662062.wav",
+      "split": "test",
+      "audio_s": 7.08,
+      "wall_s": 3.9971,
+      "model_load_ms": 707.8,
+      "peak_ws_bytes": 3653382144,
+      "reference_words": 28,
+      "word_errors": 11,
+      "hypothesis": "Soyez le l'un des parcs d'attraction les plus connus en Afrique, je suis déconsidérée comme le florent des parcs nationaux sud-africains, sans parcs.",
+      "offsets_ms": [],
+      "names_found": {
+        "Afrique du Sud": false,
+        "SANParks": false
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "8969527857548188961.wav",
+      "split": "test",
+      "audio_s": 7.02,
+      "wall_s": 3.8425,
+      "model_load_ms": 736.2,
+      "peak_ws_bytes": 3641077760,
+      "reference_words": 24,
+      "word_errors": 1,
+      "hypothesis": "Tout comme la lune exerce une traction sur la terre, provoquant des marées, la voie lactée exerce une force sur la galaxie du solitaire.",
+      "offsets_ms": [],
+      "names_found": {
+        "Voie lactée": true,
+        "Sagittaire": false
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "8969527857548188961.wav",
+      "split": "test",
+      "audio_s": 7.02,
+      "wall_s": 3.539,
+      "model_load_ms": 275.23,
+      "peak_ws_bytes": 679268352,
+      "reference_words": 24,
+      "word_errors": 1,
+      "hypothesis": "Tout comme la Lune exerce une traction sur la Terre, provoquant des marées, la Voie lactée exerce une force sur la galaxie du salutaire.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 2600
+        },
+        {
+          "from": 2600,
+          "to": 7000
+        }
+      ],
+      "names_found": {
+        "Voie lactée": true,
+        "Sagittaire": false
+      }
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "7989253100718399733.wav",
+      "split": "test",
+      "audio_s": 7.56,
+      "wall_s": 3.4564,
+      "model_load_ms": 279.03,
+      "peak_ws_bytes": 679235584,
+      "reference_words": 19,
+      "word_errors": 8,
+      "hypothesis": "La surface de la ligne est constituée des pierres et il possède sa couche extérieure et des raccouruques.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 7000
+        }
+      ],
+      "names_found": {}
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "7989253100718399733.wav",
+      "split": "test",
+      "audio_s": 7.56,
+      "wall_s": 3.9964,
+      "model_load_ms": 768.5,
+      "peak_ws_bytes": 3751010304,
+      "reference_words": 19,
+      "word_errors": 24,
+      "hypothesis": "Et sur place, il a voulu constituer des biens et des coussins pour s'accrocher à sa mère et pas qu'il l'a pas pris.",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "118005971910520590.wav",
+      "split": "test",
+      "audio_s": 10.86,
+      "wall_s": 4.8318,
+      "model_load_ms": 753.3,
+      "peak_ws_bytes": 4420976640,
+      "reference_words": 20,
+      "word_errors": 2,
+      "hypothesis": "Premièrement, la plupart des cavaliers portent des bottes d'équitation avec un talon et une semelle lisses et assez étroites.",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "118005971910520590.wav",
+      "split": "test",
+      "audio_s": 10.86,
+      "wall_s": 3.6051,
+      "model_load_ms": 297.03,
+      "peak_ws_bytes": 679526400,
+      "reference_words": 20,
+      "word_errors": 0,
+      "hypothesis": "Premièrement, la plupart des cavaliers portent des bottes d'équitation avec un talon et une semelle lisse et assez étroite.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 10000
+        }
+      ],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "12217957387078475556.wav",
+      "split": "test",
+      "audio_s": 8.88,
+      "wall_s": 3.5528,
+      "model_load_ms": 286.14,
+      "peak_ws_bytes": 679419904,
+      "reference_words": 22,
+      "word_errors": 1,
+      "hypothesis": "Le travail effectué était principalement théorique, et le programme a été écrit pour simuler les observations faites de la galaxie du sagittaire.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 5100
+        },
+        {
+          "from": 5100,
+          "to": 8220
+        }
+      ],
+      "names_found": {
+        "Sagittaire": true
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "12217957387078475556.wav",
+      "split": "test",
+      "audio_s": 8.88,
+      "wall_s": 4.3103,
+      "model_load_ms": 781.2,
+      "peak_ws_bytes": 4018745344,
+      "reference_words": 22,
+      "word_errors": 4,
+      "hypothesis": "Le travail effectué était principalement théorique, le programme a été effectué pour simuler les observations faites de la galaxie posititaire.",
+      "offsets_ms": [],
+      "names_found": {
+        "Sagittaire": false
+      }
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "15942080413960253441.wav",
+      "split": "test",
+      "audio_s": 8.46,
+      "wall_s": 4.2147,
+      "model_load_ms": 799.5999999999999,
+      "peak_ws_bytes": 3933196288,
+      "reference_words": 24,
+      "word_errors": 19,
+      "hypothesis": "Plus grande que la quantité de laquelle s'était utillée du système de transport. Et une entreprise qui s'appelle un système de transport.",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "15942080413960253441.wav",
+      "split": "test",
+      "audio_s": 8.46,
+      "wall_s": 3.7491,
+      "model_load_ms": 277.64,
+      "peak_ws_bytes": 679346176,
+      "reference_words": 24,
+      "word_errors": 15,
+      "hypothesis": "Tout le monde est parti de l'ISST et utilise le système de transport, et si l'entreprise montre ce plan du système de transport.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 5340
+        },
+        {
+          "from": 5340,
+          "to": 6720
+        }
+      ],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "9747669897173511466.wav",
+      "split": "test",
+      "audio_s": 7.5,
+      "wall_s": 3.6881,
+      "model_load_ms": 278.08,
+      "peak_ws_bytes": 679223296,
+      "reference_words": 28,
+      "word_errors": 15,
+      "hypothesis": "Je donne un registrement vidéo à Monnaie Adegrand, dévoilée dans l'interprétation des microsexpressions, c'est-à-dire expression faciale durant quelques millisecondes.",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 4000
+        },
+        {
+          "from": 4000,
+          "to": 7360
+        }
+      ],
+      "names_found": {}
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "9747669897173511466.wav",
+      "split": "test",
+      "audio_s": 7.5,
+      "wall_s": 4.1149,
+      "model_load_ms": 697.4,
+      "peak_ws_bytes": 3738710016,
+      "reference_words": 28,
+      "word_errors": 10,
+      "hypothesis": "Le registrement vidéo a mené à de bandes et ouvertes dans l'interprétation des micros expressions, c'est-à-dire expressions faciales durant quelques millisecondes.",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "vibe",
+      "repeat": 2,
+      "wav": "silence.wav",
+      "split": "control",
+      "audio_s": 3.0,
+      "wall_s": 1.9178,
+      "model_load_ms": 700.0,
+      "peak_ws_bytes": 2826629120,
+      "reference_words": 0,
+      "word_errors": 0,
+      "hypothesis": "",
+      "offsets_ms": [],
+      "names_found": {}
+    },
+    {
+      "engine": "whisper",
+      "repeat": 2,
+      "wav": "silence.wav",
+      "split": "control",
+      "audio_s": 3.0,
+      "wall_s": 3.2241,
+      "model_load_ms": 276.67,
+      "peak_ws_bytes": 678916096,
+      "reference_words": 0,
+      "word_errors": 0,
+      "hypothesis": "...",
+      "offsets_ms": [
+        {
+          "from": 0,
+          "to": 10000
+        }
+      ],
+      "names_found": {}
+    }
+  ],
+  "summary": {
+    "vibe": {
+      "errors": 85,
+      "words": 176,
+      "conditions": {
+        "clean": [
+          42,
+          133
+        ],
+        "noise_10dB": [
+          43,
+          43
+        ]
+      },
+      "wer_pct": 48.3,
+      "audio_s": 63.36,
+      "mean_total_s": 32.474,
+      "rtf": 0.5125,
+      "process_s_per_audio_min": 30.75,
+      "peak_ws_mib": 4216.17,
+      "median_model_load_ms": 734.7,
+      "hypotheses_reproduced": 8,
+      "bounded_timestamps": 0,
+      "names_detected": 1,
+      "expected_names": 6,
+      "silence": [
+        "",
+        ""
+      ]
+    },
+    "whisper": {
+      "errors": 45,
+      "words": 176,
+      "conditions": {
+        "clean": [
+          22,
+          133
+        ],
+        "noise_10dB": [
+          23,
+          43
+        ]
+      },
+      "wer_pct": 25.57,
+      "audio_s": 63.36,
+      "mean_total_s": 28.769,
+      "rtf": 0.4541,
+      "process_s_per_audio_min": 27.24,
+      "peak_ws_mib": 648.13,
+      "median_model_load_ms": 287.5,
+      "hypotheses_reproduced": 8,
+      "bounded_timestamps": 8,
+      "names_detected": 3,
+      "expected_names": 6,
+      "silence": [
+        "...",
+        "..."
+      ]
+    }
+  }
+}

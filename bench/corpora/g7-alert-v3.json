@@ -1,0 +1,1070 @@
+{
+  "fleurs_revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+  "esc50_revision": "33c8ce9eb2cf0b1c2f8bcf322eb349b6be34dbb6",
+  "backgrounds": {
+    "1-17150-A-12.wav": [
+      "fire",
+      "3d278bc2034dfb83881491a8eec97de6f1239f0a5b8a7c02be46b5aab0a51609"
+    ],
+    "1-17367-A-10.wav": [
+      "rain",
+      "d732acd2e0c7c40405968010f49f250740c86998fc416eff2ed5330fc8c89dea"
+    ],
+    "1-28135-A-11.wav": [
+      "waves",
+      "4d04b84d490c4d9ab28a52c4c96d1b14c2f8b132fc4be38166197ae814920742"
+    ]
+  },
+  "clips": [
+    {
+      "split": "dev",
+      "file": "15721518322933544275.wav",
+      "sentence_id": "1518",
+      "reference": "Un ancien policier philippin a pris en otage des touristes de Hong Kong en détournant leur bus à Manille, la capitale des Philippines.",
+      "frames": 133440,
+      "background": null,
+      "snr_db": null,
+      "sha256": "d1dbe49dfccb3796d4406acda689abc60e30272264375cc7171594b2ebd8fe4d"
+    },
+    {
+      "split": "dev",
+      "file": "1584683602767248929.wav",
+      "sentence_id": "1537",
+      "reference": "Vous pouvez voir les pyramides dans l'obscurité et vous pouvez les voir en silence avant le début du spectacle.",
+      "frames": 150720,
+      "background": null,
+      "snr_db": null,
+      "sha256": "20d84e31d7694f5211357de589d6e3e95d3c14ade2a936e7c9282e2deb382a66"
+    },
+    {
+      "split": "dev",
+      "file": "13963765675249857977.wav",
+      "sentence_id": "1651",
+      "reference": "Ceux qui prévoient une année sabbatique ont la possibilité d'apprendre en voyageant, et de plus en plus d'entre eux choisissent cette possibilité.",
+      "frames": 131520,
+      "background": null,
+      "snr_db": null,
+      "sha256": "8af1e623794b28bb2402219938cd8709c1eee235d8f4f9b813c1a804741b7852"
+    },
+    {
+      "split": "dev",
+      "file": "336892504374541425.wav",
+      "sentence_id": "1558",
+      "reference": "Avant qu'une organisation ne soit innovante, sa direction doit créer une culture de l'innovation, des connaissances partagées et sa propre culture de l'apprentissage.",
+      "frames": 137280,
+      "background": null,
+      "snr_db": null,
+      "sha256": "d42d99f2e84599e5241e619d68cb2432780a288abfb7e875ee836ed1af6ef022"
+    },
+    {
+      "split": "dev",
+      "file": "5832476106767976342.wav",
+      "sentence_id": "1572",
+      "reference": "Trois autres bombes ont explosé près des bâtiments du gouvernement en l'espace de deux heures.",
+      "frames": 132480,
+      "background": null,
+      "snr_db": null,
+      "sha256": "9c0cd19037eeba868e65762bb420e3574dcaa74c6ced71e4aee09dbea5b06b77"
+    },
+    {
+      "split": "dev",
+      "file": "4058888282216101530.wav",
+      "sentence_id": "1597",
+      "reference": "L'argent peut être échangé à la seule banque des îles située à Stanley, en face du magasin FIC West.",
+      "frames": 102720,
+      "background": null,
+      "snr_db": null,
+      "sha256": "463c20495e45b5065291cb434a8237b3c3bba9906de2c02596c03797a09a9966"
+    },
+    {
+      "split": "dev",
+      "file": "14780011979040114845.wav",
+      "sentence_id": "1552",
+      "reference": "Le résultat de l'analyse du tracé sera publié sur un site Web public.",
+      "frames": 91200,
+      "background": null,
+      "snr_db": null,
+      "sha256": "d1afa21f6e6d44dfbb2bffa3ede804067fd65075196727a0b76a64164b36259d"
+    },
+    {
+      "split": "dev",
+      "file": "15024866191890958889.wav",
+      "sentence_id": "1645",
+      "reference": "Son pouvoir omniprésent touchait tout le monde, du roi au roturier.",
+      "frames": 105600,
+      "background": null,
+      "snr_db": null,
+      "sha256": "3acc998887ad18479c18f7924f087c503a3b5ca7969be6c455c6dde85309df18"
+    },
+    {
+      "split": "dev",
+      "file": "622196158886216764.wav",
+      "sentence_id": "1553",
+      "reference": "Noël est l'une des fêtes les plus importantes de la chrétienté, elle célèbre la naissance de Jésus.",
+      "frames": 63360,
+      "background": null,
+      "snr_db": null,
+      "sha256": "6b797d8e00c5039ae2ab8e055c3bf4941d74d2c9395ef5539394f1d5c0e390bd"
+    },
+    {
+      "split": "dev",
+      "file": "12952609488891094440.wav",
+      "sentence_id": "1533",
+      "reference": "De nombreux formats courants (famille de formats APS, par exemple) sont égaux à ce rapport d’aspect ou s’en approchent de près.",
+      "frames": 188160,
+      "background": null,
+      "snr_db": null,
+      "sha256": "2309de2076358000ae688a2758e9b8a9827b2127bfd81c998bf50f4f28a5cdd5"
+    },
+    {
+      "split": "dev",
+      "file": "14402828885890342884.wav",
+      "sentence_id": "1658",
+      "reference": "Avec seulement dix-huit médailles disponibles par jour, un certain nombre de pays n'ont pas réussi à monter sur le podium des médaillés.",
+      "frames": 111360,
+      "background": null,
+      "snr_db": null,
+      "sha256": "bc222ffdec1f36c96e617777b5f651d740f75f770dcaab85c7339bb6523812fb"
+    },
+    {
+      "split": "dev",
+      "file": "9043116753413356940.wav",
+      "sentence_id": "1523",
+      "reference": "Le match s'est joué à un point, 21 à 20, mettant fin à la série de 15 victoires des All Blacks.",
+      "frames": 125760,
+      "background": null,
+      "snr_db": null,
+      "sha256": "08d0e8f75a314dd6b51f35e6df7b1f374aa955209f824b10259f1199a4ef6855"
+    },
+    {
+      "split": "dev",
+      "file": "6873185443459606163.wav",
+      "sentence_id": "1511",
+      "reference": "Bientôt, des officiers équipés de matériel antiémeute pénétrèrent dans la cour et coincèrent les détenus avec des gaz lacrymogènes.",
+      "frames": 124800,
+      "background": null,
+      "snr_db": null,
+      "sha256": "79305319427f70e529d3ed3aaed67c7e2e3b60bf9bf5a76405bd4168a6960461"
+    },
+    {
+      "split": "dev",
+      "file": "8490912182550858562.wav",
+      "sentence_id": "1539",
+      "reference": "Les membres d'une sous-culture signalent souvent leur appartenance par un usage distinctif et symbolique du style, qui englobe les modes, les maniérismes et l'argot.",
+      "frames": 167040,
+      "background": null,
+      "snr_db": null,
+      "sha256": "5b82f31bba4a3cdc3bdf600da4bcac1832bf841d421a734949eb5d3ff395dd46"
+    },
+    {
+      "split": "dev",
+      "file": "12482409059971069823.wav",
+      "sentence_id": "1530",
+      "reference": "Il devait être abattu mardi, mais il a été sauvé suite à une décision d'urgence du tribunal.",
+      "frames": 167040,
+      "background": null,
+      "snr_db": null,
+      "sha256": "ae4f4537f055e11883d8121000a2c71e01e1ba95b91f406c12ff1b8136816eec"
+    },
+    {
+      "split": "dev",
+      "file": "4145821595000192233.wav",
+      "sentence_id": "1643",
+      "reference": "La surface totale du parc est de 19 500 km², celle-ci est divisée en 14 écozones, abritant chacune une faune spécifique.",
+      "frames": 168960,
+      "background": null,
+      "snr_db": null,
+      "sha256": "0fd5164602fa81b9b8beaa35d8ace952c435f22f9ff7105628314387e3a53e8c"
+    },
+    {
+      "split": "dev",
+      "file": "10864361718248331558.wav",
+      "sentence_id": "1543",
+      "reference": "Le patient s'était rendu au Nigeria, où certains cas de virus Ebola se sont produits.",
+      "frames": 151680,
+      "background": null,
+      "snr_db": null,
+      "sha256": "1fa7fa8f492064e6aaf8ef02038cc2d6efa9ceb31324e21a1071d247779af2dd"
+    },
+    {
+      "split": "dev",
+      "file": "2309646888656704614.wav",
+      "sentence_id": "1656",
+      "reference": "La police a déclaré qu’il semblerait que le corps se trouvait là depuis un jour environ.",
+      "frames": 133440,
+      "background": null,
+      "snr_db": null,
+      "sha256": "dd953840bf29deb482ff01c37c4049b456a7b0c8f9b4358dce24c67a08c78e55"
+    },
+    {
+      "split": "dev",
+      "file": "14757781394291531658.wav",
+      "sentence_id": "1578",
+      "reference": "Ensuite, Lakkha Singh a pris l'initiative de chanter les bhajans.",
+      "frames": 155520,
+      "background": null,
+      "snr_db": null,
+      "sha256": "31e45a3e604fc5513be8dce4e9e6a463398b2b061d8eed0f2fb9b0193c2217a1"
+    },
+    {
+      "split": "dev",
+      "file": "11088482903476099771.wav",
+      "sentence_id": "1654",
+      "reference": "Je ne sais pas si vous vous en rendez compte, mais la plupart des marchandises en provenance d'Amérique centrale sont entrées dans notre pays exonérées de taxes.",
+      "frames": 152640,
+      "background": null,
+      "snr_db": null,
+      "sha256": "5ff69ac1928e488c91d99d77d8a51cc50e422070cf660d32e4f255d3bfda757d"
+    },
+    {
+      "split": "dev",
+      "file": "13883322800848130831.wav",
+      "sentence_id": "1648",
+      "reference": "Comme il n'y avait pas de grandes forêts en terre de Canaan, le bois était extrêmement cher.",
+      "frames": 163200,
+      "background": null,
+      "snr_db": null,
+      "sha256": "36f418a110a6d70055c9fc25583e6e369c9f85be656e8937b869deb9b99707f5"
+    },
+    {
+      "split": "dev",
+      "file": "15365195302044965205.wav",
+      "sentence_id": "1536",
+      "reference": "Les autorités locales avertissent les habitants des environs de rester à l’intérieur, d’éteindre les climatiseurs et de ne pas boire l’eau du robinet.",
+      "frames": 134400,
+      "background": null,
+      "snr_db": null,
+      "sha256": "cda4492e5ec3768d4de8f5b749015c7230bbd214fad9e3afa32688ae6c242030"
+    },
+    {
+      "split": "dev",
+      "file": "12736265345443968280.wav",
+      "sentence_id": "1577",
+      "reference": "Cela ne me semblait pas logique ; ce n'était certainement pas juste.",
+      "frames": 73920,
+      "background": null,
+      "snr_db": null,
+      "sha256": "6d583a2cd02843ee585524ed6ef786f8e547b92df664eddc8c0068a688037b98"
+    },
+    {
+      "split": "dev",
+      "file": "1718623772139428152.wav",
+      "sentence_id": "1627",
+      "reference": "Les repas romains de l'Antiquité ne pouvaient pas inclure ces aliments d'origine américaine ou asiatique qui ont été introduits en Europe des siècles plus tard.",
+      "frames": 137280,
+      "background": null,
+      "snr_db": null,
+      "sha256": "9d6815389c4819baadebddd27eeeb44e67f7a6748c33c86c1ab655b00d7a8f65"
+    },
+    {
+      "split": "dev",
+      "file": "14749239329139492793.wav",
+      "sentence_id": "1585",
+      "reference": "Au fil du temps, à mesure que la nouvelle population s'adapte à son nouvel environnement, elle commence à ressembler de moins en moins à l'autre population.",
+      "frames": 129600,
+      "background": null,
+      "snr_db": null,
+      "sha256": "6ec57c6531f3ed62246a57753b4fbf0f094917d28b1553645670ecdc89b7300f"
+    },
+    {
+      "split": "dev",
+      "file": "15486459632428455015.wav",
+      "sentence_id": "1607",
+      "reference": "Cela vaut la peine de se promener pendant une demi-heure dans ce village fascinant.",
+      "frames": 100800,
+      "background": null,
+      "snr_db": null,
+      "sha256": "c37eda42401a2d6ac24e06454742b60239730473d50c7fe6f0be5f59d2a1a6a9"
+    },
+    {
+      "split": "dev",
+      "file": "14158452746636513305.wav",
+      "sentence_id": "1603",
+      "reference": "Les accidents aériens sont fréquents en Iran, qui dispose d'une flotte vieillissante et mal entretenue autant pour les vols civils que militaires.",
+      "frames": 188160,
+      "background": null,
+      "snr_db": null,
+      "sha256": "9ecc72b009936bb2d33e53c8fd0839319a276f03ecaab59eef4ee696de4f4e98"
+    },
+    {
+      "split": "dev",
+      "file": "475129543623066238.wav",
+      "sentence_id": "1598",
+      "reference": "Bien que trois personnes aient été présentes dans la maison quand la voiture l'a percutée, aucune n'a été blessée.",
+      "frames": 166080,
+      "background": null,
+      "snr_db": null,
+      "sha256": "d77c90b8bf9069637c15fca9755b4d82f895106b69efd9b60078680567486cd9"
+    },
+    {
+      "split": "dev",
+      "file": "10531118780197997906.wav",
+      "sentence_id": "1640",
+      "reference": "Sur les routes glacées et enneigées, le frottement est faible et vous ne pouvez pas conduire comme si vous étiez sur l'asphalte nu.",
+      "frames": 130560,
+      "background": null,
+      "snr_db": null,
+      "sha256": "175c807ab22e16ea3c8806df5b63fe598e1360f6d33a23c9c182c4bf88850b04"
+    },
+    {
+      "split": "dev",
+      "file": "4005455978503346234.wav",
+      "sentence_id": "1556",
+      "reference": "Son millième timbre a été le magnifique « Great Deeds by Swedish Kings » de David Klöcker Ehrenstrahl en 2000, qui figure dans le Livre Guinness des records.",
+      "frames": 181440,
+      "background": null,
+      "snr_db": null,
+      "sha256": "ed3e301248cebe183bf8c187859c719cdd98020dc7e8cda3da85b38658ce0f89"
+    },
+    {
+      "split": "dev",
+      "file": "9186125339095550396.wav",
+      "sentence_id": "1566",
+      "reference": "Pourtant, 80 % de nos marchandises étaient taxées par des droits de douane dans les pays d’Amérique centrale. Nous vous soignons.",
+      "frames": 126720,
+      "background": null,
+      "snr_db": null,
+      "sha256": "2ab54ed47c59c4a8dc21196e65be840b3b94d387050f4e91f8dd17a2914d48e2"
+    },
+    {
+      "split": "dev",
+      "file": "5411678530596209717.wav",
+      "sentence_id": "1642",
+      "reference": "Les dépenses de guerre de l'impérialisme américain dans la conquête des Philippines ont été payées par le peuple philippin lui-même.",
+      "frames": 151680,
+      "background": null,
+      "snr_db": null,
+      "sha256": "c7e057d1b6f16f9ac3a01a14be15d49dce2ec5cd5d764c91cec8e509f6b733eb"
+    },
+    {
+      "split": "dev",
+      "file": "10895602731915140601.wav",
+      "sentence_id": "1596",
+      "reference": "Les naturalistes et les philosophes se sont concentrés sur les textes anciens, et en particulier sur la Bible en latin.",
+      "frames": 126720,
+      "background": null,
+      "snr_db": null,
+      "sha256": "b28ed6479b831cdf3d620255e058372232ec8239fb9a77e6b6c59190e5722f97"
+    },
+    {
+      "split": "dev",
+      "file": "5404319582598438880.wav",
+      "sentence_id": "1612",
+      "reference": "L'eau se déverse sur la digue dans une section de 100 pieds de large.",
+      "frames": 117120,
+      "background": null,
+      "snr_db": null,
+      "sha256": "b2c83d880f6b1ffd40055d97aa60e3113a18495d46d3b47901fd9ce6a4c92e3c"
+    },
+    {
+      "split": "dev",
+      "file": "10198958753510138668.wav",
+      "sentence_id": "1570",
+      "reference": "Il n'avait pas non plus le pouvoir de déroger aux lois fiscales ni à celles sur les droits de douane entre les États.",
+      "frames": 96000,
+      "background": null,
+      "snr_db": null,
+      "sha256": "281c4d7e65d186abbd4659a0afe8f8e614900c9add588c6cbdd2447fdd8ee5ce"
+    },
+    {
+      "split": "dev",
+      "file": "12003500929711524882.wav",
+      "sentence_id": "1521",
+      "reference": "Le satellite reçoit l'appel dans l'espace puis le renvoie sur Terre, presque instantanément.",
+      "frames": 96000,
+      "background": null,
+      "snr_db": null,
+      "sha256": "521a71b90f40acd30327ffd12b701e78a7cddea508c44f89d423a95a3a22cbfe"
+    },
+    {
+      "split": "dev",
+      "file": "3549421442622071956.wav",
+      "sentence_id": "1601",
+      "reference": "Selon les scientifiques, les ocelots traquent et trouvent les animaux à manger (proies) par l'odorat, en reniflant leur trajet sur le sol.",
+      "frames": 162240,
+      "background": null,
+      "snr_db": null,
+      "sha256": "a17e6fc03baa5bb763ecb8e0cf276c4755cb8a53f5d2ba8b22650bed51793d42"
+    },
+    {
+      "split": "dev",
+      "file": "12809289853746828204.wav",
+      "sentence_id": "1639",
+      "reference": "Comme les étudiants sont souvent le public le plus critique, l'auteur du blog commence à s'efforcer d'améliorer son écriture pour éviter les critiques.",
+      "frames": 172800,
+      "background": null,
+      "snr_db": null,
+      "sha256": "219f761d4905b6ea20b450a16dba0b945d4dbed10012a0b1a2e2b669e75fc15c"
+    },
+    {
+      "split": "dev",
+      "file": "18317363254086310962.wav",
+      "sentence_id": "1547",
+      "reference": "La NHK a également fait savoir que la centrale nucléaire de Kashiwazaki Kariwa, dans la préfecture de Niigata, fonctionnait normalement.",
+      "frames": 125760,
+      "background": null,
+      "snr_db": null,
+      "sha256": "f30f6be6bbe41f7d66e4345f5fd039faa198c81df6bb9cff04e6022be3f97112"
+    },
+    {
+      "split": "dev",
+      "file": "8945337825626301353.wav",
+      "sentence_id": "1657",
+      "reference": "Toute modification ou demande doit cependant être adressée à l’agence de voyages d’abord et non directement à l’hôtel.",
+      "frames": 124800,
+      "background": null,
+      "snr_db": null,
+      "sha256": "3936ab3bf6bb2c6e59f0079718486660c49798d3ba57c0fe3178aa1fcb5d1c80"
+    },
+    {
+      "split": "dev",
+      "file": "10572150933399515603.wav",
+      "sentence_id": "1636",
+      "reference": "Les Espagnols ont inauguré la période de la colonisation, laquelle a duré trois siècles.",
+      "frames": 105600,
+      "background": null,
+      "snr_db": null,
+      "sha256": "2e37a0b6e7341c7cbb002f830f8d3b91094db1956220911d90463f4413fa3ff1"
+    },
+    {
+      "split": "dev",
+      "file": "9577382764311883081.wav",
+      "sentence_id": "1534",
+      "reference": "Combiné à sa relative inaccessibilité, « Tombouctou » est devenu une métaphore pour les pays lointains et exotiques.",
+      "frames": 167040,
+      "background": null,
+      "snr_db": null,
+      "sha256": "d9ec2a948cc4eefab28d50e8f54a33ac3c727a489c955c5780a20abd5e8445c7"
+    },
+    {
+      "split": "dev",
+      "file": "2056526465369607419.wav",
+      "sentence_id": "1540",
+      "reference": "En principe, le bouddhisme tibétain est très simple. Il se compose du Kundalini Yoga, de la méditation et de la voie de l'amour universel.",
+      "frames": 161280,
+      "background": null,
+      "snr_db": null,
+      "sha256": "b7475a715aee84ac4a77f35c7649828d35eff713752a6c26093563a33715d3e7"
+    },
+    {
+      "split": "dev",
+      "file": "11357826383234870444.wav",
+      "sentence_id": "1560",
+      "reference": "Dès que vous sortez du courant, le retour à la nage n'est pas plus difficile que d'habitude.",
+      "frames": 149760,
+      "background": null,
+      "snr_db": null,
+      "sha256": "bf924a2fbae928002c97a9a0c0434062cb3a071ab826ae173c81ba4b46694260"
+    },
+    {
+      "split": "dev",
+      "file": "6120402698467486863.wav",
+      "sentence_id": "1659",
+      "reference": "Les scientifiques affirment que l'explosion causée par la collision a été massive.",
+      "frames": 126720,
+      "background": null,
+      "snr_db": null,
+      "sha256": "2457c98963b99f353480184ddf8be20b03315ae03dc16ce6e4fcd13958300635"
+    },
+    {
+      "split": "dev",
+      "file": "15432127974322879562.wav",
+      "sentence_id": "1531",
+      "reference": "Les îles de l'Afrique de l'Est se situent dans l'océan Indien, au large de la côte est africaine.",
+      "frames": 170880,
+      "background": null,
+      "snr_db": null,
+      "sha256": "c3583bb6fbb27e45dfac37e379c454bb2c3d456b517d2e1f87d91fea2d6af655"
+    },
+    {
+      "split": "dev",
+      "file": "5995873528696276166.wav",
+      "sentence_id": "1588",
+      "reference": "Selon la police, il est peu probable que le conducteur du véhicule ayant heurté le photographe fasse l'objet de poursuites pénales.",
+      "frames": 168960,
+      "background": null,
+      "snr_db": null,
+      "sha256": "7ff44b18b44a3f5c7cc8354c1d698b7bace06b622f45336e21124e19e82f62fd"
+    },
+    {
+      "split": "dev",
+      "file": "16289505342124506820.wav",
+      "sentence_id": "1650",
+      "reference": "Les crocodiles d’eau salée ne vivent pas activement dans l’océan, leur habitat principal se trouve dans les estuaires des rivières au nord de Rockhampton.",
+      "frames": 143040,
+      "background": null,
+      "snr_db": null,
+      "sha256": "57c4c5c04ea2d0257c738a5b432ed8479be1cd2d7d5941a70334e737537aab9c"
+    },
+    {
+      "split": "dev",
+      "file": "580324696948961796.wav",
+      "sentence_id": "1581",
+      "reference": "L'Amazone est également le fleuve le plus large de la planète, atteignant parfois 10 km de large.",
+      "frames": 83520,
+      "background": null,
+      "snr_db": null,
+      "sha256": "7c09c9e0d08e7c8ded1483972167117a53b486ca05bd0f54fa63f0d99a5376bd"
+    },
+    {
+      "split": "dev",
+      "file": "6347555553637163399.wav",
+      "sentence_id": "1576",
+      "reference": "Un cours couvrira normalement toutes les questions abordées ici de manière beaucoup plus détaillée, généralement avec une expérience pratique.",
+      "frames": 124800,
+      "background": null,
+      "snr_db": null,
+      "sha256": "acb300044066f102e8e5c09528fa02eacfd5e420b1d5423f5d019d2f159df8e8"
+    },
+    {
+      "split": "dev",
+      "file": "1528829748755272987.wav",
+      "sentence_id": "1510",
+      "reference": "L'ONU espère également finaliser un fonds pour aider les pays touchés par le réchauffement climatique à faire face aux impacts.",
+      "frames": 110400,
+      "background": null,
+      "snr_db": null,
+      "sha256": "31be6593f809551bfc33941939f193ca995ff3d5b3579a242e2a41a36b1c06da"
+    },
+    {
+      "split": "dev",
+      "file": "2086639904747050008.wav",
+      "sentence_id": "1554",
+      "reference": "Il dit avoir conçu une sonnette de porte Wi-Fi.",
+      "frames": 63360,
+      "background": null,
+      "snr_db": null,
+      "sha256": "6b683d78b65b870a6004f17152bc825e47673ac68a2e038dae38608dee69e6b7"
+    },
+    {
+      "split": "dev",
+      "file": "18245797820266176213.wav",
+      "sentence_id": "1606",
+      "reference": "Les Portugais, qui après l'avoir détruite l'avaient reconstruite et baptisée Casa Branca, l'ont finalement abandonnée en 1755 après un tremblement de terre.",
+      "frames": 171840,
+      "background": null,
+      "snr_db": null,
+      "sha256": "73f18a20c08b79bf13f48f42f3412bb21fda8bc7c7f1c2e6bd03864190537acb"
+    },
+    {
+      "split": "dev",
+      "file": "11046631667630579521.wav",
+      "sentence_id": "1593",
+      "reference": "Finalement, les roues en bois ont été remplacées par des roues en fer. En 1767, les premiers rails en fer ont fait leur apparition.",
+      "frames": 134400,
+      "background": null,
+      "snr_db": null,
+      "sha256": "d3a7892e09275dc36f3056193ef776964818c58718aab5dc950412e9846210b1"
+    },
+    {
+      "split": "dev",
+      "file": "4103141930996483169.wav",
+      "sentence_id": "1571",
+      "reference": "Les Arabes ont également apporté la pratique de l'Islam dans les terres et cette religion s'est largement répandue aux Comores et à Mayotte.",
+      "frames": 122880,
+      "background": null,
+      "snr_db": null,
+      "sha256": "845500962a8ada498e84549926f17a53e331c2059513a19dbc903329bcc4654d"
+    },
+    {
+      "split": "dev",
+      "file": "8657467564551770215.wav",
+      "sentence_id": "1561",
+      "reference": "La plupart des districts sont desservis par de petits caboteurs japonais, qui sont confortables et robustes.",
+      "frames": 167040,
+      "background": null,
+      "snr_db": null,
+      "sha256": "6555b7d951843df29bd2344ffaa4c3dc6b07745d851dd7fa874506c6c90c9b78"
+    },
+    {
+      "split": "dev",
+      "file": "10644254511295210664.wav",
+      "sentence_id": "1647",
+      "reference": "Les opinions présentées sont souvent superficielles, générales et trop simplifiées par rapport aux informations plus détaillées disponibles ailleurs.",
+      "frames": 127680,
+      "background": null,
+      "snr_db": null,
+      "sha256": "ffff99084d5d1272653e3d7a1588a5f4f0c8f5c14e657c5cf9827ddd596b836e"
+    },
+    {
+      "split": "dev",
+      "file": "4604658007244397303.wav",
+      "sentence_id": "1548",
+      "reference": "Lorsque vous appelez une personne qui se trouve à des milliers de kilomètres, vous utilisez un satellite.",
+      "frames": 155520,
+      "background": null,
+      "snr_db": null,
+      "sha256": "b3dd781800fcfa00fb5561efa682a3f7c1a9c25c9e5de89850ef4a1daded8239"
+    },
+    {
+      "split": "dev",
+      "file": "5888479532718765173.wav",
+      "sentence_id": "1555",
+      "reference": "Dans le cimetière, on trouve d'intéressantes sculptures en marbre représentant des colombes sur certaines tombes.",
+      "frames": 146880,
+      "background": null,
+      "snr_db": null,
+      "sha256": "fc047e03583eaabf0176f33afe47231cc30f151abb490e52b432b2dc9cb084f3"
+    },
+    {
+      "split": "dev",
+      "file": "13034524130377276263.wav",
+      "sentence_id": "1516",
+      "reference": "Veuillez traiter le site avec toute la dignité, la solennité et le respect qu'il mérite. Ne faites pas de blagues sur l'Holocauste ou les nazis.",
+      "frames": 127680,
+      "background": null,
+      "snr_db": null,
+      "sha256": "c8a634626c7a4573f8ec5d15b9dc431bf7413494e71f2eda459bfc01bdde16ad"
+    },
+    {
+      "split": "test",
+      "file": "14218582064729914931.wav",
+      "sentence_id": "1796",
+      "reference": "Ce sédiment était nécessaire à la création de bancs de sable et de plages, qui servaient d’habitats à la faune.",
+      "frames": 121920,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 8,
+      "sha256": "d2002af4b771162313513286cf7d58632099199cc86be59182e66218c2542937"
+    },
+    {
+      "split": "test",
+      "file": "4656961419508518690.wav",
+      "sentence_id": "1783",
+      "reference": "Les phénomènes météorologiques extrêmes, régionaux et saisonniers, incluent les tempêtes de froid, les tempêtes de neige avec vents violents, et les tempêtes de sable ou de poussières.",
+      "frames": 165120,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 8,
+      "sha256": "2e3a81d29fb3d86b7d85669774b08f959d5901ba70c2fac0fdebb95edb9793cd"
+    },
+    {
+      "split": "test",
+      "file": "14576741258913308247.wav",
+      "sentence_id": "1792",
+      "reference": "C'est ce qu'on appelle le pH d'un produit chimique. Vous pouvez fabriquer un indicateur en utilisant du jus de chou rouge.",
+      "frames": 147840,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 8,
+      "sha256": "05b7ae2166528e4f2c6749beef0a5e0632eed766062504aef31bdf3861eeee6e"
+    },
+    {
+      "split": "test",
+      "file": "7953074829114476731.wav",
+      "sentence_id": "1800",
+      "reference": "Le pont devrait être pleinement opérationnel en septembre 2017, date à laquelle devraient être achevés les postes de contrôle des douanes brésiliennes.",
+      "frames": 139200,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 15,
+      "sha256": "537079ef4dc835648578205ff3694d578e40e532befefbc57c14520fcb39a1e0"
+    },
+    {
+      "split": "test",
+      "file": "5927656692527234400.wav",
+      "sentence_id": "1748",
+      "reference": "L’équipe des sapeurs pompiers a finalement éteint le feu à 23 h 35.",
+      "frames": 79680,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 15,
+      "sha256": "a94206e5c7f44a55c69461ddf2fd9feef99fc0151701bf2839dd15d443b0fa1d"
+    },
+    {
+      "split": "test",
+      "file": "16845455022240045713.wav",
+      "sentence_id": "1757",
+      "reference": "Seules les mutations des cellules germinales peuvent être transmises aux enfants, tandis que d'autres mutations peuvent entraîner la mort des cellules ou le cancer.",
+      "frames": 165120,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 15,
+      "sha256": "87606d03d09823334b4002bf223d6c5cdfd12a6c4117e01ee2a8e5dcf87739f4"
+    },
+    {
+      "split": "test",
+      "file": "14369252281614463855.wav",
+      "sentence_id": "1915",
+      "reference": "Vous pouvez utiliser des boda-boda (moto taxi) pour vous déplacer dans Goma. Le prix normal (local) est d’environ 500 francs congolais pour une petite course.",
+      "frames": 164160,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 22,
+      "sha256": "bddfb28e68c40869f7253294b377dd349e91cdf816385961a5259ae25850be04"
+    },
+    {
+      "split": "test",
+      "file": "1785504271577981495.wav",
+      "sentence_id": "1680",
+      "reference": "Athlète équilibré, le tigre peut grimper (mais parfois difficilement), nager, sauter de grandes distances et tracter avec cinq fois la force d'un humain puissant.",
+      "frames": 136320,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 22,
+      "sha256": "0a529e9349b011601f7f30d0b0e7f9c14dc8ba5944f1ae5838b0685c1a0d540d"
+    },
+    {
+      "split": "test",
+      "file": "1699438851015035180.wav",
+      "sentence_id": "1760",
+      "reference": "Le mosasaure était le superprédateur de l'époque, il ne craignait rien, sauf les autres mosasaures.",
+      "frames": 117120,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 22,
+      "sha256": "f89352be7072734a63a6945c7071d4f61d6cc213c83f3412885f684a0ba95c73"
+    },
+    {
+      "split": "test",
+      "file": "7232040163359586629.wav",
+      "sentence_id": "1907",
+      "reference": "Peu après le début des hostilités, la Grande-Bretagne a mis en place un blocus naval contre l’Allemagne.",
+      "frames": 95040,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 8,
+      "sha256": "d5f07f5cd11d87e1cbcd060a59620c67b822a8bf09a221c8b5a6ce35dc59bf52"
+    },
+    {
+      "split": "test",
+      "file": "12549203010893340688.wav",
+      "sentence_id": "1903",
+      "reference": "Lorsque toutes les ressources disponibles sont utilisées efficacement dans les services fonctionnels d'une organisation, la créativité et l'ingéniosité peuvent s'exprimer pleinement.",
+      "frames": 142080,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 8,
+      "sha256": "69bbd84f92f1c7bdd079d4470736facf223cddfa1a4ba8970bc8e4d6ce45c6fa"
+    },
+    {
+      "split": "test",
+      "file": "11897674795285346876.wav",
+      "sentence_id": "1966",
+      "reference": "Cette commission a été la réponse de Martelly aux vastes protestations contre le régime qui ont commencé en octobre.",
+      "frames": 145920,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 8,
+      "sha256": "8ba7f0bcc66c2ad7e13522f4176d237bb71392747d0d52ffd15d195134f9857c"
+    },
+    {
+      "split": "test",
+      "file": "13180411801339872252.wav",
+      "sentence_id": "1741",
+      "reference": "De grandes zones plus au nord sont assez peu peuplées et certaines sont presque inhabitées à l'état sauvage.",
+      "frames": 69120,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 15,
+      "sha256": "21d210095ca0e325750c29868c961c99de2e13b6303d11bd4d4bea812650e45c"
+    },
+    {
+      "split": "test",
+      "file": "15059097282985609108.wav",
+      "sentence_id": "1885",
+      "reference": "Entre 22 h 00 et 23 h 00 MDT, les détenus ont allumé un feu dans la cour.",
+      "frames": 91200,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 15,
+      "sha256": "78ca56ccdf2aa279e594a83612ce611d5289862ffb4e8b67e03284a511399cac"
+    },
+    {
+      "split": "test",
+      "file": "13132336053284602337.wav",
+      "sentence_id": "1945",
+      "reference": "Casablanca est l’un des endroits les moins intéressants de tout le Maroc pour faire des achats.",
+      "frames": 138240,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 15,
+      "sha256": "bdfb9f354626429640c52b8bd935f5a5037fb4103be19e4a685ad7108a812a36"
+    },
+    {
+      "split": "test",
+      "file": "5468793292723670932.wav",
+      "sentence_id": "1803",
+      "reference": "L'humidité sur vos mains va réagir avec les couches extérieures, ce qui induira une sensation étrange et produira une sorte de coquille.",
+      "frames": 133440,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 22,
+      "sha256": "9631d7566cab98d499cdccf6da61b43e8683cc643a5bc303c1566e979d8c4e73"
+    },
+    {
+      "split": "test",
+      "file": "13279079565064190750.wav",
+      "sentence_id": "1677",
+      "reference": "Aujourd'hui, les seuls insectes qui ne peuvent pas replier leurs ailes sont les mouches dragons et les éphémères.",
+      "frames": 105600,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 22,
+      "sha256": "a2a72c37e7780a0725cbc71ca7252e2816ef86b6261b04d85089f46b4771dda0"
+    },
+    {
+      "split": "test",
+      "file": "9231482439901797491.wav",
+      "sentence_id": "1734",
+      "reference": "Les scientifiques ont pu conclure que la matière noire affecte les autres matières noires de la même manière que la matière normale.",
+      "frames": 130560,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 22,
+      "sha256": "aea663ef87e2ddd7aff4d03b3888cec3a7e7dd7d3787e4ca554eeeed55039fae"
+    },
+    {
+      "split": "test",
+      "file": "7880424229814892285.wav",
+      "sentence_id": "1875",
+      "reference": "Pas moins de 20 % de l'eau qui se jette des rivières de la planète dans les océans provient de l'Amazone.",
+      "frames": 81600,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 8,
+      "sha256": "7724299ba1ff2a71f37fcc42fc1225de3c7b026b18b6141b0d2ec2e128bf3f63"
+    },
+    {
+      "split": "test",
+      "file": "2318938252775740465.wav",
+      "sentence_id": "1854",
+      "reference": "Le véhicule lui-même a été enlevé du lieu de l'accident vers 12 h 00 GMT le même jour.",
+      "frames": 99840,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 8,
+      "sha256": "57bac103ae80c1b1a52aa24bed5595a31398f5b61cae9380b6dde4e2bce234cb"
+    },
+    {
+      "split": "test",
+      "file": "7163324756398649509.wav",
+      "sentence_id": "2006",
+      "reference": "Des éléments comme le calcium et le potassium sont considérés comme des métaux. Bien sûr, il y a aussi des métaux comme l’argent et l’or.",
+      "frames": 159360,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 8,
+      "sha256": "c8c0984ca99200123cfda974bb5198158bb3c89f05154ed5d410197e6ca96c76"
+    },
+    {
+      "split": "test",
+      "file": "16058710094189854539.wav",
+      "sentence_id": "1719",
+      "reference": "Le temps violent est le terme générique pour tout phénomène météorologique dangereux susceptible de causer des dommages, de graves bouleversements sociaux ou la perte de vies humaines.",
+      "frames": 151680,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 15,
+      "sha256": "fbae0023204dfc6ffeaa75ca25f941295858936acbb4dbcfed66dbbf33d7b419"
+    },
+    {
+      "split": "test",
+      "file": "16572385818525527468.wav",
+      "sentence_id": "2002",
+      "reference": "Cela permettra aux joueurs de contrôler les actions et les mouvements dans les jeux vidéo en déplaçant l’appareil dans l’air.",
+      "frames": 102720,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 15,
+      "sha256": "d4faf03cd9cf65c89b28de19dc2cf4435a2f10bf6f6254502629ef6214b77151"
+    },
+    {
+      "split": "test",
+      "file": "3292214861722888809.wav",
+      "sentence_id": "1978",
+      "reference": "Pour les Springboks, ce fut la fin d'une série de cinq défaites.",
+      "frames": 155520,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 15,
+      "sha256": "97453b8cd9a132b79e02db5e7af8639245011ec5bb70ee46a148090d4b358620"
+    },
+    {
+      "split": "test",
+      "file": "415642628385192624.wav",
+      "sentence_id": "1895",
+      "reference": "Avec le déclin de la connaissance du grec, l'Occident s'est retrouvé coupé de ses racines philosophiques et scientifiques grecques.",
+      "frames": 188160,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 22,
+      "sha256": "73e0d8637d13962fc34390d952de98034ee8cbe23abb80fddd173aafe78b9b09"
+    },
+    {
+      "split": "test",
+      "file": "11535401847300751607.wav",
+      "sentence_id": "1825",
+      "reference": "Si vous voulez participer de près à l'événement musical, vous allez devoir arriver tôt pour trouver un aire de camping bien placée.",
+      "frames": 131520,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 22,
+      "sha256": "bd34c56fbb62f9d4bce259728d8ff99c93d30fd76c06d902d5762ca22f07b870"
+    },
+    {
+      "split": "test",
+      "file": "306765481508614838.wav",
+      "sentence_id": "1802",
+      "reference": "Internet allie des éléments de communication de masse et de communication interpersonnelle.",
+      "frames": 152640,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 22,
+      "sha256": "d04a74f5a901be5cda98841e7c1331301bfb6a7f62a17239af84cd8c64963a41"
+    },
+    {
+      "split": "test",
+      "file": "11431212784065590790.wav",
+      "sentence_id": "1755",
+      "reference": "Une bombe a explosé devant le bureau du gouverneur général.",
+      "frames": 60480,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 8,
+      "sha256": "8e4272114a9cd4becdc22cfa2edd47679d71b4477b42fa6a060cd2112c60479e"
+    },
+    {
+      "split": "test",
+      "file": "11926538826833635593.wav",
+      "sentence_id": "1701",
+      "reference": "Il semble que les chèvres aient été domestiquées pour la première fois il y a environ 10 000 ans dans les monts Zagros en Iran.",
+      "frames": 101760,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 8,
+      "sha256": "4a2c7c388e2228e302fd5cb5b85a11825f5ae03c027d5221bd2533aae0ceb8bd"
+    },
+    {
+      "split": "test",
+      "file": "3843135805255634913.wav",
+      "sentence_id": "1703",
+      "reference": "Martelly a intronisé hier un nouveau Conseil électoral provisoire (CEP) composé de neuf membres.",
+      "frames": 153600,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 8,
+      "sha256": "07d827a260e8e482f8dcb73c90036892dffb5dfdd4894feb3f26d27aa6c8df58"
+    },
+    {
+      "split": "test",
+      "file": "11961715422517660841.wav",
+      "sentence_id": "1712",
+      "reference": "Sundarbans est une réserve naturelle depuis 1966, vous pourrez y trouver environ 400 tigres du Bengale royal et 30 000 cerfs tachetés.",
+      "frames": 178560,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 15,
+      "sha256": "54cc57a4021f96f066d34a5a921d572659ebae4b6e864dc58ad7bc3262f41763"
+    },
+    {
+      "split": "test",
+      "file": "8777944623865547430.wav",
+      "sentence_id": "1917",
+      "reference": "Plusieurs grands écrans de télévision ont été installés à différents endroits à Rome pour permettre aux gens de regarder la cérémonie.",
+      "frames": 106560,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 15,
+      "sha256": "74c454aaeae212556ff5dccdb5dfb54ea06cdad1e7182ae79e3c59c513263387"
+    },
+    {
+      "split": "test",
+      "file": "822362724095816125.wav",
+      "sentence_id": "1998",
+      "reference": "Ils ont des pattes recouvertes d'écailles et pourvues de griffes, ils pondent des œufs et marchent sur leurs deux pattes arrière comme des T-Rex.",
+      "frames": 117120,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 15,
+      "sha256": "f6d79707a97d50b85237fa7d76308d97e821c615f6cde3af25a59067dee660cd"
+    },
+    {
+      "split": "test",
+      "file": "14361567643536061453.wav",
+      "sentence_id": "1975",
+      "reference": "Le Vatican compte environ 800 habitants. C'est le plus petit pays indépendant au monde, et le moins peuplé.",
+      "frames": 149760,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 22,
+      "sha256": "e8d8f96864987a1fc0f8d9efb085e3ea7ab31e8c0a840f2a2976bf77e26c7362"
+    },
+    {
+      "split": "test",
+      "file": "4938149884756003084.wav",
+      "sentence_id": "1879",
+      "reference": "On ne peut que se demander ce que le clavier deviendra quand la prochaine nouveauté arrivera.",
+      "frames": 136320,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 22,
+      "sha256": "8add19247f450edaeac7cc5612cdf391d7625442a70da983f916509fd5d58737"
+    },
+    {
+      "split": "test",
+      "file": "5576235350170118390.wav",
+      "sentence_id": "1830",
+      "reference": "Le parti au pouvoir, l'Organisation du peuple du Sud-Ouest africain (SWAPO), a lui aussi réussi à conserver la majorité aux élections législatives.",
+      "frames": 159360,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 22,
+      "sha256": "21ac8822e4c2204896c2669527d637c87e9ba09dbaffb992663a0189b6d2d7e8"
+    },
+    {
+      "split": "test",
+      "file": "9920696856774930766.wav",
+      "sentence_id": "1691",
+      "reference": "Sur certaines routes, les grandes entreprises ont leurs propres avions, mais sur d’autres routes et pour les petites entreprises, il y a eu un problème.",
+      "frames": 130560,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 8,
+      "sha256": "d468560119036a3a49b7abc962cb18b21de9f93889cf62056b95ae37ebc689a7"
+    },
+    {
+      "split": "test",
+      "file": "3200367853193015991.wav",
+      "sentence_id": "1982",
+      "reference": "Aux femmes : Il est recommandé à toute femme qui voyage de dire qu’elle est mariée, quel que soit son état civil.",
+      "frames": 97920,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 8,
+      "sha256": "28ec5ca0f87c6ed1817e0aa97972d60a64426cefed2e1da2321fbb0ee97eb9b0"
+    },
+    {
+      "split": "test",
+      "file": "2171666593138007192.wav",
+      "sentence_id": "1918",
+      "reference": "Les Sundarbans ont été déclarés site du patrimoine mondial de l'UNESCO. La partie de la forêt située sur le territoire indien est appelée parc national des Sundarbans.",
+      "frames": 186240,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 8,
+      "sha256": "adce5dede49e2c476109c675235816c49a2d9b7e47ceb9f48689f237f0e96192"
+    },
+    {
+      "split": "test",
+      "file": "5871257984177192095.wav",
+      "sentence_id": "1666",
+      "reference": "Vous pouvez également avoir recours aux conseils d'autres gouvernements que le vôtre, mais leurs conseils sont adaptés à leurs citoyens.",
+      "frames": 153600,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 15,
+      "sha256": "009c365acd0b05f56a92ad406f76586112abb3fa2824d6c05c262f007b0ca656"
+    },
+    {
+      "split": "test",
+      "file": "7764879226965842057.wav",
+      "sentence_id": "1816",
+      "reference": "Duvall, qui est marié et a deux enfants adultes, n’a pas fait bonne impression à Miller, à qui l’histoire a été relatée.",
+      "frames": 110400,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 15,
+      "sha256": "18711eb33dbafc832b9f09a15f414b7a52b039bd10e794a505b09151665021ea"
+    },
+    {
+      "split": "test",
+      "file": "15379055304038386900.wav",
+      "sentence_id": "1661",
+      "reference": "Il n'a pas chiffré ces réductions, disant qu'elles seront basées sur la production économique chinoise.",
+      "frames": 168960,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 15,
+      "sha256": "af35e262dd0ef2a0e0f9f2551cdb121d0f0527e5eb17cf70754443460842eece"
+    },
+    {
+      "split": "test",
+      "file": "15829686047046406376.wav",
+      "sentence_id": "1958",
+      "reference": "La ville contraste fortement avec les cités du reste du pays, car elle possède un style davantage arabe qu'africain.",
+      "frames": 170880,
+      "background": "1-17150-A-12.wav",
+      "snr_db": 22,
+      "sha256": "ef1d465b21f2b0126fecc400d728c43e9c854747bb9696c111828890f0c764a9"
+    },
+    {
+      "split": "test",
+      "file": "17449211465694082444.wav",
+      "sentence_id": "1676",
+      "reference": "Comme pour tous les parcs nationaux sud-africains, il existe des droits d’entrée et de conservation quotidiens pour le parc.",
+      "frames": 155520,
+      "background": "1-17367-A-10.wav",
+      "snr_db": 22,
+      "sha256": "d2e090b75d81e4e994a278ae667ac3e9bbb930a512a1c8076ad95f23474b0abb"
+    },
+    {
+      "split": "test",
+      "file": "17485305272918540300.wav",
+      "sentence_id": "1908",
+      "reference": "Il s'agit d'un excellent moyen de faire la distinction entre certains verbes et objets.",
+      "frames": 92160,
+      "background": "1-28135-A-11.wav",
+      "snr_db": 22,
+      "sha256": "e59ee12638e5014fd1369714cf36b6d28f926d321c5f146d8ea811c8a006c4bb"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "transport": "stdio",
+  "interface": "ConversationPane",
+  "observations": [
+    {
+      "file": "prise-2.wav",
+      "conversation": "[0.00–6.96 s] À vérifier : Ce qui nous sert à mes inversions, mais mon type, plus le nombre de roses billets petit, moins les fonds d'activité.",
+      "mcp": {
+        "engine": "whisper.cpp-small",
+        "language": "fr",
+        "status": "needs_review",
+        "duration_ms": 6960,
+        "text": "Ce qui nous sert à mes inversions, mais mon type, plus le nombre de roses billets petit, moins les fonds d'activité.",
+        "segments": [
+          {
+            "start_ms": 0,
+            "end_ms": 6960,
+            "text": "Ce qui nous sert à mes inversions, mais mon type, plus le nombre de roses billets petit, moins les fonds d'activité.",
+            "uncertain": true,
+            "reasons": [
+              "low_token_confidence",
+              "timestamp_clipped"
+            ],
+            "min_token_p": 0.024
+          }
+        ]
+      }
+    },
+    {
+      "file": "prise-7.wav",
+      "conversation": "Silence. Aucun texte.",
+      "mcp": {
+        "engine": "whisper.cpp-small",
+        "language": "fr",
+        "status": "silence",
+        "duration_ms": 4250,
+        "text": "",
+        "segments": []
+      }
+    }
+  ]
+}

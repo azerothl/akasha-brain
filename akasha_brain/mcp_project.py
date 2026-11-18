@@ -1,10 +1,11 @@
 """Préparation et lecture de propositions sur le projet autorisé au serveur MCP."""
 
 from collections.abc import Callable
+import asyncio
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from threading import Lock
+from threading import Event, Lock
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -18,6 +19,8 @@ from contracts.akasha_contracts.errors import ErrorCode
 from .desktop_tasks import NotesTasks
 from .project import CODE_FILE_LIMIT, inspect_code, prepare, preview_replacement, project_file
 from .project_common import ProjectError, digest, project_scope
+from . import whisper_pilot
+from .planning import PlanningError
 
 
 def register_project_tools(server: MCPServer, tasks: NotesTasks, project: Path) -> None:
@@ -38,10 +41,25 @@ def register_project_tools(server: MCPServer, tasks: NotesTasks, project: Path) 
         try:
             require_project()
             return action()
-        except ProjectError as error:
+        except (ProjectError, PlanningError) as error:
             raise ToolError(str(error)) from error
         except OSError as error:
             raise ToolError("Impossible de lire les fichiers du projet autorisé.") from error
+
+    if whisper_pilot.configured():
+        @server.tool(annotations=read_only, structured_output=True)
+        async def audio_transcribe(file: str) -> dict[str, Any]:
+            """Transcrit un WAV ou FLAC français du projet et marque les passages incertains par segment."""
+            cancelled = Event()
+
+            def checkpoint():
+                if cancelled.is_set():
+                    raise InterruptedError("Transcription annulée.")
+
+            try:
+                return await asyncio.to_thread(read_project, lambda: whisper_pilot.transcribe(project, file, checkpoint))
+            finally:
+                cancelled.set()
 
     def prepare_in_sandbox(folder: Path, target: str, replacement: bytes, test: str, runtime: Path,
                            inputs: tuple[str, ...]) -> None:

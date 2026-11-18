@@ -10,7 +10,7 @@ from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 from .planning import PlanningError
 
 CATALOG = Path(__file__).with_name("specialists.json")
-MODALITIES = {"intent", "code", "ocr", "image", "sql", "solver", "verification", "file"}
+MODALITIES = {"intent", "code", "ocr", "image", "audio", "sql", "solver", "verification", "file"}
 
 
 @dataclass(frozen=True)

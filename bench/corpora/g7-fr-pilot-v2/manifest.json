@@ -1,0 +1,90 @@
+{
+  "source": "https://huggingface.co/datasets/google/fleurs/tree/70bb2e84b976b7e960aa89f1c648e09c59f894dd/data/fr_fr",
+  "license": "FLEURS, Conneau et al., Google, CC BY 4.0. Conversion PCM16 / FLAC, bruit et silence.",
+  "uncertainty_rule": "lexical token p < 0.50 or segment mean < 0.80; missing scores or clipped time",
+  "clips": [
+    {
+      "file": "prise-1.wav",
+      "source_id": "3683527580499257367",
+      "sentence_id": "1798",
+      "snr_db": null,
+      "names": [
+        "TogiNet Radio"
+      ],
+      "reference": "Initialement, l'émission était uniquement diffusée sur le vénérable site de radio Internet TogiNet Radio, un site consacré à la radio parlée.",
+      "frames": 135360,
+      "sha256": "04b635ad9312549906abc07e951122ac6a61d1846eadaef94227086898cc220f"
+    },
+    {
+      "file": "prise-2.wav",
+      "source_id": "15679345674072383870",
+      "sentence_id": "1744",
+      "snr_db": 8,
+      "names": [
+        "Rossby"
+      ],
+      "reference": "En ce qui concerne les inversions magnétiques, plus le nombre de Rossby est petit, moins l’étoile est active .",
+      "frames": 111360,
+      "sha256": "ec13bded42d22884ec6869443c28270699a6fcb203dcd62504579ab1a6e75162"
+    },
+    {
+      "file": "prise-3.flac",
+      "source_id": "2757290274126351777",
+      "sentence_id": "1947",
+      "snr_db": null,
+      "names": [
+        "Haïti"
+      ],
+      "reference": "Avant l'arrivée des troupes, Haïti n'avait pas rencontré de problèmes liés à la maladie depuis les années 1800.",
+      "frames": 96000,
+      "sha256": "14c6efdd64a4f874665d6be712e187170a7c403d2a160881ec9681295347bbef"
+    },
+    {
+      "file": "prise-4.wav",
+      "source_id": "5472816019113202964",
+      "sentence_id": "1777",
+      "snr_db": null,
+      "names": [
+        "Ottawa",
+        "Canada"
+      ],
+      "reference": "Ottawa est la charmante capitale bilingue du Canada et dispose d'un grand nombre de galeries d'art et de musées qui mettent en valeur le passé et le présent du Canada.",
+      "frames": 134400,
+      "sha256": "f670c29ff5dd62b92933aabc170a26f46d4064cfe6a414a1356494db1d42a4bb"
+    },
+    {
+      "file": "prise-5.wav",
+      "source_id": "3172268488349984843",
+      "sentence_id": "2008",
+      "snr_db": 5,
+      "names": [
+        "Bali"
+      ],
+      "reference": "Parmi les autres sujets à l’ordre du jour à Bali figurent la sauvegarde des dernières forêts du monde et le partage des technologies pour aider les pays en développement à poursuivre leur croissance de manière moins polluante.",
+      "frames": 175680,
+      "sha256": "2bb41fa5b295442a28e56b4aba99c43132405f96b0c8d9f9064790a158e5d0b9"
+    },
+    {
+      "file": "prise-6.wav",
+      "source_id": "10166091086920486572",
+      "sentence_id": "2004",
+      "snr_db": 10,
+      "names": [
+        "Mashhad"
+      ],
+      "reference": "Le même mois, un autre avion de ligne a fait une sortie de piste à Mashhad et a heurté un mur, tuant ainsi dix-sept personnes.",
+      "frames": 133440,
+      "sha256": "5a8fcfffbfd31ec194fc4402bf78b1a88ff58d854050f208ee1ebe17b1954b8e"
+    },
+    {
+      "file": "prise-7.wav",
+      "source_id": "silence",
+      "sentence_id": null,
+      "snr_db": null,
+      "names": [],
+      "reference": "",
+      "frames": 68000,
+      "sha256": "f406cd34c4f57ec7a7157ca3006c1c1613f9fb56bdd6f0aadb644e677bf11d8e"
+    }
+  ]
+}

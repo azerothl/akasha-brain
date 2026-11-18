@@ -1,0 +1,127 @@
+{
+  "source": "https://huggingface.co/datasets/google/fleurs/tree/70bb2e84b976b7e960aa89f1c648e09c59f894dd/data/fr_fr",
+  "attribution": "FLEURS, Conneau et al., Google, CC BY 4.0; conversions PCM16, deux ajouts de bruit.",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "clips": [
+    {
+      "wav": "14203199903136889342.wav",
+      "frames": 178560,
+      "sha256": "599129646540b2c196ec37144db546448de97981ed9d9d19f068e3b136cfabb9",
+      "split": "dev",
+      "sentence_id": "1646",
+      "voice_group": "MALE",
+      "condition": "clean",
+      "reference": "Les plages sont nombreuses, car Auckland est à cheval sur deux ports. Les plus populaires se trouvent dans trois zones.",
+      "names": [
+        "Auckland"
+      ]
+    },
+    {
+      "wav": "17999210160761730950.wav",
+      "frames": 96000,
+      "sha256": "4097fd2232d5cf983d951cad4745104583c287d36e54f958cce1a193c6b4cf96",
+      "split": "test",
+      "sentence_id": "1679",
+      "voice_group": "MALE",
+      "condition": "clean",
+      "reference": "Le groupe Aerosmith a annulé les derniers concerts de sa tournée.",
+      "names": [
+        "Aerosmith"
+      ]
+    },
+    {
+      "wav": "3661632639400662062.wav",
+      "frames": 113280,
+      "sha256": "ee2fd46a7c7b5074e90d82c1cec1216077920906cf03b8cefa8728e03bef2c9b",
+      "split": "test",
+      "sentence_id": "1707",
+      "voice_group": "FEMALE",
+      "condition": "clean",
+      "reference": "Il s'agit de l'un des parcs d'attraction les plus connus en Afrique du Sud et considéré comme le fleuron des parcs Nationaux sud-africains (SANParks).",
+      "names": [
+        "Afrique du Sud",
+        "SANParks"
+      ]
+    },
+    {
+      "wav": "8969527857548188961.wav",
+      "frames": 112320,
+      "sha256": "fcd2523cfb0ce8ddb3958db93cd56e0b0729b9866cfc4c1f28a61a8a64e880f1",
+      "split": "test",
+      "sentence_id": "1763",
+      "voice_group": "FEMALE",
+      "condition": "clean",
+      "reference": "Tout comme la lune exerce une traction sur la terre, provoquant des marées, la Voie lactée exerce une force sur la galaxie du Sagittaire.",
+      "names": [
+        "Voie lactée",
+        "Sagittaire"
+      ]
+    },
+    {
+      "wav": "7989253100718399733.wav",
+      "frames": 120960,
+      "sha256": "97a54fbb338274e672682cff1dc8f3973d7a8096262bae8555789ad10c994f3f",
+      "split": "test",
+      "sentence_id": "1844",
+      "voice_group": "MALE",
+      "condition": "noise_10dB",
+      "reference": "La surface de la lune est constituée de pierres et de poussière. Sa couche extérieure est appelée la croûte.",
+      "names": []
+    },
+    {
+      "wav": "118005971910520590.wav",
+      "frames": 173760,
+      "sha256": "a9c18305fc14c9cf38db593eb0dc4d36f1dcaaa1c155b76516545766fde417cc",
+      "split": "test",
+      "sentence_id": "1866",
+      "voice_group": "FEMALE",
+      "condition": "clean",
+      "reference": "Premièrement, la plupart des cavaliers portent des bottes d'équitation avec un talon et une semelle lisse et assez étroite.",
+      "names": []
+    },
+    {
+      "wav": "12217957387078475556.wav",
+      "frames": 142080,
+      "sha256": "055ba0d66c6ec76a0276fda391262542ed37731dc30d1e6c6dbbd1fe35302565",
+      "split": "test",
+      "sentence_id": "1925",
+      "voice_group": "MALE",
+      "condition": "clean",
+      "reference": "Le travail effectué était principalement théorique, mais le programme a été écrit pour simuler les observations faites de la galaxie du Sagittaire.",
+      "names": [
+        "Sagittaire"
+      ]
+    },
+    {
+      "wav": "15942080413960253441.wav",
+      "frames": 135360,
+      "sha256": "0beab49a9f1d11c3f3945b19540ce5a4869b36e510e078c5b2b77c2fd6b36611",
+      "split": "test",
+      "sentence_id": "1797",
+      "voice_group": "MALE",
+      "condition": "noise_10dB",
+      "reference": "Tout le monde fait partie de la société et utilise les systèmes de transport. Quasiment tout le monde se plaint des systèmes de transport.",
+      "names": []
+    },
+    {
+      "wav": "9747669897173511466.wav",
+      "frames": 120000,
+      "sha256": "02e5b1db96df3494843eb59474c7791d1b6f6759acd5b0f1ebc5787a3125cbc9",
+      "split": "test",
+      "sentence_id": "1775",
+      "voice_group": "FEMALE",
+      "condition": "clean",
+      "reference": "L'usage de l'enregistrement vidéo a mené à de grandes découvertes dans l'interprétation des micro-expressions, c'est-à-dire des expressions faciales durant quelques millisecondes.",
+      "names": []
+    },
+    {
+      "wav": "silence.wav",
+      "frames": 48000,
+      "sha256": "d303811b8c84619667cd0501342f84ec6cbe69f7aa3856dcf52fabda374c92b8",
+      "split": "control",
+      "condition": "silence",
+      "reference": "",
+      "names": []
+    }
+  ]
+}

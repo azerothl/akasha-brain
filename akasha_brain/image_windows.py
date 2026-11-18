@@ -160,18 +160,59 @@ def decode_export(packet: bytes) -> bytes:
 
 
 def execute_headless(stage: Path, checkpoint) -> tuple[dict, bytes]:
+    def export(compute, mount):
+        command = ("exec", compute, fr"{mount}\python\python.exe", "-I", "-B", "-X", "utf8",
+                   fr"{mount}\{GUEST}", str(MAX_PNG_BYTES))
+        return decode_export(tool_stdout("hcsdiag.exe", command, MAX_ENVELOPE_BYTES, 570, checkpoint))
+
+    return run_headless_guest(stage, checkpoint, MEMORY_MIB, export)
+
+
+def run_headless_guest(stage, checkpoint, memory_mib, export):
+    # Image and CPU ASR callers already hold the inference lease.
+    from .whisper_resident import release
+    release()
+    sandbox = str(uuid4())
+    compute, mount, mount_code, channels = start_headless_guest(stage, checkpoint, memory_mib, sandbox)
+    try:
+        data = export(compute, mount)
+        assert_headless(checkpoint)
+    finally:
+        stop_headless_guest(sandbox)
+    return {"status": "passed", "sandbox_stopped": True, "sandbox_id": sandbox, "guest_exit_code": 0,
+            "read_only_input": True, "mount_probe": mount_code, "channel_probe": channels,
+            "disabled_channels": list(CHANNELS), "headless": True, "export_transport": "hcs-stdout"}, data
+
+
+def stop_headless_guest(sandbox):
+    if sandbox in active_sandboxes():
+        wsb("stop", "--id", sandbox)
+    if sandbox in active_sandboxes():
+        raise RuntimeError("Arrêt du bac non confirmé.")
+
+
+class GuestStartError(RuntimeError):
+    pass
+
+
+def start_headless_guest(stage, checkpoint, memory_mib, sandbox, *, vgpu=False):
     if active_sandboxes():
         reject(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Une session Windows Sandbox est déjà active.")
     assert_headless(checkpoint)
     before = compute_ids(checkpoint)
-    sandbox = str(uuid4())
     tag = token_hex(4)
     mount = fr"C:\AkashaGuidedInput-{tag}"
     (stage / "isolation-sentinel.txt").write_text(tag, encoding="ascii")
     profile = ElementTree.fromstring(read_profile())
-    profile.find("MemoryInMB").text = str(MEMORY_MIB)
+    profile.find("MemoryInMB").text = str(memory_mib)
+    if vgpu:
+        profile.find("VGpu").text = "Enable"
     try:
-        if wsb("start", "--id", sandbox, "--config", ElementTree.tostring(profile, encoding="unicode"))["Id"].lower() != sandbox:
+        try:
+            started = wsb("start", "--id", sandbox, "--config", ElementTree.tostring(profile, encoding="unicode"))
+        except RuntimeError as error:
+            raise GuestStartError("Échec du démarrage de Windows Sandbox.") from error
+        if started["Id"].lower() != sandbox:
             raise RuntimeError("Identifiant du bac inattendu.")
         for _ in range(12):
             checkpoint()
@@ -198,15 +239,7 @@ def execute_headless(stage: Path, checkpoint) -> tuple[dict, bytes]:
         witness = ("exec", compute, r"C:\Windows\System32\cmd.exe", "/c", "type", fr"{mount}\isolation-sentinel.txt")
         if tool_stdout("hcsdiag.exe", witness, 128, 15, checkpoint) != tag.encode("ascii"):
             reject(ErrorCode.PERMISSION_DENIED, "Le flux HCS n’appartient pas au bac préparé.")
-        command = ("exec", compute, fr"{mount}\python\python.exe", "-I", "-B", "-X", "utf8",
-                   fr"{mount}\{GUEST}", str(MAX_PNG_BYTES))
-        data = decode_export(tool_stdout("hcsdiag.exe", command, MAX_ENVELOPE_BYTES, 570, checkpoint))
-        assert_headless(checkpoint)
-    finally:
-        if sandbox in active_sandboxes():
-            wsb("stop", "--id", sandbox)
-        if sandbox in active_sandboxes():
-            raise RuntimeError("Arrêt du bac non confirmé.")
-    return {"status": "passed", "sandbox_stopped": True, "sandbox_id": sandbox, "guest_exit_code": 0,
-            "read_only_input": True, "mount_probe": mount_code, "channel_probe": channels,
-            "disabled_channels": list(CHANNELS), "headless": True, "export_transport": "hcs-stdout"}, data
+        return compute, mount, mount_code, channels
+    except BaseException:
+        stop_headless_guest(sandbox)
+        raise

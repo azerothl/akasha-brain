@@ -1,0 +1,123 @@
+{
+  "desktop": [
+    {
+      "seconds": 43.49292389996117,
+      "sandbox": "03c0d7ea-8a49-4dd5-bf4f-40453c709e6a",
+      "pid": 3924
+    },
+    {
+      "seconds": 3.0573152000433765,
+      "sandbox": "03c0d7ea-8a49-4dd5-bf4f-40453c709e6a",
+      "pid": 3924
+    }
+  ],
+  "mcp": [
+    {
+      "file": "prise-2.wav",
+      "seconds": 2.722492900036741,
+      "engine": "whisper.cpp-small",
+      "execution": {
+        "device": "cuda",
+        "reused": true,
+        "residency_id": "03c0d7ea-8a49-4dd5-bf4f-40453c709e6a"
+      },
+      "language": "fr",
+      "status": "needs_review",
+      "duration_ms": 6960,
+      "text": "Ce qui nous sert à mes inversions, mais mon type. Plus le nombre de roses billets petit, moins les faim des tatiles.",
+      "segments": [
+        {
+          "start_ms": 0,
+          "end_ms": 3000,
+          "text": "Ce qui nous sert à mes inversions, mais mon type.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence"
+          ],
+          "min_token_p": 0.113
+        },
+        {
+          "start_ms": 3000,
+          "end_ms": 6960,
+          "text": "Plus le nombre de roses billets petit, moins les faim des tatiles.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence",
+            "timestamp_clipped"
+          ],
+          "min_token_p": 0.02
+        }
+      ]
+    },
+    {
+      "file": "prise-3.flac",
+      "seconds": 2.755418599990662,
+      "engine": "whisper.cpp-small",
+      "execution": {
+        "device": "cuda",
+        "reused": true,
+        "residency_id": "03c0d7ea-8a49-4dd5-bf4f-40453c709e6a"
+      },
+      "language": "fr",
+      "status": "needs_review",
+      "duration_ms": 6000,
+      "text": "Avant l'arrivée des troupes, Aitin avait pas rencontré de problèmes liés à la maladie depuis les années 1800.",
+      "segments": [
+        {
+          "start_ms": 0,
+          "end_ms": 6000,
+          "text": "Avant l'arrivée des troupes, Aitin avait pas rencontré de problèmes liés à la maladie depuis les années 1800.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence"
+          ],
+          "min_token_p": 0.153
+        }
+      ]
+    },
+    {
+      "file": "prise-7.wav",
+      "seconds": 0.008775900001637638,
+      "engine": "whisper.cpp-small",
+      "execution": {
+        "device": "none",
+        "reused": false
+      },
+      "language": "fr",
+      "status": "silence",
+      "duration_ms": 4250,
+      "text": "",
+      "segments": []
+    }
+  ],
+  "cpu_fallback": [
+    {
+      "file": "prise-2.wav",
+      "seconds": 21.77686729998095,
+      "engine": "whisper.cpp-small",
+      "execution": {
+        "device": "cpu",
+        "reused": false,
+        "fallback_reason": "vram_budget"
+      },
+      "language": "fr",
+      "status": "needs_review",
+      "duration_ms": 6960,
+      "text": "Ce qui nous sert à mes inversions, mais mon type, plus le nombre de roses billets petit, moins les fonds d'activité.",
+      "segments": [
+        {
+          "start_ms": 0,
+          "end_ms": 6960,
+          "text": "Ce qui nous sert à mes inversions, mais mon type, plus le nombre de roses billets petit, moins les fonds d'activité.",
+          "uncertain": true,
+          "reasons": [
+            "low_token_confidence",
+            "timestamp_clipped"
+          ],
+          "min_token_p": 0.024
+        }
+      ]
+    }
+  ],
+  "released": true
+}

@@ -1,4 +1,6 @@
 [
+  {"id": "whisper-small-fr", "modality": "audio", "engine": "whisper.cpp-small",
+   "capabilities": ["audio.transcribe"], "contract": "fr-transcript.v1", "ram_mib": 4096, "fallback": false},
   {
     "id": "png-orientation",
     "modality": "image",

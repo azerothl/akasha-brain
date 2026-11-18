@@ -621,6 +621,12 @@ class ConversationPane:
                 self.add("Comparaison", output, tag="code")
             elif plan.capability == "file.read":
                 self.show_file(plan.inputs[0], output)
+            elif plan.capability == "audio.transcribe":
+                from .whisper_pilot import display
+                execution = output.get("execution", {})
+                label = {"cuda": "GPU à chaud" if execution.get("reused") else "GPU",
+                         "cpu": "CPU"}.get(execution.get("device"))
+                self.add("Transcription · "+label if label else "Transcription", display(output))
             else:
                 self.add("Akasha", output)
                 if reply is replies[-1] and plan.capability == "project.summarize":

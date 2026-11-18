@@ -1,0 +1,79 @@
+{
+  "challenger_sha256": "c15fccf187cca06510c5cb9ebaa9f0509295a0ac8e73634e67750fc69a7b8974",
+  "independent_sha256": "8255cf6003df403e9a86b4133cfa22a47307d5f44f5ae734605d36c59a743581",
+  "rule": [
+    0.4,
+    0.8,
+    100
+  ],
+  "before": {
+    "exact": 16,
+    "erroneous": 52,
+    "false_alerts": 10,
+    "missed": 5
+  },
+  "after": {
+    "exact": 16,
+    "erroneous": 52,
+    "false_alerts": 7,
+    "missed": 10
+  },
+  "changes": [
+    {
+      "file": "14576741258913308247.wav",
+      "start_ms": 0,
+      "errors": 0,
+      "before": true,
+      "after": false
+    },
+    {
+      "file": "7953074829114476731.wav",
+      "start_ms": 0,
+      "errors": 1,
+      "before": true,
+      "after": false
+    },
+    {
+      "file": "7880424229814892285.wav",
+      "start_ms": 0,
+      "errors": 5,
+      "before": true,
+      "after": false
+    },
+    {
+      "file": "7163324756398649509.wav",
+      "start_ms": 5640,
+      "errors": 0,
+      "before": true,
+      "after": false
+    },
+    {
+      "file": "415642628385192624.wav",
+      "start_ms": 0,
+      "errors": 0,
+      "before": true,
+      "after": false
+    },
+    {
+      "file": "11431212784065590790.wav",
+      "start_ms": 0,
+      "errors": 2,
+      "before": true,
+      "after": false
+    },
+    {
+      "file": "5871257984177192095.wav",
+      "start_ms": 0,
+      "errors": 2,
+      "before": true,
+      "after": false
+    },
+    {
+      "file": "15379055304038386900.wav",
+      "start_ms": 0,
+      "errors": 2,
+      "before": true,
+      "after": false
+    }
+  ]
+}

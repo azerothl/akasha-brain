@@ -182,6 +182,8 @@ def expected_files(manifest: dict) -> tuple[dict, list]:
 
 def validate_in_sandbox(stage: Path, runtime: Path, *, checkpoint=None, node: bool = False,
                         prepare_runtime=None, export_result=None) -> dict:
+    from .whisper_resident import yield_to_sandbox
+    yield_to_sandbox()
     if active_sandboxes():
         reject(ErrorCode.ENVIRONMENT_OBSERVATION_FAILED, "Une session Windows Sandbox est déjà active.")
     profile = read_profile()

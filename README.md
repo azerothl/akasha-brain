@@ -239,6 +239,18 @@ Ajoutez `"--project", "D:/chemin/vers/le-projet"` aux `args` du serveur MCP. Ce 
 
 Sur un projet jetable, un client MCP a récupéré le diff vérifié dans Windows Sandbox et le même verdict après reconnexion. La fenêtre Windows a refusé l’application sans accord, puis appliqué le diff après approbation explicite. Le journal contient les deux décisions, et l’index et le commit Git du projet ont été préservés. [Relevé de validation](bench/results/mcp-real-project-v1.json)
 
+### Transcrire un enregistrement français (pilote G7, Windows)
+
+Sélectionnez le projet qui contient l’enregistrement et écrivez `Transcris reunion.wav` dans la conversation. Via MCP, lancez le serveur avec `--project` et appelez `audio_transcribe` avec `{"file":"reunion.wav"}`. Le pilote accepte les fichiers WAV PCM ou FLAC mono, 16 bits, 16 kHz, jusqu’à deux minutes.
+
+Le pilote utilise whisper.cpp small dans Windows Sandbox, hors ligne. Indiquez le chemin absolu du cache CPU dans `AKASHA_WHISPER_CACHE` ou dans `%LOCALAPPDATA%\AkashaBrain\whisper-cache.txt`. Ce cache fournit le modèle multilingue `ggml-small.bin` et les binaires CPU dans `whisper/Release`.
+
+Pour activer CUDA, indiquez le chemin absolu du cache GPU dans `AKASHA_WHISPER_GPU_CACHE` ou dans `%LOCALAPPDATA%\AkashaBrain\whisper-gpu-cache.txt`. Son sous-dossier `whisper/Release` contient le serveur et les DLL du paquet Windows CUDA 12.4 de whisper.cpp v1.8.3. Les deux interfaces partagent la même instance pour un même projet. Le bureau affiche **GPU à chaud** lors de sa réutilisation. Le pilote libère le modèle après deux minutes d’inactivité, lors d’un changement de projet de transcription ou lorsqu’une transcription CPU, une vérification de projet, Notes, l’OCR ou la génération d’image Windows a besoin du bac. Le serveur écoute uniquement dans le bac. [Version du moteur](https://github.com/ggml-org/whisper.cpp/releases/tag/v1.8.3)
+
+Si CUDA est indisponible ou si le budget vidéo est insuffisant, la demande est rejouée sur CPU dans le bac. MCP indique le périphérique dans `execution.device`, la réutilisation dans `execution.reused` et le motif du repli dans `execution.fallback_reason`. Les deux chemins appliquent les mêmes seuils de confiance aux jetons du segment. [Rejeu du bureau, de MCP et du repli CPU](bench/results/g7-resident-gpu-v1.json)
+
+Le panneau affiche les horaires et la mention **À vérifier** devant chaque passage incertain. MCP renvoie les mêmes passages avec `start_ms`, `end_ms`, `uncertain` et `reasons`. Le silence numérique d’un WAV produit un texte vide. Pour vérifier un nom propre, réécoutez le passage indiqué. [Corpus et références](bench/corpora/g7-fr-pilot-v2/manifest.json) · [Résultats du pilote](bench/results/g7-whisper-pilot-v2.json)
+
 ### Validation de la conversation et du serveur MCP
 
 Le 17 novembre 2026, le parcours lancé depuis la conversation a renvoyé quatre tests réussis et un verdict SQLite positif en **46,916 s**. Un client MCP local a lancé le parcours Rbitnet CPU et RapidOCR et a reçu le verdict `passed` en **138,147 s**, avec quatre tests réussis et la persistance confirmée après relance. Les 797 octets du diff renvoyé correspondent au premier diff appliqué et vérifié dans le bac. Les deux Windows Sandbox ont été arrêtés. [Relevé des deux essais](bench/results/windows-interface-mcp-notes-v1.json)

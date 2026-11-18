@@ -165,6 +165,8 @@ def run(candidate: Candidate, cancelled, image: bytes | None = None) -> dict:
             raise RuntimeError("Les paquets OCR préparés diffèrent du candidat.")
         checkpoint()
         with reserve_model("onnxruntime", specialist.ram_mib, inside_sandbox=True) as residency:
+            from .whisper_resident import release
+            release()
             result = validate_in_sandbox(stage, candidate.runtime, checkpoint=checkpoint, prepare_runtime=add_native_dlls,
                                          export_result=read_export if image is not None else None)
         return {**result, "routing": specialist.evidence(CAPABILITY), "residency": residency}
