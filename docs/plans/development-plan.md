@@ -1,6 +1,6 @@
 # Akasha Brain — Plan de développement
 
-**Statut :** plan v0.20, issu de la spécification v0.20\
+**Statut :** plan v0.21, issu de la spécification v0.21\
 **Date :** 2026-11-18\
 **Banc d'essai initial :** bureau & code local (poste Windows d'abord, environnement isolé). La cible produit est l’agent universel local à domaines croissants. La piste spatiale est séparée.
 
@@ -204,6 +204,10 @@ G9 est clôturé. La dictée et l’import alimentent un brouillon modifiable. L
 **Exécution.** Comparer les moteurs STT sur CPU sous Windows, puis raccorder le profil retenu à la conversation et au serveur MCP avec les mêmes vérifications de projet, de récupération et d’admission. Composer les segments avec les capacités d’analyse déclarées en gardant les références aux passages sources. Livrer ensuite `audio.synthesize` pour la lecture à la demande. Raccorder enfin le micro et l’import explicite d’une demande vocale au parcours de brouillon et d’envoi de la conversation. [Jalons et critères de sortie](product-goal-roadmap-v1.md#prochains-jalons--voix-locale)
 
 **Validation et retour arrière.** Publier les mesures de qualité et de ressources par moteur. Rejouer les cas d’échec, de reprise, d’annulation et d’isolation. Vérifier qu’une consigne prononcée dans un enregistrement à analyser reste une donnée et qu’une demande vocale envoyée suit les mêmes contrôles qu’une demande écrite. Vérifier l’ordonnancement des tâches audio avec une autre tâche interactive. En cas d’échec de qualification ou de régression, retirer le profil du routage actif et conserver son rapport d’évaluation. La transcription non couverte revient au parcours de diagnostic G3.
+
+### Collecte web publique (G10)
+
+G10 est clôturé sur Windows. Depuis une session sans projet, le bureau lit une page HTTPS publique après accord, affiche un extrait daté et demande un nouvel accord pour la relance. Le rejeu couvre aussi l’annulation, les liens ambigus et le passage à une nouvelle session. [Qualification et contrôles du lecteur](../../bench/results/g10-web-qualification.md) · [Rejeu de clôture](../../bench/results/g10-web-desktop-cloture.json)
 
 ## Piste séparée — Modèle du monde spatial et agent incarné
 

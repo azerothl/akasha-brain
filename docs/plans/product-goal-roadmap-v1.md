@@ -1,15 +1,15 @@
 # But produit et feuille de route post-MVP
 
-- **Statut au 19 novembre 2026** — G0 à G8 sont sur `main`. G9 est clôturé sur le bureau Windows.
+- **Statut au 19 novembre 2026** — G0 à G9 sont sur `main`. G10 est clôturé sur le bureau Windows.
 - **Dernière mise à jour** — 2026-11-19.
 - **Prérequis** — Phases 0 à 6 qualifiées sur le banc bureau et code.
-- **Spec liée** — v0.20, §2, §7.3.1, §8 à §11, §13, §14, §17 et §19. [Spécification](../architecture/brain-system-spec.md)
+- **Spec liée** — v0.21, §2, §5.3, §7.3.1, §8 à §11, §13, §14, §17 et §19. [Spécification](../architecture/brain-system-spec.md)
 
 ## Ce qui change
 
 Le but produit passe d’un MVP « deux parcours + évolution bornée sur banc » à un agent de demandes utilisateur qui compose des spécialistes, comble les lacunes sous garde-fous, mémorise par session et globalement, simule hors charge, et isole les secrets dans un vault.
 
-La v0.19 a fixé ce but. La v0.20 l’étend aux demandes audio et aux interactions vocales locales. [Plan de développement](development-plan.md)
+La v0.19 a fixé ce but. La v0.20 l’étend aux demandes audio et aux interactions vocales locales. La v0.21 ajoute le contexte web et la lecture HTTPS publique. [Plan de développement](development-plan.md)
 
 ## Jugement sur la formulation proposée
 
@@ -130,6 +130,12 @@ Le parcours Windows à cache vide demande un accord par téléchargement et qual
 Le dernier critère de G7 a été vérifié dans le bureau et via MCP sur la même réunion française scénarisée. Chaque point du résumé, la décision et les deux actions citent le WAV et la plage parlée. Le vendredi proposé reste distinct du lundi retenu. Les invitations sont attribuées à Marie. Pour les badges, la personne qui dit « je » reste à identifier. Le pilote est qualifié pour les enregistrements courts dans les formats annoncés. [Enregistrement](../../bench/corpora/g7-reunion-fr-v1/reunion.wav) · [Référence](../../bench/corpora/g7-reunion-fr-v1/reference.json) · [Rejeu et contrôles des citations](../../bench/results/g7-meeting-v1.json)
 
 Le bureau et MCP partagent désormais une instance de whisper.cpp small sur GPU pour le projet ouvert. Sur la RTX 4080 SUPER, le même WAV bruité de 6,96 s a demandé 43,49 s au premier appel dans le bureau, puis 3,06 s à chaud. Le client MCP a retrouvé la même instance en 2,72 s. Avec un budget vidéo nul, MCP a transcrit le fichier sur CPU en 21,78 s. Les deux chemins utilisent la règle d’alerte du pilote. [Rejeu de la résidence GPU](../../bench/results/g7-resident-gpu-v1.json)
+
+## Clôture G10 sur Windows
+
+Depuis une session sans projet, le bureau a consulté une page HTTPS publique, puis repris son URL à la relance « Que dit cette page ? ». Chaque accord a autorisé une seule lecture. Les deux réponses ont affiché la source et l’heure du relevé. Une nouvelle session a demandé une URL, deux liens ont déclenché une demande de précision et l’annulation a laissé le compteur de lectures inchangé. [Relevé du bureau](../../bench/results/g10-web-desktop-cloture.json)
+
+Les contrôles du lecteur couvrent l’expiration de l’accord après cinq minutes, son usage unique, le refus des destinations privées et des redirections, la limite de taille et l’arrêt du processus après quinze secondes. [Qualification](../../bench/results/g10-web-qualification.md)
 
 ## PR-G0 — But produit dans la spec et le plan
 

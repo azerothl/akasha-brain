@@ -24,9 +24,10 @@ from .capability_recovery import Recovery
 from .desktop_read_aloud import ReplyReader
 from .conversation_planning import (
     DRIVE_PATH, PROJECT_TOOLS, PendingImage, compile_local_plan, execute_intents, explicit_media_step, infer_intent, intent_parts,
-    load_conversation_catalog, references, refines_project_summary,
+    load_conversation_catalog, references, refines_project_summary, web_targets,
 )
 from .conversation_vault import SessionVault, admit_secret, clear
+from .desktop_settings import app_directory
 from .desktop_tasks import latest_steps, test_counts
 from .desktop_vault import VaultWindow
 from .desktop_voice import VoiceComposer
@@ -41,6 +42,7 @@ from .project_approval import require_fresh
 from .rbitnet_session import server
 from .specialist_registry import require_specialist
 from .vault_windows import KeyStoreUnavailable, SecretMissing
+from .web_collection import Observation, ReadReview, public_target
 from .whisper_recovery import describe as describe_audio_download
 
 PROMPT = Path(__file__).resolve().parents[1] / "bench" / "communication" / "qwen35-2b-fr-v2.json"
@@ -235,6 +237,8 @@ class ConversationPane:
         self.intent_cancel = Event()
         self.intent_progress = SimpleQueue()
         self.pending_image = None
+        self.pending_web = None
+        self.web_urls = ()
         self.audio_decision = None
         self.pending_gap = None
         self.previews = []
@@ -251,8 +255,7 @@ class ConversationPane:
         self.transcript.bind("<Destroy>", lambda _: self.intent_cancel.set(), add="+")
         if self.session_record is not None:
             self.refresh_session(self.session_record)
-        self.add("Akasha", "Que souhaitez-vous faire ? Donnez-moi le dossier ou les fichiers concernés." if communication
-                 else "Quel projet souhaitez-vous vérifier ? Donnez-moi son chemin ou choisissez son dossier.")
+        self.add("Akasha", "Que souhaitez-vous faire ? Vous pouvez indiquer un lien HTTPS ou un dossier de projet.")
         self.parent.after(150, self.poll)
 
     def focus(self):
@@ -332,18 +335,26 @@ class ConversationPane:
         self.add("Vous", request)
         self.action = None
         self.pending_image = None
+        self.pending_web = None
         self.pending_gap = None
         self.confirm.pack_forget()
         followup = self.project is not None and self.last_summary_project == self.project and refines_project_summary(request)
         self.last_summary_project = None
         cancelled = request.casefold() in ("annule", "annuler")
         cancelling_job = cancelled and self.intent_job is not None
+        replacement = parse_replacement(request)
         if cancelled:
             self.pending_intent = None
             self.intent_cancel.set()
             if self.intent_job is not None:
                 self.intent_job[3].cancel()
             self.intent_job = None
+        elif replacement is None and (urls := web_targets(request, self.web_urls)):
+            self.pending_intent = None
+            self.change = self.test_file = None
+            self.web_urls = urls
+            self.offer_web_read(urls)
+            return
         elif self.pending_intent is not None:
             original, turn = self.pending_intent
             self.request_intent(f"{original}\nPrécision de l’utilisateur\n{request}", turn=turn)
@@ -360,10 +371,10 @@ class ConversationPane:
             self.change = self.test_file = None
             self.request_intent(request)
             return
-        if change := parse_replacement(request):
+        if replacement is not None:
             if self.project is not None or self.choose_project():
-                self.change, self.test_file = change, None
-                self.add("Akasha", f"Quel script Python doit vérifier le remplacement dans {change.target} ? "
+                self.change, self.test_file = replacement, None
+                self.add("Akasha", f"Quel script Python doit vérifier le remplacement dans {replacement.target} ? "
                                    "Indiquez son chemin relatif au projet.")
             return
         if match := READ_FILE.fullmatch(request):
@@ -424,6 +435,22 @@ class ConversationPane:
             self.request_intent(request)
         else:
             self.show_capabilities(include_notes=False)
+
+    def offer_web_read(self, urls):
+        if len(urls) != 1:
+            self.add("Akasha", "Quel lien souhaitez-vous consulter ? Indiquez une seule URL.")
+            return
+        if self.intent_job is not None:
+            self.add("Akasha", "Une demande est déjà en cours. Son résultat apparaîtra ici.")
+            return
+        try:
+            self.pending_web = ReadReview(public_target(urls[0]))
+        except PlanningError as error:
+            self.add("Accès refusé", error.error.message)
+            return
+        self.add("Accord requis", f"Autorisez une requête HTTPS en lecture seule vers cette adresse.\n"
+                 f"{self.pending_web.target.url}\nCet accord vaut pour une seule lecture et expire après cinq minutes.")
+        self.offer("Autoriser la lecture", "read_web")
 
     def offer(self, title, action):
         self.action = action
@@ -532,7 +559,8 @@ class ConversationPane:
                 self.session_observation.configure(text="")
 
     def show_capabilities(self, include_notes):
-        message = ("Écrivez « Vérifie ce projet » avec le chemin de son dossier. Je vérifie les fichiers de "
+        message = ("Collez une URL HTTPS pour consulter le texte d’une page publique.\n\n"
+                   "Écrivez « Vérifie ce projet » avec le chemin de son dossier. Je vérifie les fichiers de "
                    "configuration et la syntaxe Python, puis je repère les tests que le bac peut lancer.\n\n"
                    f"Je peux aussi lire un fichier (« Lis value.py ») ou tester un remplacement dans le bac "
                    f"(« {REPLACEMENT_EXAMPLE} »). Le diff reste soumis à votre accord.")
@@ -544,13 +572,22 @@ class ConversationPane:
         if self.project is None:
             self.offer("Choisir un projet…", "choose_project")
 
-    def request_intent(self, request, *, turn=0, refine_summary=False, image_consent=None):
+    def request_intent(self, request, *, turn=0, refine_summary=False, image_consent=None, web_review=None):
         if self.intent_job is not None:
             self.add("Akasha", "J’analyse déjà une demande. Son résultat apparaîtra ici.")
             return
         self.pending_intent = None
         self.conversation_plan = self.intent_error = None
         self.conversation_steps = ()
+        if web_review is not None:
+            self.intent_cancel = cancelled = Event()
+            self.intent_progress = SimpleQueue()
+            audit_path = app_directory() / "web-audit.sqlite"
+            job = self.tasks.scheduler.submit(lambda: web_review.collect(
+                audit_path, approved=True, cancelled=cancelled.is_set))
+            self.intent_job = (request, self.project, turn, job)
+            self.add("Akasha", "Je consulte la page publique.")
+            return
         if len(request) > 8000:
             self.add("Akasha", "Précisez l’objectif en 8 000 caractères maximum, avec le chemin des fichiers concernés.")
             return
@@ -639,6 +676,12 @@ class ConversationPane:
             replies = [error.error]
         except (OSError, RuntimeError, ValueError, KeyError) as error:
             self.add("Akasha", f"La demande n’a pas pu aboutir. {error}")
+            return
+        if isinstance(replies, Observation):
+            collected_at = datetime.fromisoformat(replies.collected_at).astimezone().strftime("%d/%m/%Y à %H:%M")
+            truncated = "\n[Extrait tronqué.]" if replies.truncated else ""
+            self.add("Texte public relevé", f"{replies.url}\nRelevé le {collected_at}\n\n{replies.text}{truncated}",
+                     narration_only=True)
             return
 
         self.conversation_steps = tuple(reply.plan for reply in replies if not isinstance(reply, AkashaError))
@@ -871,6 +914,9 @@ class ConversationPane:
         self.confirm.pack_forget()
         if action == "download_audio_artifact":
             self.answer_audio("accept")
+        elif action == "read_web" and self.pending_web is not None:
+            review, self.pending_web = self.pending_web, None
+            self.request_intent("Lire la page publique", web_review=review)
         elif action == "download_image_artifact" and self.pending_image is not None:
             request, pending = self.pending_image
             self.pending_image = None

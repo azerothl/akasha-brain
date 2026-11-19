@@ -29,6 +29,7 @@ from .project_common import ProjectError
 from .project_summary import summarize_project, wants_detailed_summary
 from .rbitnet_session import server
 from .specialist_registry import require_specialist
+from .web_collection import URL_PATTERN, clean_reference
 
 REGISTRY = Path(__file__).with_name("conversation_capabilities.json")
 DOCUMENT_FORMATS = {".md", ".txt", ".rst", ".csv", ".tsv"}
@@ -39,6 +40,12 @@ REFERENCE = re.compile(
 )
 PROJECT_TOOLS = ("project.inspect", "project.summarize")
 DRIVE_PATH = re.compile(r"^[a-zA-Z]:[\\/]")
+WEB_LINK_LABEL = re.compile(r"\[[^\]\r\n]*\]\((?=https?://)", re.I)
+WEB_FOLLOWUP = re.compile(
+    r"\b(?:(?:ce|le même|du|sur le) lien|l[’']url|(?:cette|la même) page|"
+    r"(?:ce|le même) site|(?:cette|la même) cha[îi]ne|"
+    r"et (?:les?|ses) (?:stats|statistiques|vues|abonnés))\b", re.I,
+)
 INTENT_BOUNDARY = re.compile(
     r"\s+(?:(?:puis|ensuite)\s+|et\s+(?=(?:fais|faites|donne|donnez|résume|resume|vérifie|verifie|présente|compare|"
     r"explique|indique|dis|lance|affiche|envoie|lis|extrais|transcris|génère|genere|crée)\b))", re.IGNORECASE,
@@ -126,15 +133,28 @@ def _validated_catalog(manifests: bytes) -> dict[str, dict]:
 
 def references(request: str) -> list[str]:
     paths = []
-    for match in REFERENCE.finditer(request):
+    local_request = URL_PATTERN.sub(" ", WEB_LINK_LABEL.sub(" ", request))
+    for match in REFERENCE.finditer(local_request):
         value = match[1] or match[2] or match[3] or (match[4] or match[5]).rstrip(".,)")
         if PureWindowsPath(value).drive or PureWindowsPath(value).suffix:
             paths.append(value)
     return list(dict.fromkeys(paths))
 
 
+def web_targets(request: str, previous: tuple[str, ...]) -> tuple[str, ...]:
+    urls = tuple(dict.fromkeys(clean_reference(match[0]) for match in URL_PATTERN.finditer(request)))
+    if references(request) or IMAGE_REQUEST.match(request):
+        return ()
+    if urls:
+        return urls
+    if WEB_FOLLOWUP.search(request) and not PROJECT_CONTEXT.search(request):
+        return previous
+    return ()
+
+
 def intent_parts(request: str) -> list[str]:
-    protected = [match.span() for match in REFERENCE.finditer(request)]
+    protected = [match.span() for pattern in (URL_PATTERN, WEB_LINK_LABEL, REFERENCE)
+                 for match in pattern.finditer(request)]
     parts, start = [], 0
     for match in INTENT_BOUNDARY.finditer(request):
         if any(left <= match.start() < right for left, right in protected):

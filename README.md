@@ -269,6 +269,10 @@ Pour utiliser une installation locale de Vivian, indiquer le chemin absolu de so
 
 **Dicter au micro** démarre une capture avec votre accord. Arrêtez la capture pour transcrire. **Importer un message vocal…** accepte aussi un WAV ou un FLAC du projet sélectionné. Whisper place le texte dans le champ de saisie. Vous pouvez corriger le brouillon, l’effacer ou choisir **Envoyer**. Pour examiner les propos d’un enregistrement comme document, utilisez la commande de transcription ou de compte rendu G7.
 
+### Consulter une page publique
+
+Collez une URL HTTPS dans la conversation. Après accord, le bureau affiche un extrait daté du texte public. Dans la même session, « Que dit cette page ? » reprend la dernière URL avec un nouvel accord. Le premier lecteur accepte une seule destination par demande et des réponses statiques de taille bornée. [Qualification Windows de G10](bench/results/g10-web-qualification.md)
+
 ### Validation de la conversation et du serveur MCP
 
 Le 17 novembre 2026, le parcours lancé depuis la conversation a renvoyé quatre tests réussis et un verdict SQLite positif en **46,916 s**. Un client MCP local a lancé le parcours Rbitnet CPU et RapidOCR et a reçu le verdict `passed` en **138,147 s**, avec quatre tests réussis et la persistance confirmée après relance. Les 797 octets du diff renvoyé correspondent au premier diff appliqué et vérifié dans le bac. Les deux Windows Sandbox ont été arrêtés. [Relevé des deux essais](bench/results/windows-interface-mcp-notes-v1.json)

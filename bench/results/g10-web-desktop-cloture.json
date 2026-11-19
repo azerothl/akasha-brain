@@ -1,0 +1,33 @@
+{
+  "platform": "Windows-11-10.0.26320-SP0",
+  "python": "3.12.7",
+  "tk": 8.6,
+  "finished_utc": "2026-11-19T12:04:23.715829+00:00",
+  "page": "https://example.com/",
+  "turns": [
+    {
+      "turn": 1,
+      "request_id": "18ef8d8f-87ee-49b5-bb25-8357f3f20992",
+      "displayed_date": "Relevé le 19/11/2026 à 13:04",
+      "page_heading": "Example Domain",
+      "click_to_display_s": 0.938
+    },
+    {
+      "turn": 2,
+      "request_id": "32e5a946-65be-4fa8-b766-b2414abada5f",
+      "displayed_date": "Relevé le 19/11/2026 à 13:04",
+      "page_heading": "Example Domain",
+      "click_to_display_s": 0.766
+    }
+  ],
+  "host_reader_launches": 2,
+  "audit_outcomes": [
+    "authorized",
+    "collected",
+    "authorized",
+    "collected"
+  ],
+  "new_session_isolated": true,
+  "ambiguous_urls_prompted": true,
+  "cancel_before_read": true
+}

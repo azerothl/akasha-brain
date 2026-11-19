@@ -1,6 +1,6 @@
 # Akasha Brain — Spécification d’architecture
 
-**Statut :** proposition de conception, v0.20\
+**Statut :** proposition de conception, v0.21\
 **Date :** 2026-11-18\
 **Portée :** architecture fonctionnelle et technique, sans framework ni fournisseur imposé
 
@@ -41,6 +41,8 @@
 > **Révision v0.19 (2026-11-17)** — But produit figé. Agent local multi-spécialistes à domaines croissants avec abstention. Session portant des projets. Vault hybride (keystore OS pour les secrets, vault applicatif pour les handles). Cible produit = agent universel local. Piste spatiale séparée. Feuille de route post-MVP dans [product-goal-roadmap-v1.md](../plans/product-goal-roadmap-v1.md) (§2.1, §2.3, §2.4, §2.5, §17, §19).
 
 > **Révision v0.20 (2026-11-18)** — Ajout du contrat des capacités vocales locales et de leur qualification sur le banc Windows. Les jalons G7 à G9 couvrent l’analyse d’enregistrements parlés, la lecture des réponses et les demandes vocales (§7.3.1, §17, §19).
+
+> **Révision v0.21 (2026-11-18)** — Ajout des URL dans le contexte de conversation et d’une lecture HTTPS ponctuelle hors du bac (§5.3, §8.8, §10.6, §13.7, §17).
 
 ## 1. Résumé
 
@@ -260,6 +262,8 @@ La demande originale reste liée à sa représentation structurée. Les noms de 
 
 Le planificateur récupère les capacités admissibles, décompose la tâche, vérifie que les entrées peuvent être produites, ajoute des contrôles aux frontières critiques, borne les appels et choisit un chemin. Il demande clarification ou autorisation si une précondition importante manque.
 
+Une URL explicite est une cible web distincte des chemins locaux. Dans la conversation desktop, une demande de lecture portant sur une URL autonome passe par le parcours web sans projet sélectionné. Une relance qui désigne le lien, la page ou la chaîne peut reprendre la cible précédente de la même session. Si plusieurs liens sont plausibles, le bureau demande d’en indiquer un. L’autorisation de la lecture porte sur la cible exacte (§13.7).
+
 Le planificateur peut combiner petit modèle, règles, recherche dans le graphe et moteur de workflow. L’architecture n’impose pas un grand LLM central.
 
 ### 5.4 Conditions de réussite exécutables (v0.3)
@@ -462,6 +466,10 @@ Après un redémarrage du serveur, l’ancien `task_id` est inconnu. Le client s
 
 `--runs` choisit le stockage des essais Notes et des propositions de projet. `--image-runs` choisit le registre et le cache des images. Les tâches MCP passent par la file desktop partagée du serveur pour sérialiser l’accès au bac. Les réservations d’inférence coordonnent le moteur d’image avec les autres modèles locaux. [Configuration et outils](../../README.md#utiliser-akasha-brain-depuis-un-agent)
 
+### 8.8 Collecte web publique
+
+**Lecture web publique.** Le parcours desktop reçoit une URL, demande un accord pour une lecture HTTPS et renvoie l’adresse effectivement consultée, l’heure du relevé, un extrait textuel et son éventuelle troncature. Il traite une URL à la fois. Le HTML statique et les réponses texte ou JSON forment le premier périmètre. Les scripts et chargements secondaires sont désactivés. Les réponses web restent des données externes et ne peuvent déclencher une action ou élargir les permissions. L’adresse peut être reprise dans le tour suivant, avec un nouvel accord avant la prochaine requête.
+
 ## 9. Système spatial et modèle du monde
 
 ### 9.1 Quatre fonctions distinctes
@@ -573,6 +581,8 @@ L'utilisateur peut donner **avant réutilisation** un accord explicite pour un p
 Avant toute écriture durable de session, un contrôle hors modèle vérifie les champs et les valeurs selon un schéma fermé. Il admet les identifiants internes, les références de projets autorisés, les métadonnées de rétention et les faits structurés dont l’admissibilité est établie. Les demandes et réponses en texte libre, les pièces jointes et les valeurs dont l’admissibilité reste indéterminée demeurent en mémoire volatile. Les fichiers de session, mémoires, traces, journaux et sauvegardes contrôlés excluent les secrets et leurs empreintes, y compris dans les dérivés et les diagnostics de refus. Les liens vers la mémoire globale suivent les mêmes contrôles et la politique de réutilisation du §10.4.
 
 G1 permet de rouvrir les faits admis d’une session après redémarrage, sous réserve des échéances et de l’effacement (§10.2, §10.5). Son critère de sortie vérifie l’isolation entre deux sessions ouvertes sur un même projet et l’absence d’un secret synthétique et de son empreinte dans les copies contrôlées, avant et après redémarrage. G2 ajoute le scellage dans le keystore OS, le stockage des métadonnées de handle dans le vault applicatif et la résolution par une action autorisée et journalisée.
+
+La cible web précédente et l’extrait collecté restent volatils et propres à la conversation desktop. Ils disparaissent au redémarrage. L’historique durable et les sauvegardes excluent les URL complètes et les réponses web.
 
 ## 11. Boucle d’auto-évolution
 
@@ -731,6 +741,8 @@ Règles : la classe d'un workflow est la classe maximale de ses nœuds ; `destru
 
 Egress direct depuis le bac refusé par défaut (§13.5). L'exception générale est déclarée par un grant réseau : hôtes exacts sans joker large, finalité, catégories de données permises, durée, limites et approbateur. Un nœud de travail ne peut ni créer ni élargir ce grant (§13.4). Toute tentative autorisée ou refusée est journalisée en métadonnées minimales.
 
+**Collecte HTTPS publique.** L’accord R3 est ponctuel, à usage unique et valable cinq minutes. L’interface affiche l’adresse exacte qui sera envoyée. Le processus de collecte hors du bac effectue un seul GET vers cet hôte sur le port HTTPS standard, sans cookie ni en-tête d’authentification. Il vérifie les adresses DNS publiques et utilise directement l’une des adresses validées avec vérification TLS du nom approuvé. Les redirections, identifiants dans l’autorité de l’URL et destinations non publiques sont refusés. L’appel a un délai maximal de 15 secondes et la lecture du corps est bornée à 256 Kio plus un octet pour détecter la troncature. Le journal local consigne l’identifiant de l’accord, l’heure et l’issue. L’adresse, ses paramètres et le contenu restent exclus de ce journal. [Protection des destinations réseau](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+
 **Inférence distante.** `RemoteInferenceGrant` borne au minimum le fournisseur/endpoint, la finalité, les catégories de données pouvant être transmises, l'expiration, le budget de coût/appels, l'approbateur et la révocation. Le courtier d'inférence réside hors du bac réseau-isolé. Avant chaque appel, le runtime vérifie le grant, la classe des données, l'absence de secrets interdits, l'expiration et le budget ; il refuse par défaut en cas de doute. Chaque appel inscrit dans l'audit un identifiant de grant, le fournisseur et la version du modèle, la finalité, les catégories de données, le motif de routage, le coût et le résultat — jamais le prompt, la réponse ou leur empreinte. L'accord de partage de données utilisateur (§10, §13.3) reste distinct du grant réseau. Un grant ne donne aucun droit d'entraînement partagé.
 
 **Installation de dépendances.** Le bac n'accède pas directement aux registres. Avant chaque téléchargement nécessaire, présenter la dépendance, sa version et sa source et obtenir un accord explicite pour ce téléchargement ; aucun accord général de téléchargement n'est déduit de l'ouverture du projet. Un résolveur hors bac récupère alors la version exacte vers un cache d'artefacts, vérifie son empreinte et sa licence, puis remet l'artefact au bac par l'espace de préparation. Les demandes nouvelles ou modifiées exigent un nouvel accord ; en cas de refus ou de prérequis manquant, arrêter le téléchargement concerné et expliquer la limite. L'installation hors ligne dans un bac jetable est R1 ; une installation sur l'hôte reste R3 et exige une approbation distincte.
@@ -810,6 +822,8 @@ G1 applique la protection des secrets avant la persistance de session. G2 ajoute
 
 G7 à G9 étendent le registre et les parcours d’interaction à la voix dans l’ordre transcription et analyse d’enregistrements parlés, lecture à la demande, puis demandes vocales. La qualification de chaque profil repose sur le contrat du §7.3.1. [Jalons voix locale](../plans/product-goal-roadmap-v1.md#prochains-jalons--voix-locale)
 
+G10 qualifie les URL dans la conversation et la lecture HTTPS publique hors du bac. [Clôture G10](../plans/product-goal-roadmap-v1.md#clôture-g10-sur-windows)
+
 ### Piste séparée — modèle du monde spatial et agent incarné
 
 Un plan distinct traitera la perception spatiale, les états dynamiques, la prédiction conditionnée par les actions et l’interaction avec des environnements simulés puis réels selon des garanties adaptées au risque. Cette piste n’est pas couverte par la Phase 5. Elle ne partage pas le calendrier produit post-MVP.
@@ -829,7 +843,7 @@ Ces phases réduisent les risques. Elles ne définissent pas de calendrier. Le d
 - Confidentialité et droits d’usage sont documentés.
 - Environnement de départ et autonomie sont décidés avant les actions réelles.
 
-## 19. Décisions — état v0.20
+## 19. Décisions — état v0.21
 
 Décisions enregistrées pour le prototype, le banc d'essai et le but produit :
 
@@ -856,6 +870,7 @@ Décisions enregistrées pour le prototype, le banc d'essai et le but produit :
 21. **Exécution image et MCP (v0.18)** — Le parcours CPU emploie une logique commune de découverte, qualification et validation PNG et un backend isolé propre à Windows ou Linux. L’opérateur donne les accords du moteur et des poids séparément. Le client MCP suit puis reprend sa tâche avec le même identifiant et récupère le verdict et le PNG vérifié (§6.3, §8.7, §11.8).
 22. **But produit (v0.19)** — Agent universel local à domaines croissants avec abstention, organisé en sessions portant des projets. G1 filtre la persistance de session dès l’entrée. G2 ajoute le vault hybride avec keystore OS et handles applicatifs. La piste spatiale suit son propre plan (§2.1, §10.6, §17). [Feuille de route](../plans/product-goal-roadmap-v1.md)
 23. **Voix locale (v0.20)** — Transcription et synthèse sont des capacités optionnelles avec contrats versionnés. Le premier profil de chaque capacité est choisi après qualification en français sur CPU. Le STT alimente l’analyse d’enregistrements et les demandes vocales. Une demande vocale rejoint le planificateur après l’envoi du brouillon par l’utilisateur (§7.3.1, §17).
+24. **Collecte web publique (v0.21)** — Une URL peut être réutilisée pendant la session courante. La collecte HTTPS publique passe par un accord ponctuel et un processus hors du bac (§5.3, §8.8, §10.6, §13.7, §17).
 
 ## 20. Glossaire
 
