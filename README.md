@@ -286,6 +286,30 @@ Pour rejouer la qualification sur Windows depuis la racine du dépôt, utilisez 
 .\.venv\Scripts\python.exe -m pytest -q tests contracts
 ```
 
+### Consulter les statistiques d’une chaîne YouTube
+
+Pour un essai sur Windows, créez ou choisissez un projet Google Cloud dédié à Akasha et activez **YouTube Analytics API**. Dans **Google Auth Platform**, configurez l’écran de consentement et ajoutez le compte qui gère la chaîne aux utilisateurs de test si le projet est en mode test. Créez ensuite un client OAuth de type **Application de bureau**, puis téléchargez son JSON hors du dépôt. Relevez l’identifiant de la chaîne qui commence par `UC`. [Client OAuth de bureau](https://developers.google.com/identity/protocols/oauth2/native-app) · [Configuration YouTube](https://developers.google.com/youtube/reporting/guides/authorization)
+
+Créez une session dédiée. Après `connect`, confirmez avec `ENVOYER` et autorisez la chaîne dans le navigateur Google. La commande vérifie l’accès à la chaîne choisie et renvoie l’identifiant de la connexion.
+
+```powershell
+$g12Session = (.\.venv\Scripts\python.exe -m akasha_brain.service_cli session | ConvertFrom-Json).session
+$g12Client = 'C:\chemin\client_secret.json'
+$g12Channel = 'UC...'
+$g12Connection = (.\.venv\Scripts\python.exe -m akasha_brain.service_cli youtube connect --session $g12Session --client $g12Client --channel $g12Channel | ConvertFrom-Json).connection
+.\.venv\Scripts\python.exe -m akasha_brain.service_cli youtube report --session $g12Session --connection $g12Connection
+```
+
+Confirmez la lecture avec `ENVOYER`. Le JSON indique les vues, les minutes de visionnage estimées, les 28 dates demandées et les jours renvoyés par Google. Les totaux portent sur les jours renvoyés. `coverage` indique si la période est complète, partielle ou vide. Utilisez `--end-date AAAA-MM-JJ` pour comparer exactement la même période dans YouTube Studio. La date par défaut utilise le dernier jour révolu à 08 h UTC, afin que la journée du Pacifique soit terminée toute l’année. Le jeton de renouvellement est conservé dans le coffre Windows de la session, suivant sa politique de durée de vie. Chaque lecture obtient un jeton d’accès temporaire utilisé en mémoire. [Rapports YouTube Analytics](https://developers.google.com/youtube/analytics/reference/reports/query)
+
+```powershell
+.\.venv\Scripts\python.exe -m akasha_brain.service_cli youtube revoke --session $g12Session --connection $g12Connection
+.\.venv\Scripts\python.exe -m akasha_brain.service_cli youtube status --session $g12Session --connection $g12Connection
+.\.venv\Scripts\python.exe -m akasha_brain.service_cli youtube report --session $g12Session --connection $g12Connection
+```
+
+Confirmez la révocation avec `ENVOYER`. Google retire les autorisations précédemment accordées à ce projet OAuth. Après confirmation de Google et effacement du jeton du coffre, l’état est `revoked` et le dernier appel échoue avec `connection_revoked`. En cas d’échec chez Google, l’état `revocation_pending` bloque déjà les lectures et permet de réessayer `revoke`. Si le jeton a expiré dans le coffre, retirez l’autorisation depuis le compte Google. [Révocation Google](https://developers.google.com/identity/protocols/oauth2/native-app#tokenrevoke)
+
 ### Validation de la conversation et du serveur MCP
 
 Le 17 novembre 2026, le parcours lancé depuis la conversation a renvoyé quatre tests réussis et un verdict SQLite positif en **46,916 s**. Un client MCP local a lancé le parcours Rbitnet CPU et RapidOCR et a reçu le verdict `passed` en **138,147 s**, avec quatre tests réussis et la persistance confirmée après relance. Les 797 octets du diff renvoyé correspondent au premier diff appliqué et vérifié dans le bac. Les deux Windows Sandbox ont été arrêtés. [Relevé des deux essais](bench/results/windows-interface-mcp-notes-v1.json)

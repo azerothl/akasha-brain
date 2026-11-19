@@ -1,6 +1,6 @@
 # But produit et feuille de route post-MVP
 
-- **Statut au 19 novembre 2026** — G0 à G10 sont sur `main`. Le cadre de connexion G11 est clôturé sur Windows. Le premier connecteur de production reste à choisir.
+- **Statut au 19 novembre 2026** — G0 à G11 sont sur `main`. G12 est clôturé sur Windows après qualification de YouTube Analytics en lecture seule sur une chaîne autorisée.
 - **Dernière mise à jour** — 2026-11-19.
 - **Prérequis** — Phases 0 à 6 qualifiées sur le banc bureau et code.
 - **Spec liée** — v0.21, §2, §5.3, §7.3.1, §8 à §11, §13, §14, §17 et §19. [Spécification](../architecture/brain-system-spec.md)
@@ -147,7 +147,11 @@ G11 s’appuie sur le coffre G2, le registre G5 et le parcours HTTPS de G10. La 
 
 Le scénario de clôture a exercé deux services HTTPS locaux, dont un authentifié avec une clé API conservée dans le Gestionnaire d’identification Windows. Il a vérifié le refus d’une opération hors portée, la validation des schémas, l’expiration et le cloisonnement entre sessions. Le service d’essai a enregistré la publication après l’accord distinct d’écriture. Lors d’une révocation concurrente, il n’a reçu aucune requête. Les résultats indiquent leur provenance et la déconnexion a effacé les clés de test. Le banc a aussi chargé un registre opérateur dans un nouveau processus. [Parcours des connexions](../../bench/results/service-connections-g11.json) · [Journal des fournisseurs](../../bench/results/service-providers-g11.json)
 
-OAuth et le premier connecteur de production restent à planifier. Un connecteur dédié à YouTube relève de cette suite.
+## Clôture G12 — YouTube Analytics en lecture seule
+
+La CLI lie une connexion OAuth Google à une session et à une chaîne déclarée. Elle rapporte les vues et les minutes de visionnage estimées sur 28 jours, avec la couverture des dates et la provenance. Le coffre Windows conserve le jeton de renouvellement. Les tests locaux couvrent le retour OAuth dans le navigateur, la rotation du jeton, le cloisonnement, le refus après révocation et l’effacement du coffre avec un fournisseur simulé. [Configuration et rejeu](../../README.md#consulter-les-statistiques-dune-chaîne-youtube) · [Tests G12](../../tests/test_youtube_analytics.py)
+
+L’essai sur une chaîne autorisée a comparé 28 jours de données de la CLI à un export YouTube Studio. Les vues concordent pour chaque jour et l’écart de durée ne dépasse pas une minute par jour. Google a confirmé la révocation. Le jeton a disparu du coffre Windows et une nouvelle lecture a été refusée. [Relevé anonymisé](../../bench/results/g12-youtube-analytics-cloture.md)
 
 ## PR-G0 — But produit dans la spec et le plan
 

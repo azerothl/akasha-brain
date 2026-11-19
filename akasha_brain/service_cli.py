@@ -1,6 +1,7 @@
 """Configurer les services tiers du registre Akasha et appeler leurs opérations."""
 
 import argparse
+from datetime import date
 from getpass import getpass
 import json
 from pathlib import Path
@@ -15,14 +16,14 @@ from .memory_store import MemoryRefusal
 from .service_connections import Connections
 from .service_registry import DEFAULT_REGISTRY, MAX_BYTES, ServiceError, load_registry
 from .vault_windows import KeyStoreUnavailable
+from .youtube_analytics import YouTubeAnalytics
 
 
 def parser():
     installed = app_directory() / "service-adapters.json"
     cli = argparse.ArgumentParser(description=__doc__, epilog=(
         "L’adaptateur HTTPS accepte les services publics et les clés API Bearer. "
-        "renew prolonge la permission locale. OAuth, ses jetons de rafraîchissement et la rotation "
-        "des clés chez le fournisseur sont hors du périmètre de cette version."))
+        "renew prolonge la permission locale. Le parcours OAuth YouTube Analytics utilise la commande youtube."))
     cli.add_argument("--directory", type=Path, default=app_directory() / "runs",
                      help="Dossier du coffre et des sessions, par défaut celui du bureau Akasha.")
     cli.add_argument("--registry", type=Path, default=installed if installed.exists() else DEFAULT_REGISTRY,
@@ -50,6 +51,19 @@ def parser():
         sub.add_argument("--session", required=True, type=UUID)
     for sub in (status, renew, revoke, call):
         sub.add_argument("--connection", required=True, type=UUID)
+    youtube = actions.add_parser("youtube", help="Consulter YouTube Analytics en lecture seule sur Windows.")
+    youtube_actions = youtube.add_subparsers(dest="youtube_action", required=True)
+    login = youtube_actions.add_parser("connect", help="Autoriser une chaîne depuis le navigateur Google.")
+    login.add_argument("--client", required=True, type=Path, help="Fichier JSON du client OAuth de bureau.")
+    login.add_argument("--channel", required=True, help="Identifiant UC de la chaîne à autoriser.")
+    report = youtube_actions.add_parser("report", help="Lire les vues et le temps de visionnage sur 28 jours.")
+    report.add_argument("--end-date", type=date.fromisoformat, help="Dernier jour inclus au format AAAA-MM-JJ.")
+    check = youtube_actions.add_parser("status", help="Consulter l’état local de la connexion.")
+    remove = youtube_actions.add_parser("revoke", help="Révoquer chez Google et retirer l’accès au coffre.")
+    for sub in (login, report, check, remove):
+        sub.add_argument("--session", required=True, type=UUID)
+    for sub in (report, check, remove):
+        sub.add_argument("--connection", required=True, type=UUID)
     return cli
 
 
@@ -71,7 +85,17 @@ def execute(args):
     sessions = SessionStore(args.directory / "conversation-sessions.sqlite")
     if args.action == "session":
         return {"session": str(sessions.create())}
-    connections = Connections(SessionVault(args.directory, sessions), registry_path=args.registry)
+    vault = SessionVault(args.directory, sessions)
+    if args.action == "youtube":
+        youtube = YouTubeAnalytics(vault)
+        if args.youtube_action == "connect":
+            return youtube.connect_account(args.session, args.channel, args.client, egress)
+        if args.youtube_action == "report":
+            return youtube.report(args.session, args.connection, args.end_date, egress)
+        if args.youtube_action == "revoke":
+            return youtube.revoke(args.session, args.connection, egress)
+        return youtube.status(args.session, args.connection)
+    connections = Connections(vault, registry_path=args.registry)
     if args.action == "connect":
         service = connections.provider(args.service)
         secret = None
@@ -117,6 +141,9 @@ def main():
     except KeyStoreUnavailable:
         print(json.dumps({"error": "keystore_unavailable"}))
         return 1
+    except KeyboardInterrupt:
+        print(json.dumps({"error": "cancelled"}))
+        return 130
     except (ValueError, OSError, sqlite3.Error):
         print(json.dumps({"error": "configuration_unavailable"}))
         return 1
