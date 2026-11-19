@@ -265,6 +265,10 @@ Sur la RTX 4080 SUPER du banc, le premier passage audible au curseur audio Windo
 
 Pour utiliser une installation locale de Vivian, indiquer le chemin absolu de son dossier dans `%LOCALAPPDATA%\AkashaBrain\qwen-voice-home.txt` (ou `AKASHA_QWEN_HOME`). Ce dossier de confiance contient l’interpréteur `env\Scripts\python.exe` avec `faster-qwen3-tts==0.3.2`, `qwen-tts==0.1.1` et PyTorch CUDA, ainsi que `models\0c0e3051f131929182e2c023b9537f8b1c68adfe\` avec les poids et le tokenizer qualifiés. Le bouton utilise les fichiers locaux. [Révision du modèle](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice/tree/0c0e3051f131929182e2c023b9537f8b1c68adfe)
 
+### Dicter une demande dans le bureau Windows
+
+**Dicter au micro** démarre une capture avec votre accord. Arrêtez la capture pour transcrire. **Importer un message vocal…** accepte aussi un WAV ou un FLAC du projet sélectionné. Whisper place le texte dans le champ de saisie. Vous pouvez corriger le brouillon, l’effacer ou choisir **Envoyer**. Pour examiner les propos d’un enregistrement comme document, utilisez la commande de transcription ou de compte rendu G7.
+
 ### Validation de la conversation et du serveur MCP
 
 Le 17 novembre 2026, le parcours lancé depuis la conversation a renvoyé quatre tests réussis et un verdict SQLite positif en **46,916 s**. Un client MCP local a lancé le parcours Rbitnet CPU et RapidOCR et a reçu le verdict `passed` en **138,147 s**, avec quatre tests réussis et la persistance confirmée après relance. Les 797 octets du diff renvoyé correspondent au premier diff appliqué et vérifié dans le bac. Les deux Windows Sandbox ont été arrêtés. [Relevé des deux essais](bench/results/windows-interface-mcp-notes-v1.json)

@@ -1,6 +1,6 @@
 # But produit et feuille de route post-MVP
 
-- **Statut au 19 novembre 2026** — G0 à G7 sont sur `main`. G8 est clôturé sur le bureau Windows. Le prochain jalon est G9, la dictée en brouillon.
+- **Statut au 19 novembre 2026** — G0 à G8 sont sur `main`. G9 est clôturé sur le bureau Windows.
 - **Dernière mise à jour** — 2026-11-19.
 - **Prérequis** — Phases 0 à 6 qualifiées sur le banc bureau et code.
 - **Spec liée** — v0.20, §2, §7.3.1, §8 à §11, §13, §14, §17 et §19. [Spécification](../architecture/brain-system-spec.md)
@@ -100,7 +100,7 @@ G7 s’appuie sur la reprise de capacités de G3 et le registre de G5. La livrai
 | --- | --- | --- |
 | **G7 — Transcription et analyse d’enregistrements parlés** | Un WAV ou FLAC peut être transcrit dans le bureau et via MCP. Les segments horodatés permettent de résumer une réunion, d’en extraire les décisions et actions ou de retrouver un passage. | Publier la comparaison française sur CPU et qualifier un moteur. Rejouer le parcours à cache vide et après qualification, puis vérifier un cas d’analyse avec renvoi aux passages sources, la reprise après accord, l’isolation du projet et l’annulation. |
 | **G8 — Lecture des réponses (clôturé)** | Le bouton **Lire la réponse** lit le texte affiché avec une voix française locale. La lecture peut être arrêtée depuis le bureau. | Qualifier une voix en français et vérifier l’intelligibilité, le délai de lecture, l’arrêt et la libération des ressources. |
-| **G9 — Demandes vocales** | L’utilisateur peut dicter une demande avec le bouton micro ou importer un enregistrement comme message vocal. Le texte transcrit s’insère en brouillon modifiable et rejoint la conversation à l’envoi. | Rejouer la même phrase dans un enregistrement à analyser et dans une demande vocale. Vérifier que seul le brouillon envoyé déclenche la planification de la consigne. Couvrir le refus d’accès au micro, l’annulation et le nettoyage de la capture. |
+| **G9 — Demandes vocales (clôturé)** | L’utilisateur peut dicter une demande avec le bouton micro ou importer un enregistrement comme message vocal. Le texte transcrit s’insère en brouillon modifiable et rejoint la conversation à l’envoi. | Rejouer la même phrase dans un enregistrement à analyser et dans une demande vocale. Vérifier que seul le brouillon envoyé déclenche la planification de la consigne. Couvrir le refus d’accès au micro, l’annulation et le nettoyage de la capture. |
 
 - **ASR.** Comparer VibeVoice-ASR-BitNet via VibeASR.cpp à whisper.cpp sur le même corpus français. Retenir le profil par défaut après le rejeu sur le banc. Évaluer le VibeVoice-ASR complet dans un profil optionnel si les usages réunion ou podcast exigent la séparation des locuteurs et les enregistrements longs. [VibeVoice-ASR-BitNet](https://huggingface.co/microsoft/VibeVoice-ASR-BitNet) · [whisper.cpp](https://github.com/ggml-org/whisper.cpp) · [VibeVoice-ASR](https://huggingface.co/microsoft/VibeVoice-ASR)
 - **TTS.** La voix française Vivian de Qwen3-TTS assure la lecture en streaming sur GPU. Piper SIWIS medium assure le repli sur CPU si Vivian est indisponible avant le premier son.
@@ -112,6 +112,12 @@ Au premier vote, Vivian a été choisie pour les phrases 1 et 3. La phrase 2 a r
 Au deuxième vote, `reference` et `nuance` étaient ex æquo sur la première phrase. L’auditeur a choisi `reference` pour la question finale de la deuxième et `sobre` pour la narration de la troisième, avec `nuance` jugée proche. Le bouton **Lire la réponse** utilise `reference` par défaut. Un compte rendu ou un autre texte identifié comme narratif reçoit `sobre` uniquement s’il ne contient aucune question. [Votes originaux](../../bench/results/g8-streaming-32d496d848c9-reponses.json) · [Clé du deuxième lot](../../bench/results/g8-streaming-32d496d848c9-cle.json) · [Écoute et mesures du moteur](../../bench/corpora/g8-streaming-v1/README.md)
 
 Sur la RTX 4080 SUPER, le délai du clic au premier son observé au curseur audio Windows a été de 13,91 s à froid et de 0,324 s en médiane sur trois lectures à chaud. **Arrêter** a fermé la sortie en 19 ms, sans écriture audio ultérieure. La lecture suivante a réutilisé le même processus. Avec un budget vidéo nul, le repli Piper SIWIS sur CPU a lu la réponse en français avec un premier son à 20,40 s. Sur le corpus réservé à Piper, les neuf éléments attendus ont été retrouvés. [Essais du bouton](../../bench/results/g8-vivian-desktop-v1.json) · [Corpus réservé de Piper](../../bench/results/g8-siwis-fr-reserve-v1.json)
+
+### Clôture G9 sur Windows
+
+Le bureau a traité « Transcris le fichier silence » comme le contenu d’un document, puis comme message vocal importé et comme dictée. Dans ces deux derniers parcours, Whisper a rempli le brouillon. La conversation et le plan sont restés identiques jusqu’au clic sur **Envoyer**. Après correction, le plan a porté sur `silence.wav`, le fichier choisi dans le brouillon. Le rejeu couvre le refus d’ouverture du micro, l’annulation, l’effacement du tampon et l’isolation du brouillon entre sessions. La dictée automatisée utilise une entrée WinMM simulée. [Rejeu du bureau](../../bench/results/g9-voice-desktop.json) · [Tests de la dictée](../../tests/test_desktop_voice.py)
+
+Sur son micro physique, l’utilisateur a confirmé la transcription de « Camille Martin » et « quinze heures ». Après annulation, le champ est resté vide. Il a trouvé la transcription lente. Un essai de transcription en streaming est prévu lors du peaufinage pour évaluer le délai ressenti.
 
 ### Pilote G7 sur CPU Windows
 

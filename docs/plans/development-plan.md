@@ -191,11 +191,13 @@ La réouverture d’une session G1 restaure les faits admis. Une tâche image MC
 
 Après G1 et G6, la suite `tests` et `contracts` a passé 272 tests. Elle en a passé 275 après G2, 289 après G3 et 297 après G4 et G5. [Révisions testées et preuves par jalon](product-goal-roadmap-v1.md#clôture-sur-main)
 
-### Voix locale — G7 et G8 validés sur Windows
+### Voix locale — G7 à G9 validés sur Windows
 
 Le parcours G7 aboutit à un compte rendu extractif dans le bureau et via MCP. Les bornes citées ont été comparées aux interventions de référence et le responsable d’une action reste indéterminé lorsque la voix dit seulement « je ». [Validation de G7](../../bench/results/g7-meeting-v1.json)
 
 G8 est clôturé. Le bouton **Lire la réponse** utilise Vivian en streaming sur GPU et Piper sur CPU en repli. Les deux écoutes françaises ont fixé `reference` pour la conversation et `sobre` pour la narration seule. [Votes, latence et arrêt](product-goal-roadmap-v1.md#clôture-g8-sur-windows)
+
+G9 est clôturé. La dictée et l’import alimentent un brouillon modifiable. L’envoi explicite transmet le texte corrigé au planificateur. [Validation au micro et rejeu du bureau](product-goal-roadmap-v1.md#clôture-g9-sur-windows)
 
 **Entrée.** Reprendre le dossier de spécialiste `audio.transcribe` prévu par G3 et le registre de G5. Figer un corpus français avec transcriptions de référence et extraits réservés. Préparer les manifestes candidats avec versions, licences, empreintes, formats et budgets mesurables. [Contrats audio](../architecture/brain-system-spec.md#731-transcription-et-synthèse-vocale-locales)
 

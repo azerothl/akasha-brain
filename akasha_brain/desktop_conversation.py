@@ -29,6 +29,7 @@ from .conversation_planning import (
 from .conversation_vault import SessionVault, admit_secret, clear
 from .desktop_tasks import latest_steps, test_counts
 from .desktop_vault import VaultWindow
+from .desktop_voice import VoiceComposer
 from .gap_resolution import GapReview, LABELS as GAP_LABELS
 from .image_recovery import CAPABILITY as GENERATE_IMAGE, ImageResult
 from .memory_store import MemoryRefusal
@@ -215,6 +216,8 @@ def compose_image_prompt(paths, subject: str) -> str:
 
 
 class ConversationPane:
+    voice: VoiceComposer | None = None
+
     def __init__(self, parent, launch_notes, prepare_project, review_project, latest_report, tasks, *,
                  project, review_prepared, communication=None, session=None):
         self.parent = parent
@@ -301,6 +304,7 @@ class ConversationPane:
         self.entry = ttk.Entry(controls, style="Conversation.TEntry")
         self.entry.pack(side="left", fill="x", expand=True, padx=8)
         self.entry.bind("<Return>", self.send)
+        self.voice = VoiceComposer(page, self)
 
     def add(self, speaker, text, *, tag=None, narration_only=False):
         if speaker != "Vous":
@@ -321,6 +325,8 @@ class ConversationPane:
                 return
             self.answer_audio("cancel")
         self.entry.delete(0, "end")
+        if self.voice is not None:
+            self.voice.sent()
         if self.seal_request(request):
             return
         self.add("Vous", request)
@@ -507,6 +513,7 @@ class ConversationPane:
                 self.add("Akasha", "Ce dossier reste accessible pour la conversation en cours.")
         if project != self.project:
             self.reader.stop()
+            self.voice.erase()
             if self.intent_job is not None:
                 self.intent_cancel.set()
             self.answer_audio("cancel")

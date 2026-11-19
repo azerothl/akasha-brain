@@ -1,0 +1,15 @@
+{
+  "windows": "Windows-11-10.0.26320-SP0",
+  "audio_sha256": "06eeadd99718610f5d091d360280872c97157a157273c9db3296d3208449e7d5",
+  "spoken": "Transcris le fichier silence.",
+  "analysis": "Akasha\nQuel projet souhaitez-vous vérifier ? Donnez-moi son chemin ou choisissez son dossier.\n\nVous\nTranscris consigne.wav\n\nAkasha\nJ’analyse votre demande.\n\nAkasha\nJe vérifie Whisper sur une phrase française de référence.\n\nAkasha\nWhisper est qualifié. Je reprends la transcription demandée.\n\nTranscription · GPU\n[0.00–2.00 s] À vérifier : Transcri le fichier Silence.",
+  "imported_draft": "Transcri le fichier Silence.",
+  "dictated_draft": "Transcri le fichier Silence.",
+  "sent": "Transcris silence.wav",
+  "conversation": "Akasha\nQuel projet souhaitez-vous vérifier ? Donnez-moi son chemin ou choisissez son dossier.\n\nVous\nTranscris consigne.wav\n\nAkasha\nJ’analyse votre demande.\n\nAkasha\nJe vérifie Whisper sur une phrase française de référence.\n\nAkasha\nWhisper est qualifié. Je reprends la transcription demandée.\n\nTranscription · GPU\n[0.00–2.00 s] À vérifier : Transcri le fichier Silence.\n\nVous\nTranscris silence.wav\n\nAkasha\nJ’analyse votre demande.\n\nTranscription\nSilence. Aucun texte.",
+  "session_isolation": true,
+  "cancel_and_erase": true,
+  "microphone": "Accord d’application refusé puis accepté. PCM injecté dans le tampon WinMM simulé. Arrêt, annulation, effacement et conversion WAV exercés. Aucun micro physique ouvert.",
+  "file_picker": "Sélection du fichier automatisée",
+  "interim_conversation_changes": 0
+}
