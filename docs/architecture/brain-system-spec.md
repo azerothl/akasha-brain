@@ -42,7 +42,7 @@
 
 > **Révision v0.20 (2026-11-18)** — Ajout du contrat des capacités vocales locales et de leur qualification sur le banc Windows. Les jalons G7 à G9 couvrent l’analyse d’enregistrements parlés, la lecture des réponses et les demandes vocales (§7.3.1, §17, §19).
 
-> **Révision v0.21 (2026-11-18)** — Ajout des URL dans le contexte de conversation et d’une lecture HTTPS ponctuelle hors du bac (§5.3, §8.8, §10.6, §13.7, §17).
+> **Révision v0.21 (2026-11-18)** — Ajout des URL dans le contexte de conversation, d’une lecture HTTPS ponctuelle hors du bac et du contrat cible pour les connexions aux services tiers (§5.3, §8.8, §10.6, §13.7, §17).
 
 ## 1. Résumé
 
@@ -466,9 +466,15 @@ Après un redémarrage du serveur, l’ancien `task_id` est inconnu. Le client s
 
 `--runs` choisit le stockage des essais Notes et des propositions de projet. `--image-runs` choisit le registre et le cache des images. Les tâches MCP passent par la file desktop partagée du serveur pour sérialiser l’accès au bac. Les réservations d’inférence coordonnent le moteur d’image avec les autres modèles locaux. [Configuration et outils](../../README.md#utiliser-akasha-brain-depuis-un-agent)
 
-### 8.8 Collecte web publique
+### 8.8 Collecte web et connexions aux services tiers
 
 **Lecture web publique.** Le parcours desktop reçoit une URL, demande un accord pour une lecture HTTPS et renvoie l’adresse effectivement consultée, l’heure du relevé, un extrait textuel et son éventuelle troncature. Il traite une URL à la fois. Le HTML statique et les réponses texte ou JSON forment le premier périmètre. Les scripts et chargements secondaires sont désactivés. Les réponses web restent des données externes et ne peuvent déclencher une action ou élargir les permissions. L’adresse peut être reprise dans le tour suivant, avec un nouvel accord avant la prochaine requête.
+
+**Cadre cible de connexion.** Déclarer les services et leurs opérations dans le registre de capacités avec un adaptateur versionné. Envisager des adaptateurs HTTP décrits par OpenAPI et des clients MCP explicitement configurés. Le runtime examine l’identité du service, la destination, le schéma d’entrée et de sortie, la classe d’effet, les données transmissibles, le budget et les permissions par opération. Il transmet au service les seules données autorisées et restitue des résultats structurés avec provenance. Un fournisseur absent ou une opération hors périmètre produit un diagnostic typé.
+
+Les connexions authentifiées associent explicitement une identité et des portées à un service, au moyen d’OAuth à portée minimale ou d’une clé API dans le vault selon le fournisseur. La résolution des secrets est réservée à l’adaptateur autorisé. Prévoir l’état de connexion, le renouvellement, l’expiration et la révocation. Les opérations qui modifient ou publient des données passent par une approbation d’effet distincte de l’accès en lecture. Qualifier le cadre avec deux services de test de profils différents. YouTube reste un scénario d’usage pour les liens publics et son éventuel connecteur dédié est différé.
+
+Le pilote G11 charge un manifeste JSON choisi par l’opérateur et expose ses opérations en ligne de commande. Il couvre les services publics et les clés API Bearer conservées dans le coffre Windows. La durée renouvelable porte sur l’accord local. Le banc vérifie aussi une révocation après établissement de TLS, avant l’émission de la requête HTTP. OAuth reste une extension du contrat. [Rejeu Windows](../../bench/results/service-connections-g11.json)
 
 ## 9. Système spatial et modèle du monde
 
@@ -822,7 +828,7 @@ G1 applique la protection des secrets avant la persistance de session. G2 ajoute
 
 G7 à G9 étendent le registre et les parcours d’interaction à la voix dans l’ordre transcription et analyse d’enregistrements parlés, lecture à la demande, puis demandes vocales. La qualification de chaque profil repose sur le contrat du §7.3.1. [Jalons voix locale](../plans/product-goal-roadmap-v1.md#prochains-jalons--voix-locale)
 
-G10 qualifie les URL dans la conversation et la lecture HTTPS publique hors du bac. [Clôture G10](../plans/product-goal-roadmap-v1.md#clôture-g10-sur-windows)
+G10 qualifie les URL dans la conversation et la lecture HTTPS publique hors du bac. G11 qualifie les connexions HTTPS par registre d’adaptateurs avec le coffre G2 et le registre G5. [Clôture G10](../plans/product-goal-roadmap-v1.md#clôture-g10-sur-windows) · [Clôture G11](../plans/product-goal-roadmap-v1.md#clôture-g11-sur-windows)
 
 ### Piste séparée — modèle du monde spatial et agent incarné
 
@@ -870,7 +876,7 @@ Décisions enregistrées pour le prototype, le banc d'essai et le but produit :
 21. **Exécution image et MCP (v0.18)** — Le parcours CPU emploie une logique commune de découverte, qualification et validation PNG et un backend isolé propre à Windows ou Linux. L’opérateur donne les accords du moteur et des poids séparément. Le client MCP suit puis reprend sa tâche avec le même identifiant et récupère le verdict et le PNG vérifié (§6.3, §8.7, §11.8).
 22. **But produit (v0.19)** — Agent universel local à domaines croissants avec abstention, organisé en sessions portant des projets. G1 filtre la persistance de session dès l’entrée. G2 ajoute le vault hybride avec keystore OS et handles applicatifs. La piste spatiale suit son propre plan (§2.1, §10.6, §17). [Feuille de route](../plans/product-goal-roadmap-v1.md)
 23. **Voix locale (v0.20)** — Transcription et synthèse sont des capacités optionnelles avec contrats versionnés. Le premier profil de chaque capacité est choisi après qualification en français sur CPU. Le STT alimente l’analyse d’enregistrements et les demandes vocales. Une demande vocale rejoint le planificateur après l’envoi du brouillon par l’utilisateur (§7.3.1, §17).
-24. **Collecte web publique (v0.21)** — Une URL peut être réutilisée pendant la session courante. La collecte HTTPS publique passe par un accord ponctuel et un processus hors du bac (§5.3, §8.8, §10.6, §13.7, §17).
+24. **Collecte web et services tiers (v0.21)** — Une URL peut être réutilisée pendant la session courante. La collecte HTTPS publique passe par un accord ponctuel et un processus hors du bac. Les services tiers suivent un contrat d’adaptateur versionné, avec permissions par opération et résolution des secrets hors modèle (§5.3, §8.8, §10.6, §13.7, §17).
 
 ## 20. Glossaire
 

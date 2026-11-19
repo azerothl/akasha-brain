@@ -1,6 +1,6 @@
 # But produit et feuille de route post-MVP
 
-- **Statut au 19 novembre 2026** — G0 à G9 sont sur `main`. G10 est clôturé sur le bureau Windows.
+- **Statut au 19 novembre 2026** — G0 à G10 sont sur `main`. Le cadre de connexion G11 est clôturé sur Windows. Le premier connecteur de production reste à choisir.
 - **Dernière mise à jour** — 2026-11-19.
 - **Prérequis** — Phases 0 à 6 qualifiées sur le banc bureau et code.
 - **Spec liée** — v0.21, §2, §5.3, §7.3.1, §8 à §11, §13, §14, §17 et §19. [Spécification](../architecture/brain-system-spec.md)
@@ -9,7 +9,7 @@
 
 Le but produit passe d’un MVP « deux parcours + évolution bornée sur banc » à un agent de demandes utilisateur qui compose des spécialistes, comble les lacunes sous garde-fous, mémorise par session et globalement, simule hors charge, et isole les secrets dans un vault.
 
-La v0.19 a fixé ce but. La v0.20 l’étend aux demandes audio et aux interactions vocales locales. La v0.21 ajoute le contexte web et la lecture HTTPS publique. [Plan de développement](development-plan.md)
+La v0.19 a fixé ce but. La v0.20 l’étend aux demandes audio et aux interactions vocales locales. La v0.21 ajoute le contexte web, la lecture HTTPS publique et le cadre cible de connexion aux services tiers. [Plan de développement](development-plan.md)
 
 ## Jugement sur la formulation proposée
 
@@ -136,6 +136,18 @@ Le bureau et MCP partagent désormais une instance de whisper.cpp small sur GPU 
 Depuis une session sans projet, le bureau a consulté une page HTTPS publique, puis repris son URL à la relance « Que dit cette page ? ». Chaque accord a autorisé une seule lecture. Les deux réponses ont affiché la source et l’heure du relevé. Une nouvelle session a demandé une URL, deux liens ont déclenché une demande de précision et l’annulation a laissé le compteur de lectures inchangé. [Relevé du bureau](../../bench/results/g10-web-desktop-cloture.json)
 
 Les contrôles du lecteur couvrent l’expiration de l’accord après cinq minutes, son usage unique, le refus des destinations privées et des redirections, la limite de taille et l’arrêt du processus après quinze secondes. [Qualification](../../bench/results/g10-web-qualification.md)
+
+## Clôture G11 sur Windows
+
+G11 s’appuie sur le coffre G2, le registre G5 et le parcours HTTPS de G10. La ligne de commande charge un registre d’adaptateurs versionnés et permet de créer, consulter, renouveler, révoquer ou déconnecter une connexion liée à une session. [Contrat de collecte et d’intégration](../architecture/brain-system-spec.md#88-collecte-web-et-connexions-aux-services-tiers)
+
+| Jalon | Résultat visible | Critère de sortie |
+| --- | --- | --- |
+| **G11 — Cadre de connexion aux services tiers** | Configurer un service déclaré au registre, consulter ses opérations, autoriser une connexion à portée réduite et la révoquer. | Qualifier deux services de test, dont un authentifié. Vérifier les contrôles de schéma, de destination, de portée, d’expiration et d’approbation avant toute écriture. Vérifier que les secrets restent dans le coffre et les composants autorisés et que les réponses portent leur provenance. |
+
+Le scénario de clôture a exercé deux services HTTPS locaux, dont un authentifié avec une clé API conservée dans le Gestionnaire d’identification Windows. Il a vérifié le refus d’une opération hors portée, la validation des schémas, l’expiration et le cloisonnement entre sessions. Le service d’essai a enregistré la publication après l’accord distinct d’écriture. Lors d’une révocation concurrente, il n’a reçu aucune requête. Les résultats indiquent leur provenance et la déconnexion a effacé les clés de test. Le banc a aussi chargé un registre opérateur dans un nouveau processus. [Parcours des connexions](../../bench/results/service-connections-g11.json) · [Journal des fournisseurs](../../bench/results/service-providers-g11.json)
+
+OAuth et le premier connecteur de production restent à planifier. Un connecteur dédié à YouTube relève de cette suite.
 
 ## PR-G0 — But produit dans la spec et le plan
 

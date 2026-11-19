@@ -1,0 +1,221 @@
+{
+  "status": "passed",
+  "platform": "win32",
+  "keystore": "Windows Credential Manager",
+  "commands": [
+    {
+      "command": "list",
+      "outcome": "ok"
+    },
+    {
+      "command": "session",
+      "outcome": "ok"
+    },
+    {
+      "command": "connect",
+      "outcome": "destination_denied"
+    },
+    {
+      "command": "connect",
+      "outcome": "ok"
+    },
+    {
+      "command": "connect",
+      "outcome": "ok"
+    },
+    {
+      "command": "connect",
+      "outcome": "ok"
+    },
+    {
+      "command": "session",
+      "outcome": "ok"
+    },
+    {
+      "command": "status",
+      "outcome": "connection_unavailable"
+    },
+    {
+      "command": "revoke",
+      "outcome": "connection_unavailable"
+    },
+    {
+      "command": "call",
+      "outcome": "connection_unavailable"
+    },
+    {
+      "command": "call",
+      "outcome": "egress_approval_required"
+    },
+    {
+      "command": "call",
+      "outcome": "ok"
+    },
+    {
+      "command": "call",
+      "outcome": "ok"
+    },
+    {
+      "command": "call",
+      "outcome": "scope_denied"
+    },
+    {
+      "command": "call",
+      "outcome": "input_schema"
+    },
+    {
+      "command": "call",
+      "outcome": "effect_approval_required"
+    },
+    {
+      "command": "call",
+      "outcome": "ok"
+    },
+    {
+      "command": "call",
+      "outcome": "ok"
+    },
+    {
+      "command": "call",
+      "outcome": "output_schema"
+    },
+    {
+      "command": "call",
+      "outcome": "destination_denied"
+    },
+    {
+      "command": "renew",
+      "outcome": "ok"
+    },
+    {
+      "command": "revoke",
+      "outcome": "ok"
+    },
+    {
+      "command": "call",
+      "outcome": "connection_revoked"
+    },
+    {
+      "command": "disconnect",
+      "outcome": "ok"
+    },
+    {
+      "command": "list",
+      "outcome": "ok"
+    },
+    {
+      "command": "connect",
+      "outcome": "ok"
+    },
+    {
+      "command": "call",
+      "outcome": "ok"
+    },
+    {
+      "command": "disconnect",
+      "outcome": "ok"
+    }
+  ],
+  "expiry_check": {
+    "clock": "injected at expires_at",
+    "state": "expired",
+    "outcome": "connection_expired"
+  },
+  "vault_entries_removed": 2,
+  "cross_session_access_denied": true,
+  "operator_registry_loaded_in_new_process": true,
+  "concurrent_revocation": {
+    "stage": "after_tls_and_windows_credential_read",
+    "other_process": "service_cli revoke",
+    "outcome": "connection_revoked",
+    "http_requests_received": 0,
+    "published": false
+  },
+  "witness_absent_from_cli_and_files": true,
+  "audit": {
+    "status": "passed",
+    "entries_verified": 32
+  },
+  "observations": [
+    {
+      "result": {
+        "available": true
+      },
+      "provenance": {
+        "service": "catalogue-test",
+        "operation": "catalogue.status",
+        "version": "1.0.0",
+        "adapter": "service-https-json.v1",
+        "identity": "public",
+        "destination": "https://127.0.0.1:38471/v1/status",
+        "peer_sha256": "611b0c0f708f2938d94b6c1390f2713b31b53777dce6266ca5b7dc11e8dbe074",
+        "observed_at": "2026-11-19T12:19:03.875605+00:00",
+        "source": "external"
+      }
+    },
+    {
+      "result": {
+        "published": false
+      },
+      "provenance": {
+        "service": "publication-test",
+        "operation": "publication.read",
+        "version": "1.0.0",
+        "adapter": "service-https-json.v1",
+        "identity": "editor",
+        "destination": "https://127.0.0.1:38472/v1/document?document=bulletin",
+        "peer_sha256": "8119f70575af6fece1d8535554071c3a40e5a2a49d39e1695d95c3fbc9ca8a84",
+        "observed_at": "2026-11-19T12:19:04.238991+00:00",
+        "source": "external"
+      }
+    },
+    {
+      "result": {
+        "published": true
+      },
+      "provenance": {
+        "service": "publication-test",
+        "operation": "publication.publish",
+        "version": "1.0.0",
+        "adapter": "service-https-json.v1",
+        "identity": "editor",
+        "destination": "https://127.0.0.1:38472/v1/document",
+        "peer_sha256": "8119f70575af6fece1d8535554071c3a40e5a2a49d39e1695d95c3fbc9ca8a84",
+        "observed_at": "2026-11-19T12:19:05.673000+00:00",
+        "source": "external"
+      }
+    },
+    {
+      "result": {
+        "published": true
+      },
+      "provenance": {
+        "service": "publication-test",
+        "operation": "publication.read",
+        "version": "1.0.0",
+        "adapter": "service-https-json.v1",
+        "identity": "editor",
+        "destination": "https://127.0.0.1:38472/v1/document?document=bulletin",
+        "peer_sha256": "8119f70575af6fece1d8535554071c3a40e5a2a49d39e1695d95c3fbc9ca8a84",
+        "observed_at": "2026-11-19T12:19:06.015803+00:00",
+        "source": "external"
+      }
+    },
+    {
+      "result": {
+        "available": true
+      },
+      "provenance": {
+        "service": "operator-status",
+        "operation": "operator.health",
+        "version": "1.2.0",
+        "adapter": "service-https-json.v1",
+        "identity": "public",
+        "destination": "https://127.0.0.1:64807/custom/health",
+        "peer_sha256": "27b52ddd0d2f19cd554262055a298dff5fdf1fbaa66d7acf86812a4319e28ddb",
+        "observed_at": "2026-11-19T12:19:09.487888+00:00",
+        "source": "external"
+      }
+    }
+  ]
+}

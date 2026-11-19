@@ -1,0 +1,13 @@
+[
+  {
+    "id": "declared-https-json",
+    "modality": "verification",
+    "engine": "https-json",
+    "capabilities": [
+      "services.declared-https"
+    ],
+    "contract": "service-https-json.v1",
+    "ram_mib": 0,
+    "fallback": false
+  }
+]

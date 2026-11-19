@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "events": {
+    "catalogue-test": [
+      {
+        "method": "GET",
+        "path": "/v1/status",
+        "has_authorization": false
+      }
+    ],
+    "publication-test": [
+      {
+        "method": "GET",
+        "path": "/v1/document",
+        "has_authorization": true
+      },
+      {
+        "method": "PUT",
+        "path": "/v1/document",
+        "has_authorization": true
+      },
+      {
+        "method": "GET",
+        "path": "/v1/document",
+        "has_authorization": true
+      },
+      {
+        "method": "GET",
+        "path": "/v1/document",
+        "has_authorization": true
+      },
+      {
+        "method": "GET",
+        "path": "/v1/document",
+        "has_authorization": true
+      }
+    ],
+    "operator-status": [
+      {
+        "method": "GET",
+        "path": "/custom/health",
+        "has_authorization": false
+      }
+    ]
+  },
+  "published_before_approval": false,
+  "published_after_approval": true
+}

@@ -1,0 +1,113 @@
+[
+  {
+    "id": "catalogue-test",
+    "version": "1.0.0",
+    "adapter": "service-https-json.v1",
+    "origin": "https://127.0.0.1:38471",
+    "authentication": "none",
+    "operations": [
+      {
+        "id": "catalogue.status",
+        "path": "/v1/status",
+        "method": "GET",
+        "effect": "read",
+        "purpose": "Consulter la disponibilité du catalogue.",
+        "input_schema": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "available": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "available"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "publication-test",
+    "version": "1.0.0",
+    "adapter": "service-https-json.v1",
+    "origin": "https://127.0.0.1:38472",
+    "authentication": "api_key",
+    "operations": [
+      {
+        "id": "publication.read",
+        "path": "/v1/document",
+        "method": "GET",
+        "effect": "read",
+        "purpose": "Consulter le statut d’un document.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "document": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[a-z][a-z0-9-]*(?![\\s\\S])"
+            }
+          },
+          "required": [
+            "document"
+          ],
+          "additionalProperties": false
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "published": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "published"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "publication.publish",
+        "path": "/v1/document",
+        "method": "PUT",
+        "effect": "persistent",
+        "purpose": "Publier le document désigné.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "document": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[a-z][a-z0-9-]*(?![\\s\\S])"
+            }
+          },
+          "required": [
+            "document"
+          ],
+          "additionalProperties": false
+        },
+        "output_schema": {
+          "type": "object",
+          "properties": {
+            "published": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "published"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ]
+  }
+]

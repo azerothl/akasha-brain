@@ -24,9 +24,11 @@ conda create --name akasha-brain-win --override-channels -c defaults `
     'vs2015_runtime=14.40.33807=h98bb1dd_1'
 conda activate akasha-brain-win
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install 'jsonschema==4.26.0' 'pytest==9.2.0' 'Pygments==2.21.0' 'pillow==13.0.0'
+.\.venv\Scripts\python.exe -m pip install 'jsonschema==4.26.0' 'pytest==9.2.0' 'Pygments==2.21.0' 'pillow==13.0.0' 'cryptography==50.0.2'
 .\.venv\Scripts\python.exe -m pip check
 ```
+
+`cryptography` génère les certificats TLS temporaires des tests et du banc G11.
 
 Préparez le Python portable que le lanceur copiera dans Windows Sandbox. Le bac reçoit la bibliothèque standard et Tcl/Tk. Le lanceur y configure les chemins Tcl/Tk et ajoute les dépendances nécessaires au scénario.
 
@@ -272,6 +274,17 @@ Pour utiliser une installation locale de Vivian, indiquer le chemin absolu de so
 ### Consulter une page publique
 
 Collez une URL HTTPS dans la conversation. Après accord, le bureau affiche un extrait daté du texte public. Dans la même session, « Que dit cette page ? » reprend la dernière URL avec un nouvel accord. Le premier lecteur accepte une seule destination par demande et des réponses statiques de taille bornée. [Qualification Windows de G10](bench/results/g10-web-qualification.md)
+
+### Connecter un service
+
+Pour les services HTTPS déclarés, lancez `python -m akasha_brain.service_cli list` dans l’environnement du projet. La commande décrit les opérations et leurs schémas. Utilisez `--registry chemin.json` avant la sous-commande pour choisir un catalogue d’adaptateurs installé par l’opérateur. `session` crée une session et `connect --help` décrit la destination, le certificat, l’identité, les portées et la durée à autoriser. Une connexion à clé API utilise le coffre Windows. Chaque appel requiert l’accord réseau et une écriture requiert aussi un accord d’effet. `status`, `renew` et `revoke` gèrent la connexion. Le catalogue fourni déclare deux services de qualification. [Déclarations](akasha_brain/service_adapters.json) · [Rejeu des connexions](bench/results/service-connections-g11.json)
+
+Pour rejouer la qualification sur Windows depuis la racine du dépôt, utilisez l’environnement hôte ci-dessus et laissez libres les ports locaux 38471 et 38472. Le banc démarre les fournisseurs de test et utilise une clé temporaire dans le Gestionnaire d’identification Windows.
+
+```powershell
+.\.venv\Scripts\python.exe -m bench.run_service_connections --output-dir (Join-Path $env:TEMP 'akasha-g11-releve')
+.\.venv\Scripts\python.exe -m pytest -q tests contracts
+```
 
 ### Validation de la conversation et du serveur MCP
 

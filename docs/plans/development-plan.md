@@ -209,6 +209,10 @@ G9 est clôturé. La dictée et l’import alimentent un brouillon modifiable. L
 
 G10 est clôturé sur Windows. Depuis une session sans projet, le bureau lit une page HTTPS publique après accord, affiche un extrait daté et demande un nouvel accord pour la relance. Le rejeu couvre aussi l’annulation, les liens ambigus et le passage à une nouvelle session. [Qualification et contrôles du lecteur](../../bench/results/g10-web-qualification.md) · [Rejeu de clôture](../../bench/results/g10-web-desktop-cloture.json)
 
+### Connexions aux services tiers (G11)
+
+G11 est clôturé sur Windows. Le scénario en ligne de commande a qualifié le registre d’adaptateurs, la lecture publique et la connexion par clé API pour des opérations à portée définie. Il a exercé la déconnexion, la révocation et l’accord supplémentaire requis avant une écriture. OAuth et le choix d’un connecteur de production restent à planifier. [Critères de sortie et résultats](product-goal-roadmap-v1.md#clôture-g11-sur-windows)
+
 ## Piste séparée — Modèle du monde spatial et agent incarné
 
 La perception spatiale, les simulateurs et l’action incarnée suivent un plan dédié. Le jalon documentaire G6 a été relu et fusionné sur `main`. Le plan fixe les critères d’entrée depuis la Phase 5, les scénarios, les observations et les seuils d’évaluation pour la piste de recherche. [Plan de recherche spatial](spatial-world-model-plan-v0.md)
