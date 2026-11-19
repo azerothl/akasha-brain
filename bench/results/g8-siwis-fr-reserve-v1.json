@@ -1,0 +1,59 @@
+{
+  "voice_revision": "375a0fe641dea077c2a47b4e9a056d6da521eed3",
+  "engine": "Piper 2023.11.14-2 CPU",
+  "check": "whisper.cpp small français, CPU",
+  "clips": [
+    {
+      "voice": "piper-siwis-fr",
+      "audio_s": 6.251428571428572,
+      "guest_peak_bytes": 167452672,
+      "seconds_until_wav": 20.62783519999357,
+      "sandbox_stopped": true,
+      "id": "reserve-facture",
+      "wav_sha256": "4c007c02caab8974cfaea20176c1910c36b0e75799e234e1688cff8ee2f22353",
+      "asr": "Le PDF de la facture indique 35 € de TVA.\n Le paiement est prévu le 7 avril.",
+      "checks": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "voice": "piper-siwis-fr",
+      "audio_s": 6.088888888888889,
+      "guest_peak_bytes": 166604800,
+      "seconds_until_wav": 17.2725625000312,
+      "sandbox_stopped": true,
+      "id": "reserve-retour",
+      "wav_sha256": "7456c18e9237a7f310ccc2b640f8cbe400990024da9e6f96b45654b69fa42b59",
+      "asr": "Louise Bernard prendra le RER pour Paris à 16h. Elle descendra au deuxième arrêt.",
+      "checks": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "all_critical_terms": true,
+  "protocol_sha256": "4585204cd49917d79239a7780d150599232456b4fa3c81024571bef805078d10",
+  "passed": true,
+  "original_checks": [
+    [
+      true,
+      false,
+      true,
+      true
+    ],
+    [
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  ],
+  "scoring_note": "Relecture des mêmes transcriptions avec équivalence entre le symbole euro et euros."
+}

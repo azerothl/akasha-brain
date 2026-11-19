@@ -1,0 +1,2057 @@
+{
+  "definition": "Seconds until playable non-silent host PCM at native 24 kHz, 10 ms windows at -50 dBFS RMS. Accounts for digital leading silence and chunk arrival. Speaker hardware excluded.",
+  "cold": "Fresh process, includes Python runtime library imports, model load, CUDA setup and graph capture. OS file cache uncontrolled. No downloads.",
+  "warm": "Subsequent call with the same resident CUDA model and graphs, seed reset each request.",
+  "process_order": [
+    "stream-1",
+    "full-1",
+    "full-2",
+    "stream-2",
+    "stream-3",
+    "full-3"
+  ],
+  "summary": {
+    "stream_cold_phrase1": {
+      "n": 3,
+      "median_s": 10.57121939995326,
+      "min_s": 10.444577800026163,
+      "max_s": 11.707152500024531
+    },
+    "stream_warm_phrase1": {
+      "n": 3,
+      "median_s": 0.25097490000538525,
+      "min_s": 0.24152509999461472,
+      "max_s": 0.25297480004141104
+    },
+    "stream_warm_phrase2": {
+      "n": 3,
+      "median_s": 0.24916709998622538,
+      "min_s": 0.2347619000193663,
+      "max_s": 0.26248650000896306
+    },
+    "stream_warm_phrase3": {
+      "n": 3,
+      "median_s": 0.261929000003729,
+      "min_s": 0.2425563999894075,
+      "max_s": 0.26661069997120646
+    },
+    "full_cold_phrase1": {
+      "n": 3,
+      "median_s": 11.795587100004777,
+      "min_s": 11.465313199998345,
+      "max_s": 12.612977200045716
+    },
+    "full_warm_phrase1": {
+      "n": 3,
+      "median_s": 1.134929800031241,
+      "min_s": 1.124818499989342,
+      "max_s": 1.1615976000064985
+    },
+    "full_warm_phrase2": {
+      "n": 3,
+      "median_s": 1.8200397999444977,
+      "min_s": 1.7573202000185848,
+      "max_s": 1.837548300025519
+    },
+    "full_warm_phrase3": {
+      "n": 3,
+      "median_s": 2.153385499990545,
+      "min_s": 2.151527499987278,
+      "max_s": 2.233241299956571
+    }
+  },
+  "sessions": [
+    {
+      "mode": "stream",
+      "process": 65940,
+      "repetition": 1,
+      "weights_revision": "0c0e3051f131929182e2c023b9537f8b1c68adfe",
+      "corpus_sha256": "a15e9c96c4d25faa29260c6c9e4550cda243bd2080a034f1c342afe236ed2cb2",
+      "load_s": 8.608474600012414,
+      "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+      "dtype": "torch.bfloat16",
+      "packages": {
+        "faster-qwen3-tts": "0.3.2",
+        "qwen-tts": "0.1.1",
+        "transformers": "4.57.3",
+        "torch": "2.8.0+cu128"
+      },
+      "speaker": "Vivian",
+      "styles": {
+        "reference": "Parle en français sur un ton conversationnel naturel. Fais entendre les questions, marque clairement les corrections et garde un débit posé pour la narration.",
+        "nuance": "Réponds comme dans une conversation en français de France. Entre immédiatement dans la phrase. Fais monter la voix sur la dernière syllabe des vraies questions, notamment « prévenir ». Une correction tient dans un seul mouvement. Garde les affirmations simples, calmes et sobres.",
+        "sobre": "Français parlé de France, voix tranquille, directe et complice. Démarre sans hésiter. Pour une question, attends réellement une réponse : termine sur une montée nette et brève. Pour une information, garde une mélodie discrète et descendante, sans emphase ni effet de scène."
+      },
+      "seed": 7319,
+      "chunk_codec_frames": 4,
+      "runs": [
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": true,
+          "first_sound_s": 11.707152500024531,
+          "complete_s": 13.315490300010424,
+          "blocks": [
+            {
+              "ready_s": 11.617152500024531,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.760232600034215,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.933862100006081,
+              "frames": 7680
+            },
+            {
+              "ready_s": 12.073428000032436,
+              "frames": 7680
+            },
+            {
+              "ready_s": 12.229468400008045,
+              "frames": 7680
+            },
+            {
+              "ready_s": 12.373233899998013,
+              "frames": 7680
+            },
+            {
+              "ready_s": 12.50546650000615,
+              "frames": 7680
+            },
+            {
+              "ready_s": 12.649378700007219,
+              "frames": 7680
+            },
+            {
+              "ready_s": 12.764360400033183,
+              "frames": 7680
+            },
+            {
+              "ready_s": 12.879225999990012,
+              "frames": 7680
+            },
+            {
+              "ready_s": 12.995484000013676,
+              "frames": 7680
+            },
+            {
+              "ready_s": 13.106105900020339,
+              "frames": 7680
+            },
+            {
+              "ready_s": 13.22430970001733,
+              "frames": 7680
+            },
+            {
+              "ready_s": 13.31523389997892,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 101760,
+          "duration_ms": 4240.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 203564,
+          "wav_sha256": "3a7c581c8ed4fa2b318f42b4e6da011f49fea8198091945e3ed9abfc800a8abe"
+        },
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": false,
+          "first_sound_s": 0.25297480004141104,
+          "complete_s": 1.3129745000042021,
+          "blocks": [
+            {
+              "ready_s": 0.16297480004141107,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.27917300001718104,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.3836373999947682,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.49000140000134706,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.598178000014741,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7073727000388317,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.817176999989897,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9323552999994718,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.0428152999957092,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1596463000169024,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2686551000224426,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.3126201000413857,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 86400,
+          "duration_ms": 3600.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 172844,
+          "wav_sha256": "4eac052038b97c692d850d90673052b7e5951bb4b67669d6fdad1bc19c5f7ab6"
+        },
+        {
+          "style": "reference",
+          "phrase": 2,
+          "cold": false,
+          "first_sound_s": 0.26248650000896306,
+          "complete_s": 2.263058699958492,
+          "blocks": [
+            {
+              "ready_s": 0.18248650000896305,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.2889251000015065,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.39906729996437207,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.5108292999793775,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.621550899988506,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7471580000128597,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8707424000022002,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9903148000012152,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1072468999773264,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.233697099960409,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.35808909998741,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.4715238999924622,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.5893649999634363,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.7058506999746896,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.8311281999922357,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9433820999693125,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.049311899987515,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.171207499981392,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.26274450001074,
+              "frames": 5760
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 144000,
+          "duration_ms": 6000.0,
+          "onset_ms": 80.0,
+          "wav_bytes": 288044,
+          "wav_sha256": "372e1704c4de5b184ef29193f07b6e802abdd4f9cc6068f84c20979f32134c7c"
+        },
+        {
+          "style": "reference",
+          "phrase": 3,
+          "cold": false,
+          "first_sound_s": 0.26661069997120646,
+          "complete_s": 2.555992099980358,
+          "blocks": [
+            {
+              "ready_s": 0.1766106999712065,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.2823943999828771,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.38849109999137,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.4994382999720983,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.6181986999581568,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7258964999928139,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8290954999974929,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9311924999929033,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.0375608999747783,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1438859999761917,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2510159999947064,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.353496499999892,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.459412699972745,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.5624027999583632,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.6683135000057518,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.7708396000089124,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.8788219999987632,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9812563000014052,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.0880110999569297,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.195823799993377,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.2997586999554187,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.4111721999943256,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.515139499970246,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.5556972000049427,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 178560,
+          "duration_ms": 7440.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 357164,
+          "wav_sha256": "a0517af330aa322fb157b8e15fb4a1c39aa78e0243b3a2b6d028dc9bf641f437"
+        },
+        {
+          "style": "nuance",
+          "phrase": 1,
+          "cold": false,
+          "first_sound_s": 0.2571451000147499,
+          "complete_s": 1.4395128000178374,
+          "blocks": [
+            {
+              "ready_s": 0.16714510001474991,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.26867169997422025,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.3696085999836214,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.4889120999723673,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.5970917000086047,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.6994100000010803,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8029925000155345,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9153918999945745,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.019658499979414,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1303635999793187,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2481264999951236,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.3606395999668166,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.439274700009264,
+              "frames": 3840
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 96000,
+          "duration_ms": 4000.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 192044,
+          "wav_sha256": "51f36acc69d3a393636edcc74ad787b05a0d147d56f81d5c61b2bef75af0b478"
+        },
+        {
+          "style": "sobre",
+          "phrase": 1,
+          "cold": false,
+          "first_sound_s": 0.25736989998025817,
+          "complete_s": 1.6119635999784805,
+          "blocks": [
+            {
+              "ready_s": 0.1673698999802582,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.2691173999919556,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.3696683999733068,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.48100159998284653,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.5880499999620952,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.694343300012406,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8116383999586105,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.92831920000026,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.0496950999950059,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1685518000158481,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2776735000079498,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.3935024999664165,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.5062781000160612,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.6116376999998465,
+              "frames": 7680
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 107520,
+          "duration_ms": 4480.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 215084,
+          "wav_sha256": "8085efac4653cdd53f42ed905fb1de4273cb55e5088a5be055af773734aa8b31"
+        },
+        {
+          "style": "nuance",
+          "phrase": 2,
+          "cold": false,
+          "first_sound_s": 0.26676979996962474,
+          "complete_s": 3.1159175999928266,
+          "blocks": [
+            {
+              "ready_s": 0.18676979996962473,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.3027136999880895,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.4064250999945216,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.5286404999787919,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.6370133999735117,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7610929000074975,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8756891000084579,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9935931999934837,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1091723999707028,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2311776999849826,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.3411310999654233,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.4729347999673337,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.5797403999604285,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.685908899991773,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.7924358999589458,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9146975000039674,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.0371181999798864,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.1594914000015706,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.2786317999707535,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.392602399981115,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.5020448999712244,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.607409899996128,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.717181999993045,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.8299783999682404,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.948853599955328,
+              "frames": 7680
+            },
+            {
+              "ready_s": 3.0600932000088505,
+              "frames": 7680
+            },
+            {
+              "ready_s": 3.115665399993304,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 201600,
+          "duration_ms": 8400.0,
+          "onset_ms": 80.0,
+          "wav_bytes": 403244,
+          "wav_sha256": "1c609d66a01794a9b6c3faffe2f65973dd3fc50c87b5b078826c138a10ba34c0"
+        },
+        {
+          "style": "sobre",
+          "phrase": 2,
+          "cold": false,
+          "first_sound_s": 0.2551471000025049,
+          "complete_s": 2.352732900006231,
+          "blocks": [
+            {
+              "ready_s": 0.17514710000250489,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.27931350003927946,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.3820701999939047,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.4979663999984041,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.6127856000093743,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7173015000298619,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8385933000245132,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9426028000307269,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.0486711999983527,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1519704000093043,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2674997000140138,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.3821820000302978,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.4938860000111163,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.6035894000087865,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.7107286000391468,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.8177812999929301,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9260484999977052,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.0324203000054695,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.1417925000423566,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.2467382000177167,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.3524706999887712,
+              "frames": 7680
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 161280,
+          "duration_ms": 6720.0,
+          "onset_ms": 80.0,
+          "wav_bytes": 322604,
+          "wav_sha256": "9e1370b51f0ffd2fa310b828ab927aa17ad5e27a9d56dd4cb60e6f5019b0c504"
+        },
+        {
+          "style": "nuance",
+          "phrase": 3,
+          "cold": false,
+          "first_sound_s": 0.25509640001459044,
+          "complete_s": 2.323103600007016,
+          "blocks": [
+            {
+              "ready_s": 0.16509640001459047,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.27938959997845814,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.38907700002891943,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.49344160000327975,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.5979982999851927,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7018546999897808,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8061560000060126,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9143884999793954,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.0224774000234902,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1387464000144973,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2586802000296302,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.3740892999921925,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.486125199997332,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.5974465000326745,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.7132748999865726,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.8224204999860376,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9368181999889202,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.045103000011295,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.1564665000187233,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.26021330000367,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.3228959999978542,
+              "frames": 3840
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 157440,
+          "duration_ms": 6560.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 314924,
+          "wav_sha256": "8068572e49c60ed4f7af14dd41c3be3408aad434a7546c4d959e59bce58edc34"
+        },
+        {
+          "style": "sobre",
+          "phrase": 3,
+          "cold": false,
+          "first_sound_s": 0.24356419997988268,
+          "complete_s": 2.5567875999840908,
+          "blocks": [
+            {
+              "ready_s": 0.1535641999798827,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.27492409996921197,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.38038479996612296,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.48535370000172406,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.589351299975533,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7005159999825992,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8054019999690354,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9176238999934867,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.0200742000015453,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1293494999990799,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.231882799998857,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.3372680000029504,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.4447179000126198,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.549085600010585,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.6538909999653697,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.7611561000230722,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.8698620999930426,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9801522999769077,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.094300900003873,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.2013862999738194,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.3045771999750286,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.4119564999709837,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.5177998999715783,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.556553900009021,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 178560,
+          "duration_ms": 7440.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 357164,
+          "wav_sha256": "c6895bbfcb804bf84bf13633d854b45141de5e6a86fc1eebac4e57b1d2947562"
+        }
+      ]
+    },
+    {
+      "mode": "full",
+      "process": 98064,
+      "repetition": 1,
+      "weights_revision": "0c0e3051f131929182e2c023b9537f8b1c68adfe",
+      "corpus_sha256": "a15e9c96c4d25faa29260c6c9e4550cda243bd2080a034f1c342afe236ed2cb2",
+      "load_s": 8.727001600025687,
+      "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+      "dtype": "torch.bfloat16",
+      "packages": {
+        "faster-qwen3-tts": "0.3.2",
+        "qwen-tts": "0.1.1",
+        "transformers": "4.57.3",
+        "torch": "2.8.0+cu128"
+      },
+      "speaker": "Vivian",
+      "styles": {
+        "reference": "Parle en français sur un ton conversationnel naturel. Fais entendre les questions, marque clairement les corrections et garde un débit posé pour la narration.",
+        "nuance": "Réponds comme dans une conversation en français de France. Entre immédiatement dans la phrase. Fais monter la voix sur la dernière syllabe des vraies questions, notamment « prévenir ». Une correction tient dans un seul mouvement. Garde les affirmations simples, calmes et sobres.",
+        "sobre": "Français parlé de France, voix tranquille, directe et complice. Démarre sans hésiter. Pour une question, attends réellement une réponse : termine sur une montée nette et brève. Pour une information, garde une mélodie discrète et descendante, sans emphase ni effet de scène."
+      },
+      "seed": 7319,
+      "chunk_codec_frames": 4,
+      "runs": [
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": true,
+          "first_sound_s": 12.612977200045716,
+          "complete_s": 12.523213800042868,
+          "blocks": [
+            {
+              "ready_s": 12.522977200045716,
+              "frames": 101760
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 101760,
+          "duration_ms": 4240.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 203564,
+          "wav_sha256": "547da67e47c16903be26b8eb75e8ef4055f287bfcf3f4bbf2396d5c532ec0dfe"
+        },
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": false,
+          "first_sound_s": 1.1615976000064985,
+          "complete_s": 1.0717334999935701,
+          "blocks": [
+            {
+              "ready_s": 1.0715976000064984,
+              "frames": 86400
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 86400,
+          "duration_ms": 3600.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 172844,
+          "wav_sha256": "ef621a4c2701501f0e78a0b890622b5840c1829be852526589bf207ca0b784a8"
+        },
+        {
+          "style": "reference",
+          "phrase": 2,
+          "cold": false,
+          "first_sound_s": 1.8200397999444977,
+          "complete_s": 1.7404201999888755,
+          "blocks": [
+            {
+              "ready_s": 1.7400397999444976,
+              "frames": 144000
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 144000,
+          "duration_ms": 6000.0,
+          "onset_ms": 80.0,
+          "wav_bytes": 288044,
+          "wav_sha256": "072207bf64b112ac226bf5eb7b876ad81f8088aecfdfac1da9b4676586da486e"
+        },
+        {
+          "style": "reference",
+          "phrase": 3,
+          "cold": false,
+          "first_sound_s": 2.151527499987278,
+          "complete_s": 2.06185669999104,
+          "blocks": [
+            {
+              "ready_s": 2.061527499987278,
+              "frames": 178560
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 178560,
+          "duration_ms": 7440.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 357164,
+          "wav_sha256": "e49540a22503dd3cf1ad68ce12b7af573a9a63a10fb23251f05933a6485b5426"
+        }
+      ]
+    },
+    {
+      "mode": "stream",
+      "process": 34344,
+      "repetition": 2,
+      "weights_revision": "0c0e3051f131929182e2c023b9537f8b1c68adfe",
+      "corpus_sha256": "a15e9c96c4d25faa29260c6c9e4550cda243bd2080a034f1c342afe236ed2cb2",
+      "load_s": 7.888925899984315,
+      "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+      "dtype": "torch.bfloat16",
+      "packages": {
+        "faster-qwen3-tts": "0.3.2",
+        "qwen-tts": "0.1.1",
+        "transformers": "4.57.3",
+        "torch": "2.8.0+cu128"
+      },
+      "speaker": "Vivian",
+      "styles": {
+        "reference": "Parle en français sur un ton conversationnel naturel. Fais entendre les questions, marque clairement les corrections et garde un débit posé pour la narration.",
+        "nuance": "Réponds comme dans une conversation en français de France. Entre immédiatement dans la phrase. Fais monter la voix sur la dernière syllabe des vraies questions, notamment « prévenir ». Une correction tient dans un seul mouvement. Garde les affirmations simples, calmes et sobres.",
+        "sobre": "Français parlé de France, voix tranquille, directe et complice. Démarre sans hésiter. Pour une question, attends réellement une réponse : termine sur une montée nette et brève. Pour une information, garde une mélodie discrète et descendante, sans emphase ni effet de scène."
+      },
+      "seed": 7319,
+      "chunk_codec_frames": 4,
+      "runs": [
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": true,
+          "first_sound_s": 10.444577800026163,
+          "complete_s": 11.781609400000889,
+          "blocks": [
+            {
+              "ready_s": 10.354577800026163,
+              "frames": 7680
+            },
+            {
+              "ready_s": 10.475413599982858,
+              "frames": 7680
+            },
+            {
+              "ready_s": 10.593359999998938,
+              "frames": 7680
+            },
+            {
+              "ready_s": 10.714350300026126,
+              "frames": 7680
+            },
+            {
+              "ready_s": 10.83868019998772,
+              "frames": 7680
+            },
+            {
+              "ready_s": 10.959655400016345,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.080669299990404,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.199901500018314,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.306256100011524,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.409112200024538,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.515196099993773,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.620070000004489,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.72465230000671,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.78141549997963,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 101760,
+          "duration_ms": 4240.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 203564,
+          "wav_sha256": "3a7c581c8ed4fa2b318f42b4e6da011f49fea8198091945e3ed9abfc800a8abe"
+        },
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": false,
+          "first_sound_s": 0.25097490000538525,
+          "complete_s": 1.2699603000073694,
+          "blocks": [
+            {
+              "ready_s": 0.16097490000538528,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.2626538000185974,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.3636400999967009,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.4680995999951847,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.5718816000153311,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.6923903999850154,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.802840800024569,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9060659999959171,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.0181540999910794,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1229795999825,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2245068000047468,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2697249000193551,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 86400,
+          "duration_ms": 3600.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 172844,
+          "wav_sha256": "4eac052038b97c692d850d90673052b7e5951bb4b67669d6fdad1bc19c5f7ab6"
+        },
+        {
+          "style": "reference",
+          "phrase": 2,
+          "cold": false,
+          "first_sound_s": 0.24916709998622538,
+          "complete_s": 2.0984983000089414,
+          "blocks": [
+            {
+              "ready_s": 0.16916709998622537,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.28214210004080087,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.3862790000275709,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.5010327000054531,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.604986899998039,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7250504000112414,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8276880999910645,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.933050199993886,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.0398874999955297,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.146293500030879,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2693175000022165,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.3732146000256762,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.4750087999855168,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.5816899000201374,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.6899049000348896,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.795549700036645,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9032194000319578,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.0099763000034727,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.09825290000299,
+              "frames": 5760
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 144000,
+          "duration_ms": 6000.0,
+          "onset_ms": 80.0,
+          "wav_bytes": 288044,
+          "wav_sha256": "372e1704c4de5b184ef29193f07b6e802abdd4f9cc6068f84c20979f32134c7c"
+        },
+        {
+          "style": "reference",
+          "phrase": 3,
+          "cold": false,
+          "first_sound_s": 0.261929000003729,
+          "complete_s": 2.6201063999906182,
+          "blocks": [
+            {
+              "ready_s": 0.17192900000372902,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.2793264000210911,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.4035631000297144,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.509339300042484,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.6162003999925219,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7294827000005171,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8480580000323243,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9617661000229418,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.081909500004258,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.187607100000605,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2909312000265345,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.405691799998749,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.510615700040944,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.61498000001302,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.7205109000205994,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.8271477000089362,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9311898000305519,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.035271600005217,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.1409280000370927,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.2506077000289224,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.357770500006154,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.4606221000431105,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.5679648999939673,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.6197794000036083,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 178560,
+          "duration_ms": 7440.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 357164,
+          "wav_sha256": "a0517af330aa322fb157b8e15fb4a1c39aa78e0243b3a2b6d028dc9bf641f437"
+        }
+      ]
+    },
+    {
+      "mode": "full",
+      "process": 84196,
+      "repetition": 2,
+      "weights_revision": "0c0e3051f131929182e2c023b9537f8b1c68adfe",
+      "corpus_sha256": "a15e9c96c4d25faa29260c6c9e4550cda243bd2080a034f1c342afe236ed2cb2",
+      "load_s": 8.112833800027147,
+      "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+      "dtype": "torch.bfloat16",
+      "packages": {
+        "faster-qwen3-tts": "0.3.2",
+        "qwen-tts": "0.1.1",
+        "transformers": "4.57.3",
+        "torch": "2.8.0+cu128"
+      },
+      "speaker": "Vivian",
+      "styles": {
+        "reference": "Parle en français sur un ton conversationnel naturel. Fais entendre les questions, marque clairement les corrections et garde un débit posé pour la narration.",
+        "nuance": "Réponds comme dans une conversation en français de France. Entre immédiatement dans la phrase. Fais monter la voix sur la dernière syllabe des vraies questions, notamment « prévenir ». Une correction tient dans un seul mouvement. Garde les affirmations simples, calmes et sobres.",
+        "sobre": "Français parlé de France, voix tranquille, directe et complice. Démarre sans hésiter. Pour une question, attends réellement une réponse : termine sur une montée nette et brève. Pour une information, garde une mélodie discrète et descendante, sans emphase ni effet de scène."
+      },
+      "seed": 7319,
+      "chunk_codec_frames": 4,
+      "runs": [
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": true,
+          "first_sound_s": 11.795587100004777,
+          "complete_s": 11.705803900025785,
+          "blocks": [
+            {
+              "ready_s": 11.705587100004777,
+              "frames": 101760
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 101760,
+          "duration_ms": 4240.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 203564,
+          "wav_sha256": "547da67e47c16903be26b8eb75e8ef4055f287bfcf3f4bbf2396d5c532ec0dfe"
+        },
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": false,
+          "first_sound_s": 1.134929800031241,
+          "complete_s": 1.0450851999921724,
+          "blocks": [
+            {
+              "ready_s": 1.044929800031241,
+              "frames": 86400
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 86400,
+          "duration_ms": 3600.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 172844,
+          "wav_sha256": "ef621a4c2701501f0e78a0b890622b5840c1829be852526589bf207ca0b784a8"
+        },
+        {
+          "style": "reference",
+          "phrase": 2,
+          "cold": false,
+          "first_sound_s": 1.837548300025519,
+          "complete_s": 1.7578933000331745,
+          "blocks": [
+            {
+              "ready_s": 1.757548300025519,
+              "frames": 144000
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 144000,
+          "duration_ms": 6000.0,
+          "onset_ms": 80.0,
+          "wav_bytes": 288044,
+          "wav_sha256": "072207bf64b112ac226bf5eb7b876ad81f8088aecfdfac1da9b4676586da486e"
+        },
+        {
+          "style": "reference",
+          "phrase": 3,
+          "cold": false,
+          "first_sound_s": 2.233241299956571,
+          "complete_s": 2.143471099960152,
+          "blocks": [
+            {
+              "ready_s": 2.1432412999565713,
+              "frames": 178560
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 178560,
+          "duration_ms": 7440.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 357164,
+          "wav_sha256": "e49540a22503dd3cf1ad68ce12b7af573a9a63a10fb23251f05933a6485b5426"
+        }
+      ]
+    },
+    {
+      "mode": "stream",
+      "process": 5760,
+      "repetition": 3,
+      "weights_revision": "0c0e3051f131929182e2c023b9537f8b1c68adfe",
+      "corpus_sha256": "a15e9c96c4d25faa29260c6c9e4550cda243bd2080a034f1c342afe236ed2cb2",
+      "load_s": 8.081101499963552,
+      "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+      "dtype": "torch.bfloat16",
+      "packages": {
+        "faster-qwen3-tts": "0.3.2",
+        "qwen-tts": "0.1.1",
+        "transformers": "4.57.3",
+        "torch": "2.8.0+cu128"
+      },
+      "speaker": "Vivian",
+      "styles": {
+        "reference": "Parle en français sur un ton conversationnel naturel. Fais entendre les questions, marque clairement les corrections et garde un débit posé pour la narration.",
+        "nuance": "Réponds comme dans une conversation en français de France. Entre immédiatement dans la phrase. Fais monter la voix sur la dernière syllabe des vraies questions, notamment « prévenir ». Une correction tient dans un seul mouvement. Garde les affirmations simples, calmes et sobres.",
+        "sobre": "Français parlé de France, voix tranquille, directe et complice. Démarre sans hésiter. Pour une question, attends réellement une réponse : termine sur une montée nette et brève. Pour une information, garde une mélodie discrète et descendante, sans emphase ni effet de scène."
+      },
+      "seed": 7319,
+      "chunk_codec_frames": 4,
+      "runs": [
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": true,
+          "first_sound_s": 10.57121939995326,
+          "complete_s": 11.947766899946146,
+          "blocks": [
+            {
+              "ready_s": 10.481219399953261,
+              "frames": 7680
+            },
+            {
+              "ready_s": 10.600913299946114,
+              "frames": 7680
+            },
+            {
+              "ready_s": 10.718604399997275,
+              "frames": 7680
+            },
+            {
+              "ready_s": 10.838057199958712,
+              "frames": 7680
+            },
+            {
+              "ready_s": 10.964345299988054,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.119318099983502,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.244971699954476,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.368079899984878,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.471809799957555,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.574920499988366,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.681164399953559,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.782905799977016,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.888997899950482,
+              "frames": 7680
+            },
+            {
+              "ready_s": 11.94757469999604,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 101760,
+          "duration_ms": 4240.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 203564,
+          "wav_sha256": "3a7c581c8ed4fa2b318f42b4e6da011f49fea8198091945e3ed9abfc800a8abe"
+        },
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": false,
+          "first_sound_s": 0.24152509999461472,
+          "complete_s": 1.2303453999920748,
+          "blocks": [
+            {
+              "ready_s": 0.15152509999461472,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.2524527999921702,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.3571174000389874,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.46532010001828894,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.5718900000210851,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.6746891000075266,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7749132000026293,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8755372000159696,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9771428999956697,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.0880049000261351,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1914102000300772,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2301713000051677,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 86400,
+          "duration_ms": 3600.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 172844,
+          "wav_sha256": "4eac052038b97c692d850d90673052b7e5951bb4b67669d6fdad1bc19c5f7ab6"
+        },
+        {
+          "style": "reference",
+          "phrase": 2,
+          "cold": false,
+          "first_sound_s": 0.2347619000193663,
+          "complete_s": 2.0256057000369765,
+          "blocks": [
+            {
+              "ready_s": 0.1547619000193663,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.25631490000523627,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.36537420004606247,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.46934540005167946,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.5745960000203922,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.6750234000501223,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7828712000045925,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8860707000130787,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.993153200019151,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.1008802000433207,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2063006000244059,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.322743900003843,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.438845600001514,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.5392870000214316,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.639922700007446,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.7400921000516973,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.8435250000329688,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9444535000366159,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.025389800022822,
+              "frames": 5760
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 144000,
+          "duration_ms": 6000.0,
+          "onset_ms": 80.0,
+          "wav_bytes": 288044,
+          "wav_sha256": "372e1704c4de5b184ef29193f07b6e802abdd4f9cc6068f84c20979f32134c7c"
+        },
+        {
+          "style": "reference",
+          "phrase": 3,
+          "cold": false,
+          "first_sound_s": 0.2425563999894075,
+          "complete_s": 2.4765231999917887,
+          "blocks": [
+            {
+              "ready_s": 0.1525563999894075,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.25336149998474866,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.35406119999242947,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.4631124999723397,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.563391599978786,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.6639174000010826,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.7796316999592818,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.8830214999616146,
+              "frames": 7680
+            },
+            {
+              "ready_s": 0.9908281999523751,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.09887789998902,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.2085590999922715,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.312027300009504,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.4175079999840818,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.5186258999747224,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.6199412999558263,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.720958799996879,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.8236644999706186,
+              "frames": 7680
+            },
+            {
+              "ready_s": 1.9292387999594212,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.03137229999993,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.1336508999811485,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.235174699977506,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.3357189999660477,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.43825869995635,
+              "frames": 7680
+            },
+            {
+              "ready_s": 2.476238299976103,
+              "frames": 1920
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 178560,
+          "duration_ms": 7440.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 357164,
+          "wav_sha256": "a0517af330aa322fb157b8e15fb4a1c39aa78e0243b3a2b6d028dc9bf641f437"
+        }
+      ]
+    },
+    {
+      "mode": "full",
+      "process": 66948,
+      "repetition": 3,
+      "weights_revision": "0c0e3051f131929182e2c023b9537f8b1c68adfe",
+      "corpus_sha256": "a15e9c96c4d25faa29260c6c9e4550cda243bd2080a034f1c342afe236ed2cb2",
+      "load_s": 7.8453567999531515,
+      "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+      "dtype": "torch.bfloat16",
+      "packages": {
+        "faster-qwen3-tts": "0.3.2",
+        "qwen-tts": "0.1.1",
+        "transformers": "4.57.3",
+        "torch": "2.8.0+cu128"
+      },
+      "speaker": "Vivian",
+      "styles": {
+        "reference": "Parle en français sur un ton conversationnel naturel. Fais entendre les questions, marque clairement les corrections et garde un débit posé pour la narration.",
+        "nuance": "Réponds comme dans une conversation en français de France. Entre immédiatement dans la phrase. Fais monter la voix sur la dernière syllabe des vraies questions, notamment « prévenir ». Une correction tient dans un seul mouvement. Garde les affirmations simples, calmes et sobres.",
+        "sobre": "Français parlé de France, voix tranquille, directe et complice. Démarre sans hésiter. Pour une question, attends réellement une réponse : termine sur une montée nette et brève. Pour une information, garde une mélodie discrète et descendante, sans emphase ni effet de scène."
+      },
+      "seed": 7319,
+      "chunk_codec_frames": 4,
+      "runs": [
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": true,
+          "first_sound_s": 11.465313199998345,
+          "complete_s": 11.375551499950234,
+          "blocks": [
+            {
+              "ready_s": 11.375313199998345,
+              "frames": 101760
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 101760,
+          "duration_ms": 4240.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 203564,
+          "wav_sha256": "547da67e47c16903be26b8eb75e8ef4055f287bfcf3f4bbf2396d5c532ec0dfe"
+        },
+        {
+          "style": "reference",
+          "phrase": 1,
+          "cold": false,
+          "first_sound_s": 1.124818499989342,
+          "complete_s": 1.0349627999821678,
+          "blocks": [
+            {
+              "ready_s": 1.034818499989342,
+              "frames": 86400
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 86400,
+          "duration_ms": 3600.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 172844,
+          "wav_sha256": "ef621a4c2701501f0e78a0b890622b5840c1829be852526589bf207ca0b784a8"
+        },
+        {
+          "style": "reference",
+          "phrase": 2,
+          "cold": false,
+          "first_sound_s": 1.7573202000185848,
+          "complete_s": 1.677515100047458,
+          "blocks": [
+            {
+              "ready_s": 1.6773202000185847,
+              "frames": 144000
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 144000,
+          "duration_ms": 6000.0,
+          "onset_ms": 80.0,
+          "wav_bytes": 288044,
+          "wav_sha256": "072207bf64b112ac226bf5eb7b876ad81f8088aecfdfac1da9b4676586da486e"
+        },
+        {
+          "style": "reference",
+          "phrase": 3,
+          "cold": false,
+          "first_sound_s": 2.153385499990545,
+          "complete_s": 2.0636573000228964,
+          "blocks": [
+            {
+              "ready_s": 2.063385499990545,
+              "frames": 178560
+            }
+          ],
+          "playback_gap_s": [],
+          "sample_rate_hz": 24000,
+          "frames": 178560,
+          "duration_ms": 7440.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 357164,
+          "wav_sha256": "e49540a22503dd3cf1ad68ce12b7af573a9a63a10fb23251f05933a6485b5426"
+        }
+      ]
+    }
+  ]
+}

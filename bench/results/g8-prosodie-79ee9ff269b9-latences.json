@@ -1,0 +1,311 @@
+{
+  "lot": "79ee9ff269b9",
+  "corpus_sha256": "a15e9c96c4d25faa29260c6c9e4550cda243bd2080a034f1c342afe236ed2cb2",
+  "definition": "Horloge monotone jusqu’au retour du signal jouable, plus le silence initial du PCM natif. Fenêtres de 10 ms, seuil −50 dBFS RMS. Sortie physique non chronométrée.",
+  "protocol": "Trois phrases puis répétition de la première. Cache disque du système non purgé. Un bac CPU neuf à chaque appel Piper. Qwen résident CUDA après le premier appel. Les deux premières séries Piper chevauchent la préparation de dépendances sur disque. Contrôle supplémentaire sur la phrase 2 après les essais Qwen.",
+  "profiles": {
+    "current": {
+      "setup": "--length_scale 1.1",
+      "device": "CPU, Windows Sandbox neuf par demande",
+      "runs": [
+        {
+          "phrase": 1,
+          "filename": "1.wav",
+          "repeat": false,
+          "ready_seconds": 18.92761050001718,
+          "voice": "piper-siwis-fr",
+          "audio_s": 4.361632653061225,
+          "guest_peak_bytes": 126803968,
+          "seconds_until_wav": 18.858136099996045,
+          "sandbox_stopped": true,
+          "onset_s": 0.06984126984126984,
+          "first_sound_s": 18.99745176985845,
+          "separate_control": false
+        },
+        {
+          "phrase": 2,
+          "filename": "2.wav",
+          "repeat": false,
+          "ready_seconds": 67.4050133000128,
+          "voice": "piper-siwis-fr",
+          "audio_s": 4.753741496598639,
+          "guest_peak_bytes": 153194496,
+          "seconds_until_wav": 67.17967450001743,
+          "sandbox_stopped": true,
+          "onset_s": 0.19954648526077098,
+          "first_sound_s": 67.60455978527357,
+          "separate_control": false
+        },
+        {
+          "phrase": 3,
+          "filename": "3.wav",
+          "repeat": false,
+          "ready_seconds": 45.447477800014894,
+          "voice": "piper-siwis-fr",
+          "audio_s": 7.275736961451247,
+          "guest_peak_bytes": 157253632,
+          "seconds_until_wav": 45.3871027000132,
+          "sandbox_stopped": true,
+          "onset_s": 0.20952380952380953,
+          "first_sound_s": 45.6570016095387,
+          "separate_control": false
+        },
+        {
+          "phrase": 1,
+          "filename": "1-repeat.wav",
+          "repeat": true,
+          "ready_seconds": 20.280610300018452,
+          "voice": "piper-siwis-fr",
+          "audio_s": 4.640272108843537,
+          "guest_peak_bytes": 132960256,
+          "seconds_until_wav": 20.216788199963048,
+          "sandbox_stopped": true,
+          "onset_s": 0.20952380952380953,
+          "first_sound_s": 20.49013410954226,
+          "separate_control": false
+        },
+        {
+          "phrase": 2,
+          "filename": "2.wav",
+          "repeat": false,
+          "ready_seconds": 18.087638599972706,
+          "voice": "piper-siwis-fr",
+          "audio_s": 4.684081632653061,
+          "guest_peak_bytes": 154087424,
+          "seconds_until_wav": 18.03309199999785,
+          "sandbox_stopped": true,
+          "onset_s": 0.20952380952380953,
+          "first_sound_s": 18.297162409496515,
+          "separate_control": true
+        }
+      ]
+    },
+    "adjusted": {
+      "setup": "--length_scale 1.0 --sentence_silence 0.32",
+      "device": "CPU, Windows Sandbox neuf par demande",
+      "runs": [
+        {
+          "phrase": 1,
+          "filename": "1.wav",
+          "repeat": false,
+          "ready_seconds": 17.739741299999878,
+          "voice": "piper-siwis-fr",
+          "audio_s": 4.77968253968254,
+          "guest_peak_bytes": 133230592,
+          "seconds_until_wav": 17.6929034999921,
+          "sandbox_stopped": true,
+          "onset_s": 0.049886621315192746,
+          "first_sound_s": 17.78962792131507,
+          "separate_control": false
+        },
+        {
+          "phrase": 2,
+          "filename": "2.wav",
+          "repeat": false,
+          "ready_seconds": 19.02797570003895,
+          "voice": "piper-siwis-fr",
+          "audio_s": 4.587392290249433,
+          "guest_peak_bytes": 149368832,
+          "seconds_until_wav": 18.971589700027835,
+          "sandbox_stopped": true,
+          "onset_s": 0.17959183673469387,
+          "first_sound_s": 19.207567536773645,
+          "separate_control": false
+        },
+        {
+          "phrase": 3,
+          "filename": "3.wav",
+          "repeat": false,
+          "ready_seconds": 22.72303739999188,
+          "voice": "piper-siwis-fr",
+          "audio_s": 7.786666666666667,
+          "guest_peak_bytes": 158937088,
+          "seconds_until_wav": 22.628462699998636,
+          "sandbox_stopped": true,
+          "onset_s": 0.06984126984126984,
+          "first_sound_s": 22.79287866983315,
+          "separate_control": false
+        },
+        {
+          "phrase": 1,
+          "filename": "1-repeat.wav",
+          "repeat": true,
+          "ready_seconds": 40.71448380005313,
+          "voice": "piper-siwis-fr",
+          "audio_s": 4.559092970521542,
+          "guest_peak_bytes": 131809280,
+          "seconds_until_wav": 40.654342900030315,
+          "sandbox_stopped": true,
+          "onset_s": 0.05986394557823129,
+          "first_sound_s": 40.77434774563136,
+          "separate_control": false
+        },
+        {
+          "phrase": 2,
+          "filename": "2.wav",
+          "repeat": false,
+          "ready_seconds": 17.330694799951743,
+          "voice": "piper-siwis-fr",
+          "audio_s": 4.564172335600907,
+          "guest_peak_bytes": 146997248,
+          "seconds_until_wav": 17.28429659997346,
+          "sandbox_stopped": true,
+          "onset_s": 0.17959183673469387,
+          "first_sound_s": 17.510286636686438,
+          "separate_control": true
+        }
+      ]
+    },
+    "qwen": {
+      "model": {
+        "id": "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
+        "revision": "0c0e3051f131929182e2c023b9537f8b1c68adfe",
+        "files": {
+          "config.json": {
+            "bytes": 4908,
+            "sha256": "17a07f527a1c25ea30b4e023a184482a23d3e279d697b1dc81b1bde498d29cf9"
+          },
+          "generation_config.json": {
+            "bytes": 245,
+            "sha256": "f1b90b4513f3b34c62851049e2492d7b4c5940daf1276f89c82b8ef04127f3aa"
+          },
+          "merges.txt": {
+            "bytes": 1671839,
+            "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3"
+          },
+          "model.safetensors": {
+            "bytes": 3833402552,
+            "sha256": "38b1d5971bdbd982b561cccec982669a53b0537c3cf5e9bd4778ed07bb2f5137"
+          },
+          "preprocessor_config.json": {
+            "bytes": 127,
+            "sha256": "efdde1022ea9d76928bf7a9cd53139138f5ba2e466e837f08f6105ab1af1c119"
+          },
+          "speech_tokenizer/config.json": {
+            "bytes": 2336,
+            "sha256": "ee65bb901c876664ab8707c487157aa1a6ee57c65969b28fb5ec9dc211e68167"
+          },
+          "speech_tokenizer/configuration.json": {
+            "bytes": 76,
+            "sha256": "6bc26d64eb5024b4d1dab5a52371958b429256d6c9d59787f1f5294a54e0cebd"
+          },
+          "speech_tokenizer/model.safetensors": {
+            "bytes": 682293092,
+            "sha256": "836b7b357f5ea43e889936a3709af68dfe3751881acefe4ecf0dbd30ba571258"
+          },
+          "speech_tokenizer/preprocessor_config.json": {
+            "bytes": 234,
+            "sha256": "fcb3805e597e786d4067706e602f6688524640f8d3396790e2e09b5942fcbdfb"
+          },
+          "tokenizer_config.json": {
+            "bytes": 7344,
+            "sha256": "dc3c31c3bdaedd5016382bb3cbe07323026775ad51f5a4fb564505992ae4a670"
+          },
+          "vocab.json": {
+            "bytes": 2776833,
+            "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+          }
+        }
+      },
+      "environment": {
+        "windows": "Windows-11-10.0.26320-SP0",
+        "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+        "driver_version": "610.88",
+        "device": "cuda:0",
+        "dtype": "torch.bfloat16",
+        "attention": "sdpa",
+        "python": "3.12.7",
+        "cuda_runtime": "12.8",
+        "packages": {
+          "qwen-tts": "0.1.1",
+          "torch": "2.8.0+cu128",
+          "torchaudio": "2.8.0+cu128",
+          "transformers": "4.57.3",
+          "accelerate": "1.12.0",
+          "huggingface-hub": "0.36.2",
+          "numpy": "2.5.4",
+          "safetensors": "0.8.0"
+        }
+      },
+      "speaker": "Vivian",
+      "instruction": "Parle en français sur un ton conversationnel naturel. Fais entendre les questions, marque clairement les corrections et garde un débit posé pour la narration.",
+      "language": "French",
+      "seed_per_request": 7319,
+      "streaming": false,
+      "phrases": [
+        "Jeudi ? Non, vendredi. À quinze heures, ça te va ?",
+        "Camille a pris le train de Lyon, pas celui de Lille. Tu peux la prévenir ?",
+        "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie."
+      ],
+      "corpus_sha256": "a15e9c96c4d25faa29260c6c9e4550cda243bd2080a034f1c342afe236ed2cb2",
+      "cold_load_with_imports_ms": 10545.4256,
+      "timing": "perf_counter_ns to complete host waveform. Cold includes Python library imports, CUDA initialization and model load. OS file cache uncontrolled. Warm uses the same resident model. WAV encoding and I/O excluded. first_non_silent_ms adds the start of the first non-overlapping 10 ms PCM16 window with RMS >= -50 dBFS to the return time, assuming immediate playback.",
+      "runs": [
+        {
+          "phrase_id": 1,
+          "phase": "cold",
+          "repeat": false,
+          "file": "1.wav",
+          "complete_audio_ms": 17510.1293,
+          "request_start_ns": 387771945761200,
+          "complete_audio_return_ns": 387789455890500,
+          "first_non_silent_ms": 17600.1293,
+          "sample_rate_hz": 24000,
+          "frames": 92160,
+          "duration_ms": 3840.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 184364,
+          "wav_sha256": "25650a8fd7e37e4ffe9ed5bb33c69f9b9fd61bf6a4d37bcef8fe726ae62c81b4"
+        },
+        {
+          "phrase_id": 2,
+          "phase": "warm",
+          "repeat": false,
+          "file": "2.wav",
+          "complete_audio_ms": 10678.8468,
+          "request_start_ns": 387789456592500,
+          "complete_audio_return_ns": 387800135439300,
+          "first_non_silent_ms": 10758.8468,
+          "sample_rate_hz": 24000,
+          "frames": 149760,
+          "duration_ms": 6240.0,
+          "onset_ms": 80.0,
+          "wav_bytes": 299564,
+          "wav_sha256": "d8e39b5965cd9e3ef9d8ca4e78db18a3565383ef3fdf023fff69db785edacbf1"
+        },
+        {
+          "phrase_id": 3,
+          "phase": "warm",
+          "repeat": false,
+          "file": "3.wav",
+          "complete_audio_ms": 11649.7935,
+          "request_start_ns": 387800137813000,
+          "complete_audio_return_ns": 387811787606500,
+          "first_non_silent_ms": 11739.7935,
+          "sample_rate_hz": 24000,
+          "frames": 170880,
+          "duration_ms": 7120.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 341804,
+          "wav_sha256": "1e36fb22e9f43bb5f2ba84be1f2d9138623ceb6dbf01ab29a7c2cab26780f33a"
+        },
+        {
+          "phrase_id": 1,
+          "phase": "warm",
+          "repeat": true,
+          "file": null,
+          "complete_audio_ms": 6318.7975,
+          "request_start_ns": 387811789627200,
+          "complete_audio_return_ns": 387818108424700,
+          "first_non_silent_ms": 6408.7975,
+          "sample_rate_hz": 24000,
+          "frames": 92160,
+          "duration_ms": 3840.0,
+          "onset_ms": 90.0,
+          "wav_bytes": 184364,
+          "wav_sha256": "25650a8fd7e37e4ffe9ed5bb33c69f9b9fd61bf6a4d37bcef8fe726ae62c81b4"
+        }
+      ]
+    }
+  }
+}

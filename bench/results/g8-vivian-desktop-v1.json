@@ -1,0 +1,199 @@
+{
+  "passed": true,
+  "onset": "First 10 ms window >= -50 dBFS RMS; first observed device cursor past onset",
+  "runs": [
+    {
+      "case": "cold",
+      "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+      "expected_style": "reference",
+      "qwen_calls": [
+        {
+          "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+          "style": "reference",
+          "pcm_blocks": 20
+        }
+      ],
+      "sample_rate": 24000,
+      "playing_status": "Lecture en cours · Vivian · GPU",
+      "first_sound_s": 13.91128259996185,
+      "onset_frame": 1920,
+      "device_cursor_frame": 2034,
+      "device_closed_s": 19.980271900014486,
+      "final_status": "Lecture terminée.",
+      "elapsed_s": 20.003581499971915,
+      "pid": 65240,
+      "submitted_blocks": 154,
+      "submitted_frames": 147840,
+      "output_closed": true
+    },
+    {
+      "case": "warm",
+      "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+      "expected_style": "reference",
+      "qwen_calls": [
+        {
+          "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+          "style": "reference",
+          "pcm_blocks": 24
+        }
+      ],
+      "sample_rate": 24000,
+      "playing_status": "Lecture en cours · Vivian · GPU",
+      "first_sound_s": 0.35264890000689775,
+      "onset_frame": 2160,
+      "device_cursor_frame": 2171,
+      "device_closed_s": 7.702709199977107,
+      "final_status": "Lecture terminée.",
+      "elapsed_s": 7.748004799999762,
+      "pid": 65240,
+      "submitted_blocks": 186,
+      "submitted_frames": 178560,
+      "output_closed": true
+    },
+    {
+      "case": "warm_2",
+      "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+      "expected_style": "reference",
+      "qwen_calls": [
+        {
+          "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+          "style": "reference",
+          "pcm_blocks": 24
+        }
+      ],
+      "sample_rate": 24000,
+      "playing_status": "Lecture en cours · Vivian · GPU",
+      "first_sound_s": 0.31581609998829663,
+      "onset_frame": 2160,
+      "device_cursor_frame": 2217,
+      "device_closed_s": 7.6559514999971725,
+      "final_status": "Lecture terminée.",
+      "elapsed_s": 7.682979799981695,
+      "pid": 65240,
+      "submitted_blocks": 186,
+      "submitted_frames": 178560,
+      "output_closed": true
+    },
+    {
+      "case": "warm_3",
+      "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+      "expected_style": "reference",
+      "qwen_calls": [
+        {
+          "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+          "style": "reference",
+          "pcm_blocks": 24
+        }
+      ],
+      "sample_rate": 24000,
+      "playing_status": "Lecture en cours · Vivian · GPU",
+      "first_sound_s": 0.3242067000246607,
+      "onset_frame": 2160,
+      "device_cursor_frame": 2241,
+      "device_closed_s": 7.666877800016664,
+      "final_status": "Lecture terminée.",
+      "elapsed_s": 7.706012000038754,
+      "pid": 65240,
+      "submitted_blocks": 186,
+      "submitted_frames": 178560,
+      "output_closed": true
+    },
+    {
+      "case": "stop_queued_narration",
+      "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+      "expected_style": "sobre",
+      "qwen_calls": [
+        {
+          "text": "Le dossier est prêt. Il reste une chose à vérifier : le montant de la facture. Ensuite, je te l’envoie.",
+          "style": "sobre",
+          "pcm_blocks": 1
+        }
+      ],
+      "sample_rate": 24000,
+      "playing_status": "Lecture en cours · Vivian · GPU",
+      "first_sound_s": 0.3273158999509178,
+      "onset_frame": 2160,
+      "device_cursor_frame": 2258,
+      "cursor_at_stop": 2258,
+      "queued_blocks_at_stop": 4,
+      "unplayed_frames_at_reset": 3320,
+      "device_closed_s": 0.34641169995302334,
+      "final_status": "Lecture arrêtée.",
+      "elapsed_s": 0.3825428999844007,
+      "pid": 65240,
+      "submitted_blocks": 6,
+      "submitted_frames": 5760,
+      "output_closed": true,
+      "late_writes": 0,
+      "stop_to_close_s": 0.01907709997612983,
+      "stop_to_idle_s": 0.055208300007507205,
+      "warm_pid": 65240
+    },
+    {
+      "case": "mixed_question_after_stop",
+      "text": "Camille a pris le train de Lyon, pas celui de Lille. Tu peux la prévenir ?",
+      "expected_style": "reference",
+      "qwen_calls": [
+        {
+          "text": "Camille a pris le train de Lyon, pas celui de Lille. Tu peux la prévenir ?",
+          "style": "reference",
+          "pcm_blocks": 19
+        }
+      ],
+      "sample_rate": 24000,
+      "playing_status": "Lecture en cours · Vivian · GPU",
+      "first_sound_s": 0.3230224000290036,
+      "onset_frame": 1920,
+      "device_cursor_frame": 2004,
+      "device_closed_s": 6.250074099982157,
+      "final_status": "Lecture terminée.",
+      "elapsed_s": 6.311885099974461,
+      "pid": 65240,
+      "submitted_blocks": 150,
+      "submitted_frames": 144000,
+      "output_closed": true
+    },
+    {
+      "case": "zero_vram_piper",
+      "text": "Jeudi ? Non, vendredi. À quinze heures, ça te va ?",
+      "expected_style": null,
+      "qwen_calls": [
+        {
+          "text": "Jeudi ? Non, vendredi. À quinze heures, ça te va ?",
+          "style": "reference",
+          "pcm_blocks": 0
+        }
+      ],
+      "sample_rate": 22050,
+      "piper": {
+        "text": "Jeudi ? Non, vendredi. À quinze heures, ça te va ?",
+        "voice": "piper-siwis-fr",
+        "audio_s": 4.617052154195012,
+        "guest_peak_bytes": 135020544,
+        "seconds_until_wav": 20.03898399998434,
+        "sandbox_stopped": true
+      },
+      "playing_status": "Lecture en cours · Piper · CPU",
+      "first_sound_s": 20.401825800014194,
+      "onset_frame": 4180,
+      "device_cursor_frame": 4211,
+      "output_closed": true,
+      "final_status": "Lecture terminée.",
+      "elapsed_s": 24.944715399993584,
+      "pid": null
+    }
+  ],
+  "resident_gpu_uuids": [
+    "GPU-d9116be8-13c2-ea3b-b790-e27e8c7fe969"
+  ],
+  "warm": {
+    "pid": 65240,
+    "first_sound_s": [
+      0.35264890000689775,
+      0.31581609998829663,
+      0.3242067000246607
+    ],
+    "median_first_sound_s": 0.3242067000246607
+  },
+  "fallback_vram_limit_mib": 0
+}

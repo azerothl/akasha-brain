@@ -84,6 +84,23 @@ WHISPER_MODEL = Artifact(
     "MIT", "https://github.com/openai/whisper/blob/main/LICENSE", MODEL.redirect_hosts,
 )
 
+PIPER_ENGINE = Artifact(
+    "Piper pour Windows AMD64", "2023.11.14-2", "piper_windows_amd64.zip",
+    "https://github.com/rhasspy/piper/releases/tag/2023.11.14-2",
+    "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip",
+    "f3c58906402b24f3a96d92145f58acba6d86c9b5db896d207f78dc80811efcea", 22_477_236,
+    "MIT (Piper), GPL (eSpeak NG)", "https://github.com/rhasspy/piper/tree/2023.11.14-2", ENGINE.redirect_hosts)
+_SIWIS_REV = "375a0fe641dea077c2a47b4e9a056d6da521eed3"
+_SIWIS_ROOT = f"https://huggingface.co/rhasspy/piper-voices/resolve/{_SIWIS_REV}/fr/fr_FR/siwis/medium"
+PIPER_ARTIFACTS = (PIPER_ENGINE, *(Artifact(
+    title, _SIWIS_REV, filename, _SIWIS_ROOT+"/MODEL_CARD", _SIWIS_ROOT+"/"+filename, checksum, size,
+    "SIWIS (corpus CC BY 4.0)", _SIWIS_ROOT+"/MODEL_CARD", MODEL.redirect_hosts)
+    for title, filename, checksum, size in (
+        ("Voix française SIWIS medium", "fr_FR-siwis-medium.onnx",
+         "641d1ab097da2b81128c076810edb052b385decc8be3381814802a64a73baf99", 63_201_294),
+        ("Configuration SIWIS medium", "fr_FR-siwis-medium.onnx.json",
+         "39479916c2db192b5ac9764daddd0c744d83e023ad890c6976c0633ae4df8959", 4875))))
+
 
 @dataclass(frozen=True)
 class DownloadReview:
@@ -131,7 +148,8 @@ class CatalogRedirects(HTTPRedirectHandler):
 def download(review: DownloadReview, approval: str | None, checkpoint) -> None:
     artifact = review.artifact
     denied = authorize({"risk_class": "R3", "human_approval": (
-        artifact in (*ARTIFACTS, LINUX_ENGINE, WHISPER_ENGINE, WHISPER_MODEL) and approval == review.approval_sha256
+        artifact in (*ARTIFACTS, LINUX_ENGINE, WHISPER_ENGINE, WHISPER_MODEL, *PIPER_ARTIFACTS)
+        and approval == review.approval_sha256
     )})
     if denied:
         raise ProjectError(denied)
@@ -144,7 +162,7 @@ def download(review: DownloadReview, approval: str | None, checkpoint) -> None:
             claim.write(review.approval_sha256)
     except FileExistsError:
         reject(ErrorCode.APPROVAL_REQUIRED, "Cet accord a déjà servi. Un nouvel accord est nécessaire.")
-    action = "audio_artifact_download" if artifact in (WHISPER_ENGINE, WHISPER_MODEL) else "image_artifact_download"
+    action = "audio_artifact_download" if artifact in (WHISPER_ENGINE, WHISPER_MODEL, *PIPER_ARTIFACTS) else "image_artifact_download"
     record(review.audit, action=action, risk="R3", actor="human", decision="approved")
 
     partial = None

@@ -11,6 +11,7 @@ from contracts.akasha_contracts.errors import ErrorCode
 
 def test_registered_modalities_and_contracts_are_distinct():
     expected = {
+        ("audio.synthesize", "audio", "fr-pcm-stream.v1"): "qwen3-tts-vivian-fr",
         ("conversation.intent", "intent", "conversation-intent.v1"): "communication-qwen",
         ("image.ocr", "ocr", "ocr-text.v1"): "vision-rapidocr",
         ("image.generate", "image", "verified-png.v1"): "image-sd-turbo",
@@ -22,7 +23,11 @@ def test_registered_modalities_and_contracts_are_distinct():
     for signature, identity in expected.items():
         specialist = select_specialist(*signature)
         assert specialist.id == identity and specialist.evidence(signature[0])["engine"] == specialist.engine
-    assert not any(item.fallback for item in active_specialists())
+    assert {item.id for item in active_specialists() if item.fallback} == {"piper-siwis-fr"}
+    wav = ("audio.synthesize", "audio", "fr-wav.v1")
+    with pytest.raises(PlanningError):
+        select_specialist(*wav)
+    assert select_specialist(*wav, fallback_authorized=True).id == "piper-siwis-fr"
     for invalid in (("image.generate", "code", "verified-png.v1"), ("image.ocr", "ocr", "unified-diff.v1"),
                     ("notes.restore_reference", "solver", "unified-diff.v1")):
         with pytest.raises(PlanningError) as rejected:

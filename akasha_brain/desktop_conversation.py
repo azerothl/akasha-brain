@@ -21,6 +21,7 @@ from bench.run_guided_repair import CHECKPOINTS, file_hash
 from contracts.akasha_contracts.errors import AkashaError, ErrorCode
 
 from .capability_recovery import Recovery
+from .desktop_read_aloud import ReplyReader
 from .conversation_planning import (
     DRIVE_PATH, PROJECT_TOOLS, PendingImage, compile_local_plan, execute_intents, explicit_media_step, infer_intent, intent_parts,
     load_conversation_catalog, references, refines_project_summary,
@@ -291,6 +292,7 @@ class ConversationPane:
         self.transcript.pack(side="left", fill="both", expand=True)
         self.transcript.tag_configure("speaker", font=speaker_font)
         self.transcript.tag_configure("code", font=code_font)
+        self.reader = ReplyReader(page, self.tasks.scheduler, lambda: self.project)
         controls = ttk.Frame(page, style="Data.TFrame")
         controls.pack(fill="x", pady=(10, 0))
         self.confirm = ttk.Button(controls, command=self.confirm_action)
@@ -300,7 +302,9 @@ class ConversationPane:
         self.entry.pack(side="left", fill="x", expand=True, padx=8)
         self.entry.bind("<Return>", self.send)
 
-    def add(self, speaker, text, *, tag=None):
+    def add(self, speaker, text, *, tag=None, narration_only=False):
+        if speaker != "Vous":
+            self.reader.set_text(text, narration_only=narration_only)
         self.transcript.configure(state="normal")
         self.transcript.insert("end", speaker + "\n", "speaker")
         self.transcript.insert("end", text + "\n\n", tag or ())
@@ -502,6 +506,7 @@ class ConversationPane:
             except SESSION_WRITE_ERRORS:
                 self.add("Akasha", "Ce dossier reste accessible pour la conversation en cours.")
         if project != self.project:
+            self.reader.stop()
             if self.intent_job is not None:
                 self.intent_cancel.set()
             self.answer_audio("cancel")
@@ -671,7 +676,7 @@ class ConversationPane:
                 self.show_file(plan.inputs[0], output)
             elif plan.capability == "audio.meeting_minutes":
                 from .meeting_minutes import display
-                self.add("Compte rendu", display(output))
+                self.add("Compte rendu", display(output), narration_only=True)
             elif plan.capability == "audio.transcribe":
                 from .whisper_pilot import display
                 execution = output.get("execution", {})
@@ -679,7 +684,7 @@ class ConversationPane:
                          "cpu": "CPU"}.get(execution.get("device"))
                 self.add("Transcription · "+label if label else "Transcription", display(output))
             else:
-                self.add("Akasha", output)
+                self.add("Akasha", output, narration_only=plan.capability == "project.summarize")
                 if reply is replies[-1] and plan.capability == "project.summarize":
                     self.last_summary_project = reply.project
 
@@ -794,7 +799,8 @@ class ConversationPane:
 
     def show_file(self, name, result):
         lines = "\n".join(f"{row['line']:>3}  {row['text']}{'…' if row['excerpt'] else ''}" for row in result["lines"])
-        self.add(name, lines or "Le fichier est vide.", tag="code")
+        self.add(name, lines or "Le fichier est vide.", tag="code",
+                 narration_only=Path(name).suffix.casefold() in {".txt", ".md", ".rst"})
         if result["more"]:
             self.add("Akasha", "L’aperçu est limité aux 80 premières lignes.")
 
@@ -920,7 +926,7 @@ class ConversationPane:
     def reply_to_report(self, report):
         evidence, facts = result_summary(report)
         if self.communication is None or facts is None or self.responding:
-            self.add("Résultat du banc", evidence)
+            self.add("Résultat du banc", evidence, narration_only=True)
             return
         self.responding = True
 
@@ -943,7 +949,7 @@ class ConversationPane:
             pass
         else:
             self.responding = False
-            self.add("Akasha · synthèse locale" if generated else "Résultat du banc", answer)
+            self.add("Akasha · synthèse locale" if generated else "Résultat du banc", answer, narration_only=True)
         self.parent.after(150, self.poll)
 
     def poll_project(self):

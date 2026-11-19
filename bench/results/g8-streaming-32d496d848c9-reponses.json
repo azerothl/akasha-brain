@@ -1,0 +1,20 @@
+{
+  "lot": "32d496d848c9",
+  "reponses": [
+    {
+      "phrase": 1,
+      "choix": "Ex æquo",
+      "remarque": "B et C sont un peu meilleur que A"
+    },
+    {
+      "phrase": 2,
+      "choix": "C",
+      "remarque": ""
+    },
+    {
+      "phrase": 3,
+      "choix": "C",
+      "remarque": "B et C sont très proche"
+    }
+  ]
+}

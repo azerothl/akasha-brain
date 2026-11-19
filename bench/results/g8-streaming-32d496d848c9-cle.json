@@ -1,0 +1,31 @@
+{
+  "lot": "32d496d848c9",
+  "ordre": [
+    [
+      "sobre",
+      "reference",
+      "nuance"
+    ],
+    [
+      "nuance",
+      "sobre",
+      "reference"
+    ],
+    [
+      "reference",
+      "nuance",
+      "sobre"
+    ]
+  ],
+  "sources_sha256": {
+    "1-reference": "3a7c581c8ed4fa2b318f42b4e6da011f49fea8198091945e3ed9abfc800a8abe",
+    "1-nuance": "51f36acc69d3a393636edcc74ad787b05a0d147d56f81d5c61b2bef75af0b478",
+    "1-sobre": "8085efac4653cdd53f42ed905fb1de4273cb55e5088a5be055af773734aa8b31",
+    "2-reference": "372e1704c4de5b184ef29193f07b6e802abdd4f9cc6068f84c20979f32134c7c",
+    "2-nuance": "1c609d66a01794a9b6c3faffe2f65973dd3fc50c87b5b078826c138a10ba34c0",
+    "2-sobre": "9e1370b51f0ffd2fa310b828ab927aa17ad5e27a9d56dd4cb60e6f5019b0c504",
+    "3-reference": "a0517af330aa322fb157b8e15fb4a1c39aa78e0243b3a2b6d028dc9bf641f437",
+    "3-nuance": "8068572e49c60ed4f7af14dd41c3be3408aad434a7546c4d959e59bce58edc34",
+    "3-sobre": "c6895bbfcb804bf84bf13633d854b45141de5e6a86fc1eebac4e57b1d2947562"
+  }
+}

@@ -1,4 +1,8 @@
 [
+  {"id": "qwen3-tts-vivian-fr", "modality": "audio", "engine": "faster-qwen3-tts",
+   "capabilities": ["audio.synthesize"], "contract": "fr-pcm-stream.v1", "ram_mib": 6144, "fallback": false},
+  {"id": "piper-siwis-fr", "modality": "audio", "engine": "piper-siwis-medium",
+   "capabilities": ["audio.synthesize"], "contract": "fr-wav.v1", "ram_mib": 2048, "fallback": true},
   {"id": "whisper-small-fr", "modality": "audio", "engine": "whisper.cpp-small",
    "capabilities": ["audio.transcribe"], "contract": "fr-transcript.v1", "ram_mib": 4096, "fallback": false},
   {

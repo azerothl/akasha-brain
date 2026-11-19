@@ -384,7 +384,7 @@ Le registre expose deux capacités optionnelles derrière les adaptateurs du §6
 | Capacité | Entrée | Résultat attendu |
 | --- | --- | --- |
 | `audio.transcribe` (STT / ASR) | Référence à un WAV ou FLAC dans un projet autorisé, ou à la capture temporaire de la session active pour une demande vocale | Texte UTF-8 et segments contenant le texte et les bornes de début et de fin en millisecondes. Les segments sont ordonnés et bornés par la durée du média. Le profil peut fournir la langue détectée et distinguer les locuteurs s’il a été qualifié pour ces fonctions. |
-| `audio.synthesize` (TTS) | Texte destiné à l’utilisateur, langue et voix autorisée par le profil | Audio WAV validé avant restitution. Le premier profil cible la lecture à la demande des réponses affichées en français, dans le bureau. |
+| `audio.synthesize` (TTS) | Texte destiné à l’utilisateur, langue et voix autorisée par le profil | Le bureau lit les blocs PCM mono 16 bits à 24 kHz de Vivian au fil de la synthèse (`fr-pcm-stream.v1`). Le profil de repli Piper fournit un WAV validé (`fr-wav.v1`). |
 
 Le STT sert à deux parcours selon l’intention exprimée par l’utilisateur.
 

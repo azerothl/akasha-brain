@@ -1,0 +1,53 @@
+{
+  "voice_revision": "375a0fe641dea077c2a47b4e9a056d6da521eed3",
+  "engine": "Piper 2023.11.14-2 CPU",
+  "check": "whisper.cpp small français, CPU",
+  "clips": [
+    {
+      "voice": "piper-siwis-fr",
+      "audio_s": 4.867210884353741,
+      "guest_peak_bytes": 181760000,
+      "seconds_until_wav": 23.510783099976834,
+      "sandbox_stopped": true,
+      "id": "rendez-vous",
+      "wav_sha256": "7138aad776faf60f2ee4bf9ef80f1d5c2fdfb2fa5eba310187caebd816ee6733",
+      "asr": "Votre rendez-vous avec Camille et Martin est prévu le 18 novembre à 14h.",
+      "checks": [
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "voice": "piper-siwis-fr",
+      "audio_s": 5.659319727891156,
+      "guest_peak_bytes": 169992192,
+      "seconds_until_wav": 19.246173599967733,
+      "sandbox_stopped": true,
+      "id": "montant",
+      "wav_sha256": "19481b604cb7502c3e8680f6dbcecce74c98349ec469f59aae61a9796b5a2126",
+      "asr": "Le montant total est de 42 euros et 50 centimes.\n La facture est prête.",
+      "checks": [
+        true,
+        true
+      ]
+    },
+    {
+      "voice": "piper-siwis-fr",
+      "audio_s": 5.903129251700681,
+      "guest_peak_bytes": 153133056,
+      "seconds_until_wav": 19.18875339999795,
+      "sandbox_stopped": true,
+      "id": "transport",
+      "wav_sha256": "db5ab191c73e9fc9aeab12c3c2146e13b0ac43ee66f0c7974cd356848ad0dd74",
+      "asr": "La sans-off confirme le départ du Togevé pour Lyon.\n Le quai sera affiché dans dix minutes.",
+      "checks": [
+        false,
+        false,
+        true,
+        true
+      ]
+    }
+  ],
+  "all_critical_terms": false
+}

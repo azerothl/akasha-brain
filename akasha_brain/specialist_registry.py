@@ -77,8 +77,8 @@ def select_specialist(capability: str, modality: str, contract: str, *, fallback
 
 
 def require_specialist(capability: str, modality: str, contract: str, engine: str, *,
-                       ram_mib: int | None = None) -> Specialist:
-    specialist = select_specialist(capability, modality, contract)
+                       ram_mib: int | None = None, fallback_authorized=False) -> Specialist:
+    specialist = select_specialist(capability, modality, contract, fallback_authorized=fallback_authorized)
     if specialist.engine != engine or (ram_mib is not None and specialist.ram_mib != ram_mib):
         raise PlanningError(AkashaError(ErrorCode.CAPABILITY_ENGINE_UNSUPPORTED,
             "Le moteur ou son budget diffère de l’adaptateur qualifié.",

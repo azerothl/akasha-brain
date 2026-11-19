@@ -1,0 +1,5 @@
+[
+  {"id": "rendez-vous", "text": "Votre rendez-vous avec Camille Martin est prévu le 18 novembre à 14 heures.", "critical": [["camille martin"], ["18 novembre", "dix huit novembre"], ["14 heures", "quatorze heures", "14 h"]]},
+  {"id": "montant", "text": "Le montant total est de 42 euros et 50 centimes. La facture est prête.", "critical": [["42 euros", "quarante deux euros"], ["50 centimes", "cinquante centimes"]]},
+  {"id": "transport", "text": "La SNCF confirme le départ du TGV pour Lyon. Le quai sera affiché dans dix minutes.", "critical": [["sncf", "s n c f"], ["tgv", "t g v"], ["lyon"], ["10 minutes", "dix minutes"]]}
+]

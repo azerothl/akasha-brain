@@ -1,0 +1,20 @@
+{
+  "lot": "79ee9ff269b9",
+  "reponses": [
+    {
+      "phrase": 1,
+      "choix": "C",
+      "remarque": ""
+    },
+    {
+      "phrase": 2,
+      "choix": "Aucune",
+      "remarque": "la version B est la meilleur, mais le ton ne correspond pas vraiment a la phrase, le début est trop lent, et la question n'est pas assez marquée"
+    },
+    {
+      "phrase": 3,
+      "choix": "A",
+      "remarque": "la version A est la meilleur, mais le ton est surjoué"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "lot": "79ee9ff269b9",
+  "ordre": [
+    [
+      "adjusted",
+      "current",
+      "qwen"
+    ],
+    [
+      "current",
+      "qwen",
+      "adjusted"
+    ],
+    [
+      "qwen",
+      "adjusted",
+      "current"
+    ]
+  ],
+  "sources_sha256": {
+    "1-current": "1530549127f41bc6a69a1cde0b33a0c682618db80d77147eef556f567b9c1d52",
+    "1-adjusted": "8cedfd5efa51897979e8cf592b4add6dcc2bfc017865a208a2eeebd1c6f0295a",
+    "1-qwen": "25650a8fd7e37e4ffe9ed5bb33c69f9b9fd61bf6a4d37bcef8fe726ae62c81b4",
+    "2-current": "6e0786516e3d2163881b9f00cb02a064805edd70c34c0294b1062aa695111c70",
+    "2-adjusted": "e675e097f2ad5aa75e6c0975c056cea9c210938ddd17a2cfc1c53fe92a1f69e6",
+    "2-qwen": "d8e39b5965cd9e3ef9d8ca4e78db18a3565383ef3fdf023fff69db785edacbf1",
+    "3-current": "5aa119ac9d6a1fc2c5ee77d7757074d63cff1f5c4312ae6ead35e6ce19cc8f16",
+    "3-adjusted": "b40cfe39ef65073875836c808148eeef34dcc67cca6a3be1123c6b79a10ab888",
+    "3-qwen": "1e36fb22e9f43bb5f2ba84be1f2d9138623ceb6dbf01ab29a7c2cab26780f33a"
+  }
+}

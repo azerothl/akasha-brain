@@ -1,0 +1,53 @@
+{
+  "voice_revision": "375a0fe641dea077c2a47b4e9a056d6da521eed3",
+  "engine": "Piper 2023.11.14-2 CPU",
+  "check": "whisper.cpp small français, CPU",
+  "clips": [
+    {
+      "voice": "piper-siwis-fr",
+      "audio_s": 5.029750566893424,
+      "guest_peak_bytes": 183508992,
+      "seconds_until_wav": 18.440651800017804,
+      "sandbox_stopped": true,
+      "id": "rendez-vous",
+      "wav_sha256": "95941b19345cdb4b02fd19bfde2befb99f5be9cacc1f41e32ed0d68b7692dd01",
+      "asr": "Votre rendez-vous avec Camille Martin est prévu le 18 novembre à 14h.",
+      "checks": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "voice": "piper-siwis-fr",
+      "audio_s": 5.868299319727891,
+      "guest_peak_bytes": 171892736,
+      "seconds_until_wav": 18.780514499987476,
+      "sandbox_stopped": true,
+      "id": "montant",
+      "wav_sha256": "9e52f1ff24fdaadda4074fb65cf0b7bc9f7cc33475bf36c960e49b03879c68e3",
+      "asr": "Le montant total est de 42 euros et 50 centimes.\n La facture est prête.",
+      "checks": [
+        true,
+        true
+      ]
+    },
+    {
+      "voice": "piper-siwis-fr",
+      "audio_s": 6.762267573696145,
+      "guest_peak_bytes": 165564416,
+      "seconds_until_wav": 18.317775499948766,
+      "sandbox_stopped": true,
+      "id": "transport",
+      "wav_sha256": "d79c830138208d07f6ece550a342386e6bcd911369df8f4abe3a01de2d6fb4e3",
+      "asr": "La SNCF confirme le départ du TGV pour Lyon.\n Le quai sera affiché dans 10 minutes.",
+      "checks": [
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "all_critical_terms": true
+}

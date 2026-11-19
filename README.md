@@ -255,6 +255,16 @@ Le panneau affiche les horaires et la mention **À vérifier** devant chaque pas
 
 Pour obtenir le compte rendu, écrivez `Résume la réunion reunion.wav` dans le bureau ou appelez `audio_meeting_minutes` avec `{"file":"reunion.wav"}` via MCP. Le résumé, les décisions et les actions citent le fichier et les bornes du passage. MCP fournit aussi les indices des segments dans `source.segment_indices`. Le compte rendu sélectionne des phrases de la transcription française. Une action formulée à la première personne sans nom porte la mention **Attribution à vérifier**. Un passage marqué incertain par Whisper conserve son avertissement dans le compte rendu. [Essai sur une réunion à deux voix](bench/results/g7-meeting-v1.json)
 
+### Lire une réponse dans le bureau Windows
+
+**Lire la réponse** lit la dernière réponse affichée en français. Avec le profil CUDA installé, Vivian (Qwen3-TTS CustomVoice 1.7B) commence à parler dès les premiers blocs audio et le modèle reste chargé pour les demandes suivantes. Le ton conversationnel `reference` s’applique par défaut, y compris aux réponses qui se terminent par une question. Une lecture explicitement informative, par exemple un compte rendu ou un résumé de projet, utilise `sobre` si elle ne contient aucune question. **Arrêter** interrompt la préparation ou la lecture et vide le son en attente.
+
+Si Vivian est indisponible avant le début de la lecture, le bureau affiche le repli vers la voix française SIWIS de Piper sur CPU. À la première utilisation de Piper, le bureau demande un accord pour chacun des trois fichiers manquants, vérifie leurs empreintes et les conserve dans le cache personnel. [Essais de voix](bench/corpora/g8-streaming-v1/README.md) · [Contrôle du bouton et de l’arrêt](bench/results/g8-vivian-desktop-v1.json)
+
+Sur la RTX 4080 SUPER du banc, le premier passage audible au curseur audio Windows a pris 13,91 s à froid et 0,324 s en médiane sur trois lectures à chaud. L’arrêt pendant la parole a fermé la sortie en 19 ms. La lecture suivante a réutilisé le même processus. Le bureau libère le modèle après deux minutes d’inactivité.
+
+Pour utiliser une installation locale de Vivian, indiquer le chemin absolu de son dossier dans `%LOCALAPPDATA%\AkashaBrain\qwen-voice-home.txt` (ou `AKASHA_QWEN_HOME`). Ce dossier de confiance contient l’interpréteur `env\Scripts\python.exe` avec `faster-qwen3-tts==0.3.2`, `qwen-tts==0.1.1` et PyTorch CUDA, ainsi que `models\0c0e3051f131929182e2c023b9537f8b1c68adfe\` avec les poids et le tokenizer qualifiés. Le bouton utilise les fichiers locaux. [Révision du modèle](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice/tree/0c0e3051f131929182e2c023b9537f8b1c68adfe)
+
 ### Validation de la conversation et du serveur MCP
 
 Le 17 novembre 2026, le parcours lancé depuis la conversation a renvoyé quatre tests réussis et un verdict SQLite positif en **46,916 s**. Un client MCP local a lancé le parcours Rbitnet CPU et RapidOCR et a reçu le verdict `passed` en **138,147 s**, avec quatre tests réussis et la persistance confirmée après relance. Les 797 octets du diff renvoyé correspondent au premier diff appliqué et vérifié dans le bac. Les deux Windows Sandbox ont été arrêtés. [Relevé des deux essais](bench/results/windows-interface-mcp-notes-v1.json)

@@ -1,0 +1,78 @@
+{
+  "lot": "32d496d848c9",
+  "cible_LUFS": -23,
+  "clips": [
+    {
+      "id": "1-A",
+      "sha256": "a870d46269c0478fd1c167304061108923f7f6dc8f4948f7f5699d5fea381005",
+      "LUFS": -23.02,
+      "dBTP": -6.9,
+      "onset_s": 0.09
+    },
+    {
+      "id": "1-B",
+      "sha256": "54e5ee44f64dfe4460756bf96819e825d7f6248e083e1a1f39f4f712a3440e6a",
+      "LUFS": -23.0,
+      "dBTP": -5.93,
+      "onset_s": 0.09
+    },
+    {
+      "id": "1-C",
+      "sha256": "54a6a7594ab2ccb91996a29c09525ab9536b938422563f576a86674c65de2ee5",
+      "LUFS": -23.0,
+      "dBTP": -7.27,
+      "onset_s": 0.09
+    },
+    {
+      "id": "2-A",
+      "sha256": "9cb569dea63e04f7e4e75cdeda995c1d3534b2b1074c255b13c8674e7e16b305",
+      "LUFS": -22.99,
+      "dBTP": -8.46,
+      "onset_s": 0.08
+    },
+    {
+      "id": "2-B",
+      "sha256": "fe204ae8222d8acdd568fc03bfc5655fb43ccbb454778342c3be62f469adf937",
+      "LUFS": -23.01,
+      "dBTP": -7.01,
+      "onset_s": 0.08
+    },
+    {
+      "id": "2-C",
+      "sha256": "5b1368e90b7d1892ee5b59cc597290905daf960410511dcee1d5af8be2d5c08e",
+      "LUFS": -23.01,
+      "dBTP": -8.03,
+      "onset_s": 0.08
+    },
+    {
+      "id": "3-A",
+      "sha256": "38b4c4f3f44db2f73e4374086ff7e79f6225f0c7ea18c9ecb4c4c9021deb4ce2",
+      "LUFS": -23.0,
+      "dBTP": -5.0,
+      "onset_s": 0.09
+    },
+    {
+      "id": "3-B",
+      "sha256": "2a27e06ca29b364f032120e5d8ac6e110571da0bd48afd22e599f652c60f8a78",
+      "LUFS": -23.0,
+      "dBTP": -6.53,
+      "onset_s": 0.09
+    },
+    {
+      "id": "3-C",
+      "sha256": "9330097afd46579be123bfefff650cf488351dd0d2e6d710ca2b372a63772c38",
+      "LUFS": -23.0,
+      "dBTP": -4.25,
+      "onset_s": 0.09
+    }
+  ],
+  "navigateur": {
+    "nom": "Edge",
+    "version": "158.0.4370.21",
+    "hors_ligne": true,
+    "sans_fenetre": true,
+    "muet": true,
+    "lectures_verifiees": 9,
+    "export_verifie": "ecoute-g8-32d496d848c9-reponses.json"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "promotion": {"all_critical_terms": true, "max_seconds_until_wav": 30, "max_guest_peak_mib": 512, "max_seconds_to_stop": 1},
+  "phrases": [
+    {"id": "reserve-facture", "text": "Le PDF de la facture indique 35 euros de TVA. Le paiement est prévu le 7 avril.", "critical": [["pdf", "p d f"], ["35 euros", "trente cinq euros"], ["tva", "t v a"], ["7 avril", "sept avril"]]},
+    {"id": "reserve-retour", "text": "Louise Bernard prendra le RER pour Paris à 16 heures. Elle descendra au deuxième arrêt.", "critical": [["louise bernard"], ["rer", "r e r"], ["paris"], ["16 heures", "seize heures"], ["deuxième arrêt", "2e arrêt"]]}
+  ]
+}

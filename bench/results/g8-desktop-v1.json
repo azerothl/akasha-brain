@@ -1,0 +1,12 @@
+{
+  "displayed_reply": "Votre rendez-vous avec Camille Martin est prévu le 18 novembre à 14 heures.",
+  "seconds_to_playing": 19.714342699968256,
+  "seconds_to_stopped": 0.09469060000265017,
+  "open_devices_on_audio_thread": {
+    "before": 0,
+    "playing": 1,
+    "after": 0
+  },
+  "windows_output_released": true,
+  "interactive_queue_available_during_playback": true
+}
